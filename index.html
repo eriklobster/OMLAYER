@@ -3,45 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>omlayer | Coming Soon</title>
+    <meta name="description" content="omlayer is a next-generation platform currently under development. Stay tuned for the future of layered architecture and seamless digital experiences.">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://omlayer.com/">
+    <meta property="og:title" content="omlayer | Coming Soon">
+    <meta property="og:description" content="A new standard in digital architecture. Coming soon.">
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="omlayer | Coming Soon">
+    <meta property="twitter:description" content="A new standard in digital architecture. Coming soon.">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap" rel="stylesheet">
     <style>
         body { 
-            background-color: #050505;
+            background-color: #000000;
             font-family: 'Inter', sans-serif;
             color: #ffffff;
         }
-        .radial-glow {
-            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        .fade-in {
+            animation: fadeIn 2s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center overflow-hidden">
+<body class="h-screen w-full flex items-center justify-center">
 
-    <div class="absolute inset-0 radial-glow pointer-events-none"></div>
-
-    <div class="relative z-10 text-center px-4">
-        <div class="mb-12">
-            <h1 class="text-4xl md:text-6xl font-semibold tracking-tight text-white opacity-90 italic">
-                omlayer<span class="text-blue-500">.</span>
-            </h1>
-            <div class="h-1 w-12 bg-blue-600 mx-auto mt-4 rounded-full"></div>
-        </div>
-
-        <div class="space-y-4">
-            <p class="text-sm uppercase tracking-[0.3em] text-gray-500 font-medium">
-                Under Construction
-            </p>
-            <h2 class="text-xl md:text-2xl text-gray-300 font-light">
-                Something new is taking shape.
-            </h2>
-        </div>
-    </div>
-
-    <footer class="absolute bottom-8 w-full text-center">
-        <p class="text-xs text-gray-600 tracking-widest uppercase">
-            &copy; 2026 omlayer. All rights reserved.
+    <main class="text-center fade-in">
+        <h1 class="text-5xl md:text-7xl font-light tracking-tighter text-white italic">
+            omlayer<span class="text-blue-600">.</span>
+        </h1>
+        
+        <p class="mt-6 text-xs uppercase tracking-[0.5em] text-gray-500 font-medium">
+            Coming Soon
         </p>
+    </main>
+
+    <footer class="absolute bottom-10 w-full text-center">
+        <div class="h-[1px] w-8 bg-gray-800 mx-auto mb-4"></div>
+        <p class="text-[10px] text-gray-700 tracking-widest uppercase">
+            &copy; 2025-￼ omlayer
+        </p>
+    </footer>
+
+</body>
+    </html>
