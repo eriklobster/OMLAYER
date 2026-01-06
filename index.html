@@ -3,26 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMLAYER - Nomadic Refugee Pottery</title>
+    <title>omlayer | Coming Soon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f9f9f9; text-align: center; }
-        header { background: #4a90e2; color: white; padding: 40px 20px; }
-        img { max-width: 100%; height: auto; margin: 20px 0; }
-        .btn { display: inline-block; padding: 10px 20px; margin: 10px; background: #4a90e2; color: white; text-decoration: none; border-radius: 5px; }
-        footer { margin-top: 40px; font-size: 0.9em; color: #666; }
+        body { 
+            background-color: #050505;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
+        .radial-glow {
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        }
     </style>
 </head>
-<body>
-    <header>
-        <h1>OMLAYER</h1>
-        <p>Nomadic shop of authentic refugee pottery. Sourced in Pai. Sold on Etsy & Telegram.</p>
-    </header>
-    <img src="Set.jpg" alt="V60 Clay Dripper + 200ml Blue Mug Set">
-    <p>Handcrafted V60 Dripper + Mug by Myanmar Refugee Artisan in Pai – $35 USD</p>
-    <a href="https://www.etsy.com/shop/OMLAYER" class="btn">Shop on Etsy</a>
-    <a href="https://t.me/OMLAYER" class="btn">Chat on Telegram</a>
-    <footer>
-        <p>📧 hello@omlayer.com | Worldwide Shipping | #RefugeeArtisan #SlowCoffee</p>
-    </footer>
-</body>
-</html>
+<body class="h-screen w-full flex items-center justify-center overflow-hidden">
+
+    <div class="absolute inset-0 radial-glow pointer-events-none"></div>
+
+    <div class="relative z-10 text-center px-4">
+        <div class="mb-12">
+            <h1 class="text-4xl md:text-6xl font-semibold tracking-tight text-white opacity-90 italic">
+                omlayer<span class="text-blue-500">.</span>
+            </h1>
+            <div class="h-1 w-12 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        <div class="space-y-4">
+            <p class="text-sm uppercase tracking-[0.3em] text-gray-500 font-medium">
+                Under Construction
+            </p>
+            <h2 class="text-xl md:text-2xl text-gray-300 font-light">
+                Something new is taking shape.
+            </h2>
+        </div>
+    </div>
+
+    <footer class="absolute bottom-8 w-full text-center">
+        <p class="text-xs text-gray-600 tracking-widest uppercase">
+            &copy; 2026 omlayer. All rights reserved.
+        </p>
