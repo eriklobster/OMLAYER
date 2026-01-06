@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>omlayer | Coming Soon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #050505;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
+        .radial-glow {
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex items-center justify-center overflow-hidden">
+
+    <div class="absolute inset-0 radial-glow pointer-events-none"></div>
+
+    <div class="relative z-10 text-center px-4">
+        <div class="mb-12">
+            <h1 class="text-4xl md:text-6xl font-semibold tracking-tight text-white opacity-90 italic">
+                omlayer<span class="text-blue-500">.</span>
+            </h1>
+            <div class="h-1 w-12 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        <div class="space-y-4">
+            <p class="text-sm uppercase tracking-[0.3em] text-gray-500 font-medium">
+                Under Construction
+            </p>
+            <h2 class="text-xl md:text-2xl text-gray-300 font-light">
+                Something new is taking shape.
+            </h2>
+        </div>
+
+        <div class="mt-10 max-w-sm mx-auto">
+            <form class="flex flex-col sm:flex-row gap-2">
+                <input 
+                    type="email" 
+                    placeholder="Email address" 
+                    class="bg-white/5 border border-white/10 px-4 py-2.5 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-full transition-all placeholder:text-gray-600"
+                >
+                <button class="bg-white text-black text-sm font-semibold px-6 py-2.5 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap">
+                    Notify Me
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="absolute bottom-8 w-full text-center">
+        <p class="text-xs text-gray-600 tracking-widest uppercase">
+            &copy; 2026 omlayer. All rights reserved.
+        </p>
