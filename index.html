@@ -448,7 +448,8 @@
     }
     .layer-list div::before { content: ""; display: block; width: 24px; height: 1px; margin-bottom: 13px; background: var(--signal); opacity: .65; }
 
-    .work { padding-top: calc(var(--section) * .88); }
+    .work { padding-top: calc(var(--section) * .78); }
+    .work .section-header { margin-bottom: clamp(36px, 4vw, 54px); }
     .case-study {
       border: 1px solid var(--line);
       border-radius: 3px;
@@ -458,26 +459,25 @@
     .case-top {
       display: grid;
       grid-template-columns: 1.06fr .94fr;
-      min-height: 590px;
+      min-height: 500px;
     }
-    .case-copy { padding: clamp(34px, 6vw, 78px); border-right: 1px solid var(--line); }
-    .case-kicker { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+    .case-copy { padding: clamp(30px, 4vw, 54px); border-right: 1px solid var(--line); }
+    .case-title-row { display: flex; align-items: center; justify-content: space-between; gap: clamp(18px, 2.5vw, 34px); margin: 22px 0 12px; }
     .case-logo {
-      width: clamp(88px, 9vw, 124px);
+      width: clamp(88px, 7vw, 112px);
       height: auto;
-      margin-top: -12px;
       flex: 0 0 auto;
       filter: drop-shadow(0 18px 30px rgba(0, 36, 103, .24));
     }
     .status { display: inline-flex; align-items: center; gap: 10px; color: #98a09f; font: 300 .68rem/1 "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
     .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 12px rgba(185,255,217,.6); }
-    .case-copy h3 { margin: 30px 0 8px; font-size: clamp(3rem, 5.7vw, 6.7rem); font-weight: 500; line-height: .93; letter-spacing: -.068em; }
-    .case-subtitle { margin: 0; color: #c0c5c6; font-size: clamp(1.15rem, 1.7vw, 1.55rem); line-height: 1.45; letter-spacing: -.022em; }
-    .case-description { max-width: 630px; margin: 34px 0 0; color: #8f979c; line-height: 1.75; }
-    .case-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 38px; }
+    .case-copy h3 { margin: 0; font-size: clamp(3rem, 4.7vw, 5.6rem); font-weight: 500; line-height: .9; letter-spacing: -.068em; }
+    .case-subtitle { margin: 0; color: #c0c5c6; font-size: clamp(1.1rem, 1.55vw, 1.42rem); line-height: 1.35; letter-spacing: -.022em; }
+    .case-description { max-width: 630px; margin: 24px 0 0; color: #8f979c; line-height: 1.65; }
+    .case-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 26px; }
     .tag { padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; color: #899196; font: 300 .62rem/1 "DM Mono", monospace; letter-spacing: .055em; text-transform: uppercase; }
     .system-visual {
-      padding: clamp(30px, 5vw, 68px);
+      padding: clamp(24px, 3.5vw, 48px);
       display: grid;
       place-items: center;
       position: relative;
@@ -487,10 +487,10 @@
         linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
       background-size: auto, 42px 42px, 42px 42px;
     }
-    .system-stack { width: min(100%, 410px); display: grid; gap: 11px; position: relative; }
+    .system-stack { width: min(100%, 410px); display: grid; gap: 8px; position: relative; }
     .system-node {
-      min-height: 74px;
-      padding: 15px 17px;
+      min-height: 64px;
+      padding: 12px 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -511,10 +511,10 @@
       grid-template-columns: repeat(3, 1fr);
       border-top: 1px solid var(--line);
     }
-    .case-fact { min-height: 126px; padding: 24px clamp(24px, 4vw, 50px); border-right: 1px solid var(--line); }
+    .case-fact { min-height: 108px; padding: 20px clamp(22px, 3.5vw, 42px); border-right: 1px solid var(--line); }
     .case-fact:last-child { border-right: 0; }
     .case-fact span { color: #667077; font: 300 .63rem/1 "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
-    .case-fact p { margin: 18px 0 0; color: #c4c9ca; line-height: 1.55; }
+    .case-fact p { margin: 14px 0 0; color: #c4c9ca; line-height: 1.5; }
 
     .process-list { counter-reset: process; border-top: 1px solid var(--line); }
     .process-step {
@@ -611,7 +611,7 @@
       .capability { min-height: 180px; }
       .case-top { grid-template-columns: 1fr; }
       .case-copy { border-right: 0; border-bottom: 1px solid var(--line); }
-      .system-visual { min-height: 520px; }
+      .system-visual { min-height: 420px; }
     }
 
     @media (max-width: 680px) {
@@ -639,12 +639,12 @@
       .manifesto-inner { padding: 34px 24px; }
       .manifesto-statement { font-size: clamp(1.8rem, 8vw, 2.55rem); }
       .layer-list { grid-template-columns: 1fr 1fr; gap: 24px 12px; }
-      .case-copy { padding: 32px 24px 40px; }
-      .case-kicker { gap: 16px; }
-      .case-logo { width: 86px; margin-top: -8px; }
-      .case-copy h3 { font-size: clamp(3rem, 16vw, 4.5rem); }
-      .system-visual { min-height: 445px; padding: 24px; }
-      .system-node { min-height: 68px; }
+      .case-copy { padding: 28px 22px 32px; }
+      .case-title-row { gap: 14px; margin: 18px 0 12px; }
+      .case-logo { width: 72px; }
+      .case-copy h3 { font-size: clamp(2.75rem, 13vw, 3.9rem); }
+      .system-visual { min-height: 360px; padding: 20px; }
+      .system-node { min-height: 62px; padding: 11px 13px; }
       .case-footer { grid-template-columns: 1fr; }
       .case-fact { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       .case-fact:last-child { border-bottom: 0; }
@@ -820,11 +820,11 @@
         <article class="case-study reveal">
           <div class="case-top">
             <div class="case-copy">
-              <div class="case-kicker">
-                <span class="status">Live · Private-use system</span>
+              <span class="status">Live · Private-use system</span>
+              <div class="case-title-row">
+                <h3>Ocean<br>Kids Club</h3>
                 <img class="case-logo" src="ocean-kids-club-logo.png" alt="Ocean Kids Club logo" width="640" height="585" loading="lazy" decoding="async">
               </div>
-              <h3>Ocean<br>Kids Club</h3>
               <p class="case-subtitle">A custom operations system built around Telegram.</p>
               <p class="case-description">A bilingual interface for parents, staff and administrators—bringing registration, child records, absences, reminders, attendance, reporting and scheduled operations into one dependable workflow.</p>
               <div class="case-tags" aria-label="Technologies used">
