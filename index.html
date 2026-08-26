@@ -238,76 +238,99 @@
       position: relative;
       perspective: 1100px;
       isolation: isolate;
+      display: grid;
+      place-items: center;
     }
     .layer-stage::before {
       content: "";
       position: absolute;
-      width: 74%;
+      width: 88%;
       aspect-ratio: 1;
-      left: 17%;
-      top: 10%;
+      left: 6%;
+      top: 4%;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(99, 126, 199, .20), rgba(64, 97, 168, .035) 48%, transparent 70%);
-      filter: blur(14px);
+      background:
+        radial-gradient(circle at 50% 47%, rgba(185, 255, 217, .12), transparent 14%),
+        radial-gradient(circle, rgba(99, 126, 199, .22), rgba(64, 97, 168, .045) 48%, transparent 70%);
+      filter: blur(18px);
     }
     .layer-object {
       position: absolute;
-      inset: 8% 0 0;
+      inset: 3% 0 0;
       transform-style: preserve-3d;
       transform: rotateX(var(--rx)) rotateY(var(--ry));
-      transition: transform .32s var(--ease);
+      transition: transform .5s var(--ease);
     }
-    .plane {
+    .spirit-shell {
       position: absolute;
       left: 50%;
-      top: 50%;
-      width: min(420px, 82vw);
-      aspect-ratio: 1.28;
-      border: 1px solid rgba(237, 243, 239, .2);
-      border-radius: 3px;
+      top: 48%;
+      width: min(510px, 88vw);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%) translateZ(24px);
       transform-style: preserve-3d;
-      box-shadow: 0 34px 90px rgba(0,0,0,.28);
-      overflow: hidden;
     }
-    .plane::before {
+    .spirit-shell::before,
+    .spirit-shell::after {
       content: "";
       position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: linear-gradient(145deg, #000, transparent 82%);
+      inset: 8%;
+      border: 1px solid rgba(240, 242, 238, .07);
+      border-radius: 50%;
+      box-shadow: 0 0 0 44px rgba(145, 174, 252, .015), 0 0 90px rgba(86, 116, 205, .08);
+      transform: translateZ(-54px);
     }
-    .plane-a {
-      opacity: .28;
-      background: rgba(35, 46, 57, .2);
-      transform: translate(-50%, -50%) rotateX(64deg) rotateZ(-34deg) translateZ(-104px);
+    .spirit-shell::after {
+      inset: 23%;
+      border-color: rgba(185, 255, 217, .11);
+      box-shadow: 0 0 58px rgba(185, 255, 217, .06);
+      transform: translateZ(72px);
     }
-    .plane-b {
-      opacity: .58;
-      background: linear-gradient(145deg, rgba(72, 89, 114, .18), rgba(255,255,255,.015));
-      transform: translate(-50%, -50%) rotateX(64deg) rotateZ(-34deg) translateZ(-38px);
+    .spirit-sigil {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 28px 54px rgba(0, 0, 0, .32));
     }
-    .plane-c {
-      background: linear-gradient(145deg, rgba(152, 178, 214, .12), rgba(255,255,255,.025));
-      backdrop-filter: blur(11px);
-      -webkit-backdrop-filter: blur(11px);
-      transform: translate(-50%, -50%) rotateX(64deg) rotateZ(-34deg) translateZ(30px);
+    .spirit-sigil circle,
+    .spirit-sigil path,
+    .spirit-sigil polygon { vector-effect: non-scaling-stroke; }
+    .sigil-outer,
+    .sigil-flower,
+    .sigil-diamond { transform-box: fill-box; transform-origin: center; }
+    .sigil-outer { animation: spirit-spin 48s linear infinite; }
+    .sigil-flower { animation: spirit-spin-reverse 34s linear infinite; }
+    .sigil-diamond { animation: spirit-drift 9s ease-in-out infinite; }
+    .sigil-ring { fill: none; stroke: rgba(240, 242, 238, .16); stroke-width: 1; }
+    .sigil-ring-soft { fill: none; stroke: rgba(145, 174, 252, .16); stroke-width: 1; stroke-dasharray: 2 11; stroke-linecap: round; }
+    .sigil-arc { fill: none; stroke: url(#spiritGradient); stroke-width: 1.5; stroke-linecap: round; opacity: .7; }
+    .sigil-flower circle { fill: rgba(145, 174, 252, .018); stroke: rgba(198, 215, 255, .22); stroke-width: 1; }
+    .sigil-diamond polygon { fill: none; stroke: rgba(185, 255, 217, .2); stroke-width: 1; }
+    .sigil-axis { stroke: rgba(240, 242, 238, .18); stroke-width: 1; stroke-dasharray: 1 8; stroke-linecap: round; }
+    .sigil-node { fill: #b9ffd9; filter: url(#spiritGlow); }
+    .sigil-node-blue { fill: #91aefc; filter: url(#spiritGlow); }
+    .sigil-seed {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: spirit-breathe 5.8s ease-in-out infinite;
     }
-    .om-mark {
+    .spirit-orb {
       position: absolute;
-      left: 50%;
-      top: 46%;
-      width: 190px;
+      width: 10px;
       aspect-ratio: 1;
-      transform: translate(-50%, -50%) translateZ(95px);
-      filter: drop-shadow(0 0 30px rgba(155, 186, 255, .32));
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 12px rgba(185, 255, 217, .7), 0 0 42px rgba(185, 255, 217, .24);
+      animation: spirit-float 7s ease-in-out infinite;
     }
-    .om-mark circle, .om-mark path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .om-mark .orbit { stroke: rgba(235, 240, 238, .18); stroke-width: .8; }
-    .om-mark .infinity { stroke: url(#markGradient); stroke-width: 2; }
-    .om-mark .dot { fill: var(--signal); stroke: none; filter: drop-shadow(0 0 7px var(--signal)); }
+    .spirit-orb-a { left: 12%; top: 24%; transform: translateZ(92px); }
+    .spirit-orb-b { right: 10%; bottom: 25%; width: 6px; background: var(--blue); animation-delay: -2.4s; transform: translateZ(130px); }
+    .spirit-orb-c { left: 24%; bottom: 14%; width: 4px; animation-delay: -4.1s; opacity: .7; transform: translateZ(-22px); }
+    @keyframes spirit-spin { to { transform: rotate(360deg); } }
+    @keyframes spirit-spin-reverse { to { transform: rotate(-360deg); } }
+    @keyframes spirit-drift { 0%, 100% { transform: rotate(-4deg) scale(.98); } 50% { transform: rotate(4deg) scale(1.025); } }
+    @keyframes spirit-breathe { 0%, 100% { transform: scale(.86); opacity: .72; } 50% { transform: scale(1.14); opacity: 1; } }
+    @keyframes spirit-float { 0%, 100% { margin-top: -8px; opacity: .45; } 50% { margin-top: 12px; opacity: 1; } }
     .stage-note {
       position: absolute;
       right: 2%;
@@ -604,8 +627,9 @@
       .hero-actions { display: grid; grid-template-columns: 1fr 1fr; }
       .button { padding-inline: 14px; font-size: .65rem; }
       .layer-stage { min-height: 340px; margin-top: 10px; }
-      .plane { width: min(315px, 82vw); }
-      .om-mark { width: 138px; }
+      .spirit-shell { width: min(350px, 92vw); }
+      .spirit-orb-a { left: 8%; top: 19%; }
+      .spirit-orb-b { right: 7%; bottom: 21%; }
       .stage-note { right: 0; bottom: 0; font-size: .55rem; }
       .section-header { display: block; }
       .section-index { display: block; margin-bottom: 22px; }
@@ -673,24 +697,62 @@
 
         <div class="layer-stage" data-layer-stage aria-hidden="true">
           <div class="layer-object">
-            <div class="plane plane-a"></div>
-            <div class="plane plane-b"></div>
-            <div class="plane plane-c"></div>
-            <svg class="om-mark" viewBox="0 0 200 200" role="presentation">
-              <defs>
-                <linearGradient id="markGradient" x1="30" y1="35" x2="170" y2="165" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#f0f2ee"/>
-                  <stop offset=".48" stop-color="#91aefc"/>
-                  <stop offset="1" stop-color="#b9ffd9"/>
-                </linearGradient>
-              </defs>
-              <circle class="orbit" cx="100" cy="100" r="75"/>
-              <circle class="orbit" cx="100" cy="100" r="56"/>
-              <path class="infinity" d="M49 101c19-37 43-37 51 0s32 37 51 0c-19-37-43-37-51 0s-32 37-51 0Z"/>
-              <circle class="dot" cx="100" cy="43" r="3.5"/>
-            </svg>
+            <div class="spirit-shell">
+              <svg class="spirit-sigil" viewBox="0 0 600 600" role="presentation">
+                <defs>
+                  <linearGradient id="spiritGradient" x1="90" y1="100" x2="510" y2="500" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#f0f2ee"/>
+                    <stop offset=".45" stop-color="#91aefc"/>
+                    <stop offset="1" stop-color="#b9ffd9"/>
+                  </linearGradient>
+                  <radialGradient id="seedGradient">
+                    <stop stop-color="#f0f2ee"/>
+                    <stop offset=".35" stop-color="#b9ffd9" stop-opacity=".9"/>
+                    <stop offset="1" stop-color="#91aefc" stop-opacity="0"/>
+                  </radialGradient>
+                  <filter id="spiritGlow" x="-300%" y="-300%" width="700%" height="700%">
+                    <feGaussianBlur stdDeviation="5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+
+                <g class="sigil-outer">
+                  <circle class="sigil-ring" cx="300" cy="300" r="252"/>
+                  <circle class="sigil-ring-soft" cx="300" cy="300" r="228"/>
+                  <path class="sigil-arc" d="M89 300a211 211 0 0 1 422 0"/>
+                  <path class="sigil-arc" d="M126 411a211 211 0 0 0 348 0" opacity=".38"/>
+                  <circle class="sigil-node" cx="300" cy="48" r="3.5"/>
+                  <circle class="sigil-node-blue" cx="518" cy="426" r="3"/>
+                  <circle class="sigil-node" cx="82" cy="426" r="2.5"/>
+                </g>
+
+                <g class="sigil-flower">
+                  <circle cx="300" cy="300" r="78"/>
+                  <circle cx="300" cy="222" r="78"/>
+                  <circle cx="367.5" cy="261" r="78"/>
+                  <circle cx="367.5" cy="339" r="78"/>
+                  <circle cx="300" cy="378" r="78"/>
+                  <circle cx="232.5" cy="339" r="78"/>
+                  <circle cx="232.5" cy="261" r="78"/>
+                </g>
+
+                <g class="sigil-diamond">
+                  <polygon points="300,150 430,375 170,375"/>
+                  <polygon points="300,450 170,225 430,225"/>
+                </g>
+
+                <path class="sigil-axis" d="M300 88V512M88 300H512"/>
+                <g class="sigil-seed">
+                  <circle cx="300" cy="300" r="54" fill="url(#seedGradient)" opacity=".65"/>
+                  <circle class="sigil-node" cx="300" cy="300" r="7"/>
+                </g>
+              </svg>
+              <span class="spirit-orb spirit-orb-a"></span>
+              <span class="spirit-orb spirit-orb-b"></span>
+              <span class="spirit-orb spirit-orb-c"></span>
+            </div>
           </div>
-          <div class="stage-note">Layers / aligned<br>System / online</div>
+          <div class="stage-note">Field / breathing<br>Layers / becoming</div>
         </div>
       </div>
       <div class="scroll-cue" aria-hidden="true">Scroll to assemble</div>
