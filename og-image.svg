@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="atmosphere" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(932 260) rotate(151) scale(520 420)">
+      <stop stop-color="#24365d" stop-opacity=".64"/>
+      <stop offset=".48" stop-color="#111722" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#080a0d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="signal" x1="720" y1="58" x2="1086" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0f2ee"/>
+      <stop offset=".48" stop-color="#91aefc"/>
+      <stop offset="1" stop-color="#b9ffd9"/>
+    </linearGradient>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(913 315) scale(72)">
+      <stop stop-color="#f0f2ee"/>
+      <stop offset=".2" stop-color="#b9ffd9" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#91aefc" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-300%" y="-300%" width="700%" height="700%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#f0f2ee" stroke-opacity=".035"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#080a0d"/>
+  <rect width="1200" height="630" fill="url(#atmosphere)"/>
+  <rect x="638" width="562" height="630" fill="url(#grid)" opacity=".7"/>
+  <path d="M0 58H1200M0 572H1200" stroke="#f0f2ee" stroke-opacity=".09"/>
+
+  <g transform="translate(58 52)">
+    <circle cx="25" cy="25" r="23" fill="none" stroke="#315bff" stroke-width="3"/>
+    <circle cx="25" cy="25" r="19" fill="none" stroke="#91aefc" stroke-opacity=".5"/>
+    <text x="25" y="31" text-anchor="middle" fill="#f0f2ee" font-family="Arial, sans-serif" font-size="18" font-weight="700" font-style="italic">OM</text>
+    <text x="61" y="32" fill="#f0f2ee" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="7">LAYER</text>
+  </g>
+
+  <g transform="translate(58 212)" font-family="Arial, sans-serif">
+    <circle cx="5" cy="-18" r="4" fill="#b9ffd9" filter="url(#glow)"/>
+    <text x="20" y="-13" fill="#aeb6bb" font-size="13" letter-spacing="3">INDEPENDENT DIGITAL STUDIO · GLOBAL</text>
+    <text x="0" y="72" fill="#f0f2ee" font-size="76" font-weight="600" letter-spacing="-4">Build your next</text>
+    <text x="0" y="151" fill="#9fa7ad" font-size="76" font-weight="600" letter-spacing="-4">digital layer.</text>
+    <text x="3" y="210" fill="#7f888e" font-size="20">Websites · Products · Automation · Systems</text>
+  </g>
+
+  <g transform="translate(913 315)" fill="none">
+    <circle r="225" stroke="#f0f2ee" stroke-opacity=".12"/>
+    <circle r="198" stroke="#91aefc" stroke-opacity=".16" stroke-dasharray="2 12"/>
+    <circle r="154" stroke="#f0f2ee" stroke-opacity=".1"/>
+    <path d="M-194 0A194 194 0 0 1 194 0" stroke="url(#signal)" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+    <path d="M-158 111A194 194 0 0 0 158 111" stroke="url(#signal)" stroke-width="2" stroke-linecap="round" opacity=".34"/>
+    <g stroke="#c6d7ff" stroke-opacity=".23">
+      <circle r="68"/><circle cy="-68" r="68"/><circle cx="59" cy="-34" r="68"/>
+      <circle cx="59" cy="34" r="68"/><circle cy="68" r="68"/>
+      <circle cx="-59" cy="34" r="68"/><circle cx="-59" cy="-34" r="68"/>
+    </g>
+    <path d="M0-132 114 66-114 66ZM0 132-114-66 114-66Z" stroke="#b9ffd9" stroke-opacity=".18"/>
+    <path d="M0-205V205M-205 0H205" stroke="#f0f2ee" stroke-opacity=".12" stroke-dasharray="1 9"/>
+    <circle r="72" fill="url(#core)" opacity=".72"/>
+    <circle r="7" fill="#b9ffd9" filter="url(#glow)"/>
+    <circle cx="0" cy="-225" r="4" fill="#b9ffd9" filter="url(#glow)"/>
+    <circle cx="195" cy="112" r="3" fill="#91aefc" filter="url(#glow)"/>
+  </g>
+
+  <text x="58" y="604" fill="#626a70" font-family="monospace" font-size="12" letter-spacing="2">CHANT OM. WE'LL BUILD YOUR DIGITAL LAYER.</text>
+  <text x="1142" y="604" text-anchor="end" fill="#626a70" font-family="monospace" font-size="12" letter-spacing="2">OMLAYER.COM</text>
+</svg>
