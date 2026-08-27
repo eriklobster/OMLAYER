@@ -529,19 +529,42 @@
     .case-fact span { color: #667077; font: 300 .63rem/1 "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
     .case-fact p { margin: 14px 0 0; color: #c4c9ca; line-height: 1.5; }
 
-    .process-list { counter-reset: process; border-top: 1px solid var(--line); }
-    .process-step {
-      counter-increment: process;
+    .process-list {
       display: grid;
-      grid-template-columns: .35fr 1fr 1fr;
-      gap: clamp(24px, 5vw, 80px);
-      min-height: 116px;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: repeat(12, 1fr);
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
     }
-    .process-step::before { content: "0" counter(process); color: #616a70; font: 300 .68rem/1 "DM Mono", monospace; }
-    .process-step h3 { margin: 0; font-size: clamp(1.65rem, 2.6vw, 2.8rem); font-weight: 500; letter-spacing: -.04em; }
-    .process-step p { margin: 0; color: #838c92; line-height: 1.65; }
+    .process-step {
+      grid-column: span 3;
+      min-height: 244px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.008);
+      transition: background .35s ease, border-color .35s ease;
+    }
+    .process-step:nth-child(n+5) { grid-column: span 4; }
+    .process-step:hover { background: rgba(255,255,255,.028); border-color: rgba(185,255,217,.2); }
+    .process-step::before {
+      content: attr(data-letter);
+      position: absolute;
+      right: 18px;
+      top: 4px;
+      color: rgba(145,174,252,.08);
+      font: 500 clamp(5.5rem, 8vw, 8.4rem)/1 Manrope, sans-serif;
+      letter-spacing: -.08em;
+      transition: color .35s ease, transform .45s var(--ease);
+    }
+    .process-step:hover::before { color: rgba(185,255,217,.13); transform: translateY(-4px) rotate(2deg); }
+    .process-code { position: absolute; left: 28px; top: 27px; color: #616a70; font: 300 .62rem/1 "DM Mono", monospace; letter-spacing: .1em; text-transform: uppercase; }
+    .process-step h3 { position: relative; margin: 0; font-size: clamp(1.7rem, 2.5vw, 2.65rem); font-weight: 500; letter-spacing: -.045em; }
+    .process-step p { position: relative; max-width: 360px; margin: 14px 0 0; color: #838c92; line-height: 1.62; }
 
     .contact { padding: clamp(88px, 11vw, 154px) 0 58px; overflow: hidden; position: relative; }
     .contact::before {
@@ -608,6 +631,8 @@
     .stagger.is-visible > *:nth-child(3) { transition-delay: .14s; }
     .stagger.is-visible > *:nth-child(4) { transition-delay: .21s; }
     .stagger.is-visible > *:nth-child(5) { transition-delay: .28s; }
+    .stagger.is-visible > *:nth-child(6) { transition-delay: .35s; }
+    .stagger.is-visible > *:nth-child(7) { transition-delay: .42s; }
 
     @media (max-width: 1020px) {
       .nav { grid-template-columns: 1fr auto; }
@@ -623,6 +648,9 @@
       .case-top { grid-template-columns: 1fr; }
       .case-copy { border-right: 0; border-bottom: 1px solid var(--line); }
       .system-visual { min-height: 420px; }
+      .process-list { grid-template-columns: repeat(2, 1fr); }
+      .process-step, .process-step:nth-child(n+5) { grid-column: auto; }
+      .process-step:last-child { grid-column: 1 / -1; min-height: 190px; }
     }
 
     @media (max-width: 680px) {
@@ -659,8 +687,11 @@
       .case-footer { grid-template-columns: 1fr; }
       .case-fact { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       .case-fact:last-child { border-bottom: 0; }
-      .process-step { grid-template-columns: 42px 1fr; gap: 14px; padding: 21px 0; }
-      .process-step p { grid-column: 2; }
+      .process-list { grid-template-columns: 1fr; }
+      .process-step, .process-step:nth-child(n+5), .process-step:last-child { grid-column: auto; min-height: 176px; padding: 24px 20px; }
+      .process-code { left: 20px; top: 21px; }
+      .process-step::before { right: 15px; font-size: 6rem; }
+      .process-step p { margin-top: 10px; }
       .contact { padding-top: 88px; }
       .contact h2 { font-size: clamp(3.25rem, 15vw, 4.55rem); }
       .contact-grid { grid-template-columns: 1fr; margin-top: 30px; }
@@ -886,15 +917,17 @@
         <header class="section-header reveal">
           <span class="section-index">04 / Process</span>
           <h2 class="section-title" id="process-title">From signal<br>to system.</h2>
-          <p class="section-lead">A direct, collaborative process. Enough structure to move with confidence; enough flexibility to let the right solution emerge.</p>
+          <p class="section-lead">Seven deliberate steps. Enough structure to move with confidence; enough flexibility to let the right solution emerge.</p>
         </header>
 
         <div class="process-list stagger">
-          <article class="process-step"><h3>Discover</h3><p>Find the real problem, the audience and the smallest useful version worth building.</p></article>
-          <article class="process-step"><h3>Design</h3><p>Shape the experience, system logic and visual language before complexity compounds.</p></article>
-          <article class="process-step"><h3>Build</h3><p>Turn the concept into fast, accessible, maintainable software—with no theatre between idea and execution.</p></article>
-          <article class="process-step"><h3>Launch</h3><p>Test the critical paths, deploy carefully and make sure the real-world system holds together.</p></article>
-          <article class="process-step"><h3>Evolve</h3><p>Learn from use, sharpen what works and add the next layer only when it creates value.</p></article>
+          <article class="process-step" data-letter="O"><span class="process-code">O / 01</span><h3>Observe</h3><p>Find the real problem, the people it affects and the constraints reality will enforce.</p></article>
+          <article class="process-step" data-letter="M"><span class="process-code">M / 02</span><h3>Map</h3><p>Define the journeys, dependencies and smallest useful version worth building.</p></article>
+          <article class="process-step" data-letter="L"><span class="process-code">L / 03</span><h3>Layer</h3><p>Shape the interface, logic, data, automation and visual language as one connected system.</p></article>
+          <article class="process-step" data-letter="A"><span class="process-code">A / 04</span><h3>Assemble</h3><p>Turn the design into fast, accessible and maintainable software.</p></article>
+          <article class="process-step" data-letter="Y"><span class="process-code">Y / 05</span><h3>Yield</h3><p>Move the system into real use, test critical paths and let reality challenge our assumptions.</p></article>
+          <article class="process-step" data-letter="E"><span class="process-code">E / 06</span><h3>Evaluate</h3><p>Study what works, what creates friction and what delivers genuine value.</p></article>
+          <article class="process-step" data-letter="R"><span class="process-code">R / 07</span><h3>Refine</h3><p>Strengthen the system and add the next layer only when it earns its place.</p></article>
         </div>
       </div>
     </section>
