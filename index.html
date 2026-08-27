@@ -1028,10 +1028,11 @@
         let resumeTimer;
 
         const positionLetters = () => {
+          const orbitRadius = window.innerWidth <= 680 ? 34 : 40;
           letters.forEach((letter, index) => {
             const itemAngle = angle + (index / letters.length) * Math.PI * 2;
-            letter.style.left = `${50 + Math.cos(itemAngle) * 40}%`;
-            letter.style.top = `${50 + Math.sin(itemAngle) * 40}%`;
+            letter.style.left = `${50 + Math.cos(itemAngle) * orbitRadius}%`;
+            letter.style.top = `${50 + Math.sin(itemAngle) * orbitRadius}%`;
           });
         };
 
