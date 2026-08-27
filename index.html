@@ -456,12 +456,16 @@
 
     .work { padding-top: calc(var(--section) * .78); }
     .work .section-header { margin-bottom: clamp(36px, 4vw, 54px); }
+    .case-study-link { display: block; border-radius: 3px; }
     .case-study {
       border: 1px solid var(--line);
       border-radius: 3px;
       overflow: hidden;
       background: #0b0e11;
+      transition: transform .42s var(--ease), border-color .42s ease, box-shadow .42s ease;
     }
+    .case-study-link:hover .case-study,
+    .case-study-link:focus-visible .case-study { transform: translateY(-5px); border-color: rgba(185,255,217,.28); box-shadow: 0 30px 80px rgba(0,0,0,.22); }
     .case-top {
       display: grid;
       grid-template-columns: 1.06fr .94fr;
@@ -482,6 +486,9 @@
     .case-description { max-width: 630px; margin: 24px 0 0; color: #8f979c; line-height: 1.65; }
     .case-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 26px; }
     .tag { padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; color: #899196; font: 300 .62rem/1 "DM Mono", monospace; letter-spacing: .055em; text-transform: uppercase; }
+    .case-visit { display: inline-flex; align-items: center; gap: 12px; margin-top: 28px; color: #cbd0d0; font: 400 .68rem/1 "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .case-visit::after { content: ""; width: 32px; height: 1px; background: var(--signal); transform-origin: left; transition: transform .3s var(--ease); }
+    .case-study-link:hover .case-visit::after { transform: scaleX(1.7); }
     .system-visual {
       padding: clamp(24px, 3.5vw, 48px);
       display: grid;
@@ -821,7 +828,8 @@
           <p class="section-lead">Not a concept render. A live system used for day-to-day operations, designed around real people and real constraints.</p>
         </header>
 
-        <article class="case-study reveal">
+        <a class="case-study-link reveal" href="/work/ocean-kids-club/" aria-label="View the Ocean Kids Club case study">
+        <article class="case-study">
           <div class="case-top">
             <div class="case-copy">
               <span class="status">Live · Private-use system</span>
@@ -838,6 +846,7 @@
                 <span class="tag">D1</span>
                 <span class="tag">Google Sheets</span>
               </div>
+              <span class="case-visit">View full case study</span>
             </div>
 
             <div class="system-visual" aria-label="Ocean Kids Club system architecture">
@@ -868,6 +877,7 @@
             <div class="case-fact"><span>System</span><p>Automated reminders, jobs and reporting</p></div>
           </div>
         </article>
+        </a>
       </div>
     </section>
 

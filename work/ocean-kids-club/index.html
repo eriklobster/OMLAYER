@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080a0d">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+  <title>Ocean Kids Club — OMLAYER case study</title>
+  <meta name="description" content="Ocean Kids Club is a bilingual operations system built around Telegram, Cloudflare Workers, D1 and automated reporting.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://www.omlayer.com/work/ocean-kids-club/">
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.omlayer.com/work/ocean-kids-club/">
+  <meta property="og:site_name" content="OMLAYER">
+  <meta property="og:title" content="Ocean Kids Club — OMLAYER case study">
+  <meta property="og:description" content="A custom operations system built around Telegram.">
+  <meta property="og:image" content="https://www.omlayer.com/work/ocean-kids-club/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ocean Kids Club — a custom operations system built by OMLAYER">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ocean Kids Club — OMLAYER case study">
+  <meta name="twitter:description" content="A custom operations system built around Telegram.">
+  <meta name="twitter:image" content="https://www.omlayer.com/work/ocean-kids-club/og-image.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ink: #080a0d;
+      --ink-2: #0c1014;
+      --paper: #f0f2ee;
+      --muted: #92999f;
+      --line: rgba(240,242,238,.12);
+      --line-soft: rgba(240,242,238,.065);
+      --signal: #b9ffd9;
+      --blue: #91aefc;
+      --max: 1320px;
+      --gutter: clamp(20px,4vw,56px);
+      --section: clamp(82px,10vw,142px);
+      --ease: cubic-bezier(.2,.75,.25,1);
+    }
+    *,*::before,*::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--ink); }
+    body { margin: 0; overflow-x: hidden; color: var(--paper); background: var(--ink); font: 400 16px/1.5 Manrope,Arial,sans-serif; -webkit-font-smoothing: antialiased; }
+    body::before { content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; background:radial-gradient(62% 45% at 86% 8%,rgba(75,110,202,.16),transparent 74%),radial-gradient(48% 40% at 8% 68%,rgba(73,161,126,.07),transparent 76%),linear-gradient(180deg,#090b0f,#080a0d 58%,#090b0e); }
+    body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; opacity:.022; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+    ::selection { color:var(--ink); background:var(--signal); }
+    a { color:inherit; text-decoration:none; }
+    img,svg { display:block; max-width:100%; }
+    :focus-visible { outline:2px solid var(--signal); outline-offset:5px; }
+    .shell { width:min(calc(100% - var(--gutter) * 2),var(--max)); margin-inline:auto; }
+    .mono { font-family:"DM Mono",monospace; }
+
+    .skip-link { position:fixed; left:16px; top:12px; z-index:100; padding:10px 14px; color:var(--ink); background:var(--paper); transform:translateY(-150%); transition:transform .2s ease; }
+    .skip-link:focus { transform:translateY(0); }
+    .site-header { position:fixed; inset:0 0 auto; z-index:30; border-bottom:1px solid transparent; transition:background .35s ease,border-color .35s ease; }
+    .site-header.is-scrolled { background:rgba(8,10,13,.82); border-color:var(--line-soft); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+    .nav { height:88px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; }
+    .wordmark { justify-self:start; display:inline-flex; align-items:center; gap:5px; color:var(--paper); font-size:1.14rem; font-weight:700; letter-spacing:.22em; }
+    .wordmark img { width:38px; height:38px; }
+    .back-link,.nav-cta { color:#aab1b5; font:400 .65rem/1 "DM Mono",monospace; letter-spacing:.1em; text-transform:uppercase; transition:color .25s ease; }
+    .back-link { justify-self:center; }
+    .nav-cta { justify-self:end; }
+    .back-link:hover,.nav-cta:hover { color:var(--paper); }
+
+    .hero { min-height:min(860px,100svh); padding:150px 0 70px; display:grid; align-items:center; border-bottom:1px solid var(--line-soft); position:relative; overflow:hidden; }
+    .hero-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(330px,.65fr); gap:clamp(48px,8vw,120px); align-items:center; }
+    .status { display:inline-flex; align-items:center; gap:10px; color:#9ba3a6; font:300 .68rem/1 "DM Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .status::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--signal); box-shadow:0 0 12px rgba(185,255,217,.65); }
+    h1 { margin:30px 0 0; font-size:clamp(4.2rem,9vw,9.2rem); font-weight:500; line-height:.84; letter-spacing:-.075em; }
+    h1 span { display:block; color:#9da5aa; }
+    .hero-lead { max-width:700px; margin:34px 0 0; color:#a6adb1; font-size:clamp(1.18rem,1.8vw,1.55rem); line-height:1.55; letter-spacing:-.025em; }
+    .hero-meta { display:flex; flex-wrap:wrap; gap:7px; margin-top:34px; }
+    .tag { padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:#8c9499; font:300 .61rem/1 "DM Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
+    .identity-field { min-height:480px; display:grid; place-items:center; position:relative; }
+    .identity-field::before,.identity-field::after { content:""; position:absolute; border:1px solid rgba(240,242,238,.08); border-radius:50%; animation:spin 48s linear infinite; }
+    .identity-field::before { width:100%; aspect-ratio:1; border-color:rgba(145,174,252,.12); border-style:dashed; }
+    .identity-field::after { width:72%; aspect-ratio:1; box-shadow:0 0 90px rgba(73,107,204,.12); animation-direction:reverse; animation-duration:35s; }
+    .identity-field img { width:min(290px,70%); position:relative; z-index:2; filter:drop-shadow(0 26px 52px rgba(0,38,112,.34)); animation:float 6s ease-in-out infinite; }
+    .field-node { position:absolute; z-index:3; width:7px; aspect-ratio:1; border-radius:50%; background:var(--signal); box-shadow:0 0 13px rgba(185,255,217,.7); }
+    .field-node.one { top:12%; right:23%; }
+    .field-node.two { bottom:16%; left:13%; width:4px; background:var(--blue); }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes float { 50% { transform:translateY(-12px) rotate(1deg); } }
+
+    .section { padding:var(--section) 0; border-bottom:1px solid var(--line-soft); }
+    .section-head { display:grid; grid-template-columns:.5fr 1.15fr .7fr; gap:clamp(28px,5vw,80px); align-items:start; margin-bottom:clamp(46px,7vw,88px); }
+    .section-index { color:#697177; font:300 .65rem/1.5 "DM Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+    h2 { margin:0; font-size:clamp(3rem,5.8vw,6.5rem); font-weight:500; line-height:.92; letter-spacing:-.065em; }
+    .section-intro { margin:0; color:#8e969b; line-height:1.75; }
+    .split-copy { display:grid; grid-template-columns:1fr 1fr; gap:clamp(42px,9vw,150px); }
+    .split-copy .lead { margin:0; color:#c7cccd; font-size:clamp(1.55rem,3vw,3rem); line-height:1.25; letter-spacing:-.045em; }
+    .body-copy { color:#8d969b; line-height:1.8; }
+    .body-copy p { margin:0 0 22px; }
+
+    .scope-grid { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); }
+    .scope-card { min-height:235px; padding:clamp(24px,3vw,42px); border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:rgba(255,255,255,.012); transition:background .3s ease; }
+    .scope-card:hover { background:rgba(255,255,255,.035); }
+    .scope-number { color:#626b70; font:300 .61rem/1 "DM Mono",monospace; letter-spacing:.08em; }
+    .scope-card h3 { margin:45px 0 13px; font-size:clamp(1.35rem,2vw,2rem); font-weight:500; letter-spacing:-.035em; }
+    .scope-card p { margin:0; color:#838c91; line-height:1.65; }
+
+    .architecture { display:grid; grid-template-columns:.78fr 1.22fr; border:1px solid var(--line); background:#0b0e11; }
+    .architecture-copy { padding:clamp(32px,5vw,70px); border-right:1px solid var(--line); }
+    .architecture-copy h3 { margin:0; font-size:clamp(2.5rem,4.5vw,5rem); font-weight:500; line-height:.94; letter-spacing:-.06em; }
+    .architecture-copy p { margin:28px 0 0; color:#889196; line-height:1.75; }
+    .architecture-map { padding:clamp(28px,5vw,66px); display:grid; gap:12px; align-content:center; background:radial-gradient(circle at 50% 48%,rgba(91,119,200,.12),transparent 52%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px); background-size:auto,42px 42px,42px 42px; }
+    .node { min-height:82px; padding:17px 19px; display:grid; grid-template-columns:1fr auto; gap:20px; align-items:center; border:1px solid rgba(255,255,255,.15); background:rgba(11,15,19,.88); }
+    .node strong { display:block; font-weight:500; }
+    .node span { display:block; margin-top:6px; color:#70797f; font:300 .61rem/1.5 "DM Mono",monospace; letter-spacing:.055em; text-transform:uppercase; }
+    .node em { color:#7e878c; font:normal 300 .59rem/1 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .flow-line { height:18px; width:1px; margin:-12px 0 -12px 28px; background:linear-gradient(var(--blue),var(--signal)); position:relative; z-index:2; }
+
+    .principles { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line); }
+    .principle { padding:28px 24px 0 0; }
+    .principle::before { content:""; display:block; width:26px; height:1px; margin-bottom:18px; background:var(--signal); opacity:.7; }
+    .principle strong { font-weight:500; }
+    .principle p { margin:12px 0 0; color:#818a8f; line-height:1.65; }
+
+    .next { padding:clamp(100px,15vw,190px) 0 70px; text-align:center; position:relative; overflow:hidden; }
+    .next::before { content:""; position:absolute; width:min(900px,95vw); aspect-ratio:1; left:50%; top:32%; transform:translate(-50%,-10%); border:1px solid rgba(240,242,238,.06); border-radius:50%; box-shadow:0 0 120px rgba(71,105,197,.06); pointer-events:none; }
+    .chant { margin:0 0 25px; color:var(--signal); font:300 .68rem/1.4 "DM Mono",monospace; letter-spacing:.11em; text-transform:uppercase; }
+    .next h2 { max-width:980px; margin:auto; position:relative; }
+    .next h2 span { color:#969ea3; }
+    .next p:not(.chant) { max-width:580px; margin:30px auto 0; color:#8e969b; line-height:1.75; position:relative; }
+    .actions { margin-top:40px; display:flex; justify-content:center; flex-wrap:wrap; gap:12px; position:relative; }
+    .button { min-height:50px; padding:0 21px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:2px; color:#d4d8d9; background:rgba(255,255,255,.025); font:400 .72rem/1 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; transition:transform .28s var(--ease),background .28s ease,border-color .28s ease; }
+    .button:hover { transform:translateY(-3px); border-color:rgba(255,255,255,.28); background:rgba(255,255,255,.055); }
+    .button.primary { color:var(--ink); background:var(--paper); border-color:var(--paper); font-weight:500; }
+    .button.primary:hover { background:var(--signal); border-color:var(--signal); }
+    .footer { border-top:1px solid var(--line); }
+    .footer-inner { min-height:88px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px; color:#697177; font:300 .59rem/1.5 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .footer-inner span:nth-child(2) { color:#9ca3a5; letter-spacing:.22em; }
+    .footer-inner span:last-child { justify-self:end; }
+
+    .reveal { opacity:0; transform:translateY(26px); transition:opacity .8s var(--ease),transform .8s var(--ease); }
+    .reveal.is-visible { opacity:1; transform:none; }
+    @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.identity-field::before,.identity-field::after,.identity-field img{animation:none} }
+    @media (max-width:980px) {
+      .hero { min-height:auto; }
+      .hero-grid { grid-template-columns:1fr; }
+      .identity-field { min-height:410px; width:min(520px,100%); margin:auto; }
+      .section-head { grid-template-columns:.4fr 1fr; }
+      .section-intro { grid-column:2; }
+      .scope-grid { grid-template-columns:repeat(2,1fr); }
+      .architecture { grid-template-columns:1fr; }
+      .architecture-copy { border-right:0; border-bottom:1px solid var(--line); }
+      .principles { grid-template-columns:repeat(2,1fr); gap:38px 24px; }
+    }
+    @media (max-width:680px) {
+      :root { --gutter:18px; --section:76px; }
+      .nav { height:72px; grid-template-columns:1fr auto; }
+      .wordmark { font-size:1.05rem; }
+      .wordmark img { width:34px; height:34px; }
+      .back-link { display:none; }
+      .hero { padding:118px 0 58px; }
+      h1 { font-size:clamp(4rem,21vw,6rem); }
+      .hero-lead { margin-top:26px; }
+      .identity-field { min-height:330px; }
+      .identity-field img { width:min(225px,68%); }
+      .section-head,.split-copy { display:block; }
+      .section-index { display:block; margin-bottom:22px; }
+      .section-intro { margin-top:25px; }
+      .body-copy { margin-top:34px; }
+      .scope-grid { grid-template-columns:1fr; }
+      .scope-card { min-height:auto; }
+      .scope-card h3 { margin-top:32px; }
+      .architecture-copy,.architecture-map { padding:26px 22px; }
+      .node { min-height:74px; padding:14px; }
+      .principles { grid-template-columns:1fr; }
+      .next { padding-top:92px; }
+      .next h2 { font-size:clamp(3.2rem,16vw,4.7rem); }
+      .actions { display:grid; grid-template-columns:1fr; }
+      .footer-inner { grid-template-columns:1fr auto; }
+      .footer-inner span:first-child { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" data-header>
+    <nav class="shell nav" aria-label="Case study navigation">
+      <a class="wordmark" href="/#top" aria-label="OMLAYER home"><img src="../../brand-mark.svg" alt="" width="38" height="38"><span>LAYER</span></a>
+      <a class="back-link" href="/#work">Back to selected work</a>
+      <a class="nav-cta" href="#contact">Get in touch</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="case-title">
+      <div class="shell hero-grid">
+        <div class="reveal">
+          <span class="status">Live · Private-use system</span>
+          <h1 id="case-title">Ocean <span>Kids Club</span></h1>
+          <p class="hero-lead">A custom operations system built around Telegram—connecting families, staff, records, reminders and reporting in one dependable workflow.</p>
+          <div class="hero-meta" aria-label="Technology stack">
+            <span class="tag">Telegram</span><span class="tag">TypeScript</span><span class="tag">Cloudflare Workers</span><span class="tag">D1</span><span class="tag">Google Sheets</span>
+          </div>
+        </div>
+        <div class="identity-field reveal" aria-hidden="true">
+          <span class="field-node one"></span><span class="field-node two"></span>
+          <img src="../../ocean-kids-club-logo.png" alt="" width="640" height="585">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="brief-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">01 / The brief</span>
+          <h2 id="brief-title">More than<br>a bot.</h2>
+          <p class="section-intro">The interface lives in Telegram. The product behind it is an operational system with structured data, role-specific workflows and scheduled processes.</p>
+        </header>
+        <div class="split-copy reveal">
+          <p class="lead">Put daily operations inside the interface people already know.</p>
+          <div class="body-copy">
+            <p>Ocean Kids Club coordinates recurring work between parents, staff and administrators. Registration, child information, absences, attendance and reminders all need to remain clear as the system grows.</p>
+            <p>OMLAYER designed the product as connected layers: a bilingual Telegram interface, workflow logic, an authoritative database, scheduled jobs and optional reporting to Google Sheets.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="scope-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">02 / Operational scope</span>
+          <h2 id="scope-title">One system.<br>Different roles.</h2>
+          <p class="section-intro">Each capability belongs to the same operational model rather than becoming another disconnected tool.</p>
+        </header>
+        <div class="scope-grid reveal">
+          <article class="scope-card"><span class="scope-number">01</span><h3>Bilingual interface</h3><p>English and Russian interaction within the same Telegram product.</p></article>
+          <article class="scope-card"><span class="scope-number">02</span><h3>Parent registration</h3><p>Guided onboarding that turns conversations into structured records.</p></article>
+          <article class="scope-card"><span class="scope-number">03</span><h3>Child records</h3><p>Information connected to the relevant parent and operational workflow.</p></article>
+          <article class="scope-card"><span class="scope-number">04</span><h3>Absence workflows</h3><p>A consistent way to submit, store and process absence information.</p></article>
+          <article class="scope-card"><span class="scope-number">05</span><h3>Staff attendance</h3><p>Dedicated staff interaction built into the same operational environment.</p></article>
+          <article class="scope-card"><span class="scope-number">06</span><h3>Reminders & reporting</h3><p>Scheduled jobs and optional Sheets reporting reduce repetitive follow-up.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="system-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">03 / System design</span>
+          <h2 id="system-title">Layers that<br>hold together.</h2>
+          <p class="section-intro">Telegram is the visible layer. Validation, orchestration, records and reporting remain separated behind it so each part can evolve responsibly.</p>
+        </header>
+        <div class="architecture reveal">
+          <div class="architecture-copy">
+            <h3>Conversation in front.<br>Infrastructure behind.</h3>
+            <p>People interact with a familiar chat interface. Cloudflare Workers receive and route events, D1 stores operational data, scheduled jobs handle time-based work, and reporting can be sent asynchronously to Google Sheets.</p>
+          </div>
+          <div class="architecture-map" aria-label="Ocean Kids Club system architecture">
+            <div class="node"><div><strong>Telegram interface</strong><span>Parents · Staff · Administrators</span></div><em>Bilingual</em></div>
+            <span class="flow-line" aria-hidden="true"></span>
+            <div class="node"><div><strong>Operations layer</strong><span>Webhooks · Validation · Workflows</span></div><em>Workers</em></div>
+            <span class="flow-line" aria-hidden="true"></span>
+            <div class="node"><div><strong>Data layer</strong><span>Structured operational records</span></div><em>D1</em></div>
+            <span class="flow-line" aria-hidden="true"></span>
+            <div class="node"><div><strong>Scheduled & reporting layer</strong><span>Reminders · Jobs · Optional reports</span></div><em>Sheets</em></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="principles-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">04 / Build principles</span>
+          <h2 id="principles-title">Designed for<br>daily use.</h2>
+          <p class="section-intro">The product is live and largely complete, with ongoing polish based on real operational use.</p>
+        </header>
+        <div class="principles reveal">
+          <div class="principle"><strong>Familiar entry point</strong><p>No separate application to teach, install or remember.</p></div>
+          <div class="principle"><strong>Structured underneath</strong><p>Chat interactions resolve into dependable records and workflows.</p></div>
+          <div class="principle"><strong>Role-specific paths</strong><p>Parents, staff and administrators reach the tasks relevant to them.</p></div>
+          <div class="principle"><strong>Room to evolve</strong><p>Interface, workflows, data and reporting can improve as distinct layers.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="next" id="contact" aria-labelledby="next-title">
+      <div class="shell reveal">
+        <p class="chant">Chant OM. We'll build your digital layer.</p>
+        <h2 id="next-title">Have operations living in chat? <span>Let’s turn them into a system.</span></h2>
+        <p>Tell us what people repeat, where information gets lost and what needs to connect. We’ll respond with clear questions and a practical next step.</p>
+        <div class="actions">
+          <a class="button primary" href="mailto:hello@omlayer.com">hello@omlayer.com</a>
+          <a class="button" href="https://t.me/omlayer" target="_blank" rel="noopener noreferrer">Telegram</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-inner"><span>Chant OM. We'll build your digital layer.</span><span>OMLAYER</span><span>© 2025—∞ OMLAYER</span></div>
+  </footer>
+
+  <script>
+    (() => {
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const header = document.querySelector('[data-header]');
+      const items = document.querySelectorAll('.reveal');
+      const updateHeader = () => header?.classList.toggle('is-scrolled', window.scrollY > 24);
+      updateHeader();
+      window.addEventListener('scroll', updateHeader, { passive: true });
+      if ('IntersectionObserver' in window && !reducedMotion) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+        items.forEach((item) => observer.observe(item));
+      } else {
+        items.forEach((item) => item.classList.add('is-visible'));
+      }
+    })();
+  </script>
+</body>
+</html>
