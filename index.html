@@ -9,7 +9,7 @@
 
   <title>OMLAYER — Build your next digital layer</title>
   <meta name="description" content="OMLAYER designs and builds high-end websites, web applications, automation, AI integrations, Telegram systems and the infrastructure behind ambitious ideas.">
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <link rel="canonical" href="https://www.omlayer.com/">
 
   <meta property="og:type" content="website">
@@ -529,19 +529,33 @@
     .case-fact span { color: #667077; font: 300 .63rem/1 "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
     .case-fact p { margin: 14px 0 0; color: #c4c9ca; line-height: 1.5; }
 
-    .process-list { counter-reset: process; border-top: 1px solid var(--line); }
-    .process-step {
-      counter-increment: process;
-      display: grid;
-      grid-template-columns: .35fr 1fr 1fr;
-      gap: clamp(24px, 5vw, 80px);
-      min-height: 116px;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-    }
-    .process-step::before { content: "0" counter(process); color: #616a70; font: 300 .68rem/1 "DM Mono", monospace; }
-    .process-step h3 { margin: 0; font-size: clamp(1.65rem, 2.6vw, 2.8rem); font-weight: 500; letter-spacing: -.04em; }
-    .process-step p { margin: 0; color: #838c92; line-height: 1.65; }
+    .process-orbit { min-height:560px; display:grid; grid-template-columns:minmax(400px,.92fr) minmax(360px,1.08fr); align-items:center; gap:clamp(28px,6vw,92px); border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden; }
+    .process-mandala { width:min(100%,500px); aspect-ratio:1; position:relative; justify-self:center; isolation:isolate; }
+    .mandala-glow { position:absolute; inset:19%; border-radius:50%; background:radial-gradient(circle,rgba(185,255,217,.09),rgba(145,174,252,.035) 48%,transparent 72%); filter:blur(13px); }
+    .mandala-geometry { position:absolute; inset:21%; width:58%; height:58%; color:rgba(185,255,217,.3); filter:drop-shadow(0 0 18px rgba(145,174,252,.1)); animation:mandala-breathe 8s ease-in-out infinite; }
+    .mandala-geometry circle, .mandala-geometry path { fill:none; stroke:currentColor; stroke-width:.75; vector-effect:non-scaling-stroke; }
+    .mandala-geometry .mandala-soft { stroke:rgba(145,174,252,.18); }
+    .mandala-core { position:absolute; left:50%; top:50%; width:54px; aspect-ratio:1; transform:translate(-50%,-50%) rotate(45deg); border:1px solid rgba(185,255,217,.42); box-shadow:inset 0 0 22px rgba(185,255,217,.08),0 0 24px rgba(145,174,252,.08); }
+    .mandala-core::after { content:""; position:absolute; inset:12px; border:1px solid rgba(145,174,252,.34); border-radius:50%; }
+    @keyframes mandala-breathe { 0%,100% { transform:rotate(0) scale(.97); opacity:.74; } 50% { transform:rotate(12deg) scale(1.03); opacity:1; } }
+    .orbit-ring { position:absolute; inset:10%; border:1px solid rgba(255,255,255,.075); border-radius:50%; }
+    .orbit-ring::before, .orbit-ring::after { content:""; position:absolute; border:1px solid rgba(255,255,255,.04); border-radius:50%; }
+    .orbit-ring::before { inset:9%; }
+    .orbit-ring::after { inset:24%; }
+    .process-letter { position:absolute; z-index:2; min-width:46px; height:46px; padding:0 15px; display:inline-flex; align-items:center; justify-content:center; gap:0; color:#dfe5e4; border:1px solid rgba(255,255,255,.15); border-radius:999px; background:rgba(8,11,14,.9); box-shadow:0 8px 28px rgba(0,0,0,.25); font:500 .87rem/1 "DM Mono",monospace; cursor:pointer; transform:translate(-50%,-50%); transition:color .28s ease,border-color .28s ease,background .28s ease,box-shadow .28s ease; }
+    .process-letter:hover, .process-letter:focus-visible, .process-letter[aria-pressed="true"] { color:var(--signal); border-color:rgba(185,255,217,.48); background:rgba(13,20,20,.96); box-shadow:0 0 0 4px rgba(185,255,217,.035),0 10px 34px rgba(0,0,0,.36); outline:none; }
+    .process-glyph { display:inline-block; transform-origin:center; }
+    .process-glyph.is-spinning { animation:glyph-spin .62s var(--ease); }
+    @keyframes glyph-spin { from { transform:rotate(0); } to { transform:rotate(360deg); } }
+    .process-word { max-width:0; opacity:0; overflow:hidden; white-space:nowrap; transition:max-width .48s var(--ease),opacity .24s ease,margin .48s var(--ease); }
+    .process-letter[aria-pressed="true"] .process-word { max-width:92px; opacity:1; margin-left:1px; }
+    .process-detail { max-width:620px; min-height:260px; padding:clamp(30px,4vw,52px); position:relative; border:1px solid var(--line); background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(255,255,255,.006)); }
+    .process-detail::before { content:""; position:absolute; left:-1px; top:34px; width:1px; height:72px; background:var(--signal); box-shadow:0 0 18px rgba(185,255,217,.35); }
+    .process-detail-code { color:#6f787e; font:300 .64rem/1 "DM Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .process-detail h3 { margin:28px 0 0; font-size:clamp(2.8rem,5vw,5rem); font-weight:450; letter-spacing:-.06em; line-height:.9; }
+    .process-detail h3 span:first-child { color:var(--signal); }
+    .process-detail p { max-width:520px; margin:28px 0 0; color:#9aa2a6; font-size:clamp(1rem,1.35vw,1.15rem); line-height:1.7; }
+    .process-hint { position:absolute; right:0; bottom:24px; color:#596167; font:300 .58rem/1 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
 
     .contact { padding: clamp(88px, 11vw, 154px) 0 58px; overflow: hidden; position: relative; }
     .contact::before {
@@ -608,6 +622,8 @@
     .stagger.is-visible > *:nth-child(3) { transition-delay: .14s; }
     .stagger.is-visible > *:nth-child(4) { transition-delay: .21s; }
     .stagger.is-visible > *:nth-child(5) { transition-delay: .28s; }
+    .stagger.is-visible > *:nth-child(6) { transition-delay: .35s; }
+    .stagger.is-visible > *:nth-child(7) { transition-delay: .42s; }
 
     @media (max-width: 1020px) {
       .nav { grid-template-columns: 1fr auto; }
@@ -623,6 +639,7 @@
       .case-top { grid-template-columns: 1fr; }
       .case-copy { border-right: 0; border-bottom: 1px solid var(--line); }
       .system-visual { min-height: 420px; }
+      .process-orbit { grid-template-columns:minmax(360px,.9fr) 1.1fr; gap:24px; }
     }
 
     @media (max-width: 680px) {
@@ -659,8 +676,13 @@
       .case-footer { grid-template-columns: 1fr; }
       .case-fact { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
       .case-fact:last-child { border-bottom: 0; }
-      .process-step { grid-template-columns: 42px 1fr; gap: 14px; padding: 21px 0; }
-      .process-step p { grid-column: 2; }
+      .process-orbit { min-height:0; grid-template-columns:1fr; gap:0; padding:8px 0 32px; overflow:visible; }
+      .process-mandala { width:min(100%,390px); }
+      .process-letter { min-width:40px; height:40px; padding:0 12px; font-size:.76rem; }
+      .process-detail { min-height:245px; margin-top:-3px; padding:28px 24px; }
+      .process-detail h3 { margin-top:23px; }
+      .process-detail p { margin-top:22px; }
+      .process-hint { display:none; }
       .contact { padding-top: 88px; }
       .contact h2 { font-size: clamp(3.25rem, 15vw, 4.55rem); }
       .contact-grid { grid-template-columns: 1fr; margin-top: 30px; }
@@ -886,15 +908,35 @@
         <header class="section-header reveal">
           <span class="section-index">04 / Process</span>
           <h2 class="section-title" id="process-title">From signal<br>to system.</h2>
-          <p class="section-lead">A direct, collaborative process. Enough structure to move with confidence; enough flexibility to let the right solution emerge.</p>
+          <p class="section-lead">Seven deliberate steps. Enough structure to move with confidence; enough flexibility to let the right solution emerge.</p>
         </header>
 
-        <div class="process-list stagger">
-          <article class="process-step"><h3>Discover</h3><p>Find the real problem, the audience and the smallest useful version worth building.</p></article>
-          <article class="process-step"><h3>Design</h3><p>Shape the experience, system logic and visual language before complexity compounds.</p></article>
-          <article class="process-step"><h3>Build</h3><p>Turn the concept into fast, accessible, maintainable software—with no theatre between idea and execution.</p></article>
-          <article class="process-step"><h3>Launch</h3><p>Test the critical paths, deploy carefully and make sure the real-world system holds together.</p></article>
-          <article class="process-step"><h3>Evolve</h3><p>Learn from use, sharpen what works and add the next layer only when it creates value.</p></article>
+        <div class="process-orbit reveal" data-process-orbit>
+          <div class="process-mandala" aria-label="The seven stages of the OMLAYER method">
+            <div class="mandala-glow" aria-hidden="true"></div>
+            <div class="orbit-ring" aria-hidden="true"></div>
+            <svg class="mandala-geometry" viewBox="0 0 200 200" aria-hidden="true">
+              <circle cx="100" cy="100" r="72"/><circle class="mandala-soft" cx="100" cy="100" r="52"/>
+              <circle cx="100" cy="61" r="39"/><circle cx="100" cy="139" r="39"/>
+              <circle cx="66.2" cy="80.5" r="39"/><circle cx="133.8" cy="80.5" r="39"/>
+              <circle cx="66.2" cy="119.5" r="39"/><circle cx="133.8" cy="119.5" r="39"/>
+              <path class="mandala-soft" d="M100 20 169.3 140 30.7 140Z M100 180 30.7 60 169.3 60Z"/>
+            </svg>
+            <div class="mandala-core" aria-hidden="true"></div>
+            <button class="process-letter" type="button" data-word="Observe" data-code="O / 01" data-definition="Find the real problem, the people it affects and the constraints reality will enforce." aria-pressed="true"><span class="process-glyph">O</span><span class="process-word">bserve</span></button>
+            <button class="process-letter" type="button" data-word="Map" data-code="M / 02" data-definition="Define the journeys, dependencies and smallest useful version worth building." aria-pressed="false"><span class="process-glyph">M</span><span class="process-word">ap</span></button>
+            <button class="process-letter" type="button" data-word="Layer" data-code="L / 03" data-definition="Shape the interface, logic, data, automation and visual language as one connected system." aria-pressed="false"><span class="process-glyph">L</span><span class="process-word">ayer</span></button>
+            <button class="process-letter" type="button" data-word="Assemble" data-code="A / 04" data-definition="Turn the design into fast, accessible and maintainable software." aria-pressed="false"><span class="process-glyph">A</span><span class="process-word">ssemble</span></button>
+            <button class="process-letter" type="button" data-word="Yield" data-code="Y / 05" data-definition="Move the system into real use, test critical paths and let reality challenge our assumptions." aria-pressed="false"><span class="process-glyph">Y</span><span class="process-word">ield</span></button>
+            <button class="process-letter" type="button" data-word="Evaluate" data-code="E / 06" data-definition="Study what works, what creates friction and what delivers genuine value." aria-pressed="false"><span class="process-glyph">E</span><span class="process-word">valuate</span></button>
+            <button class="process-letter" type="button" data-word="Refine" data-code="R / 07" data-definition="Strengthen the system and add the next layer only when it earns its place." aria-pressed="false"><span class="process-glyph">R</span><span class="process-word">efine</span></button>
+          </div>
+          <article class="process-detail" aria-live="polite" aria-atomic="true">
+            <span class="process-detail-code" data-process-code>O / 01 · OMLAYER METHOD</span>
+            <h3><span data-process-letter>O</span><span data-process-rest>bserve</span></h3>
+            <p data-process-definition>Find the real problem, the people it affects and the constraints reality will enforce.</p>
+            <span class="process-hint">Point · focus · tap</span>
+          </article>
         </div>
       </div>
     </section>
@@ -970,6 +1012,71 @@
           stage.style.setProperty('--ry', '0deg');
           stage.style.setProperty('--rx', '0deg');
         });
+      }
+
+      const processOrbit = document.querySelector('[data-process-orbit]');
+      if (processOrbit) {
+        const mandala = processOrbit.querySelector('.process-mandala');
+        const letters = [...processOrbit.querySelectorAll('.process-letter')];
+        const detailCode = processOrbit.querySelector('[data-process-code]');
+        const detailLetter = processOrbit.querySelector('[data-process-letter]');
+        const detailRest = processOrbit.querySelector('[data-process-rest]');
+        const detailDefinition = processOrbit.querySelector('[data-process-definition]');
+        let angle = -Math.PI / 2;
+        let previousTime = 0;
+        let paused = reducedMotion;
+        let resumeTimer;
+
+        const positionLetters = () => {
+          const orbitRadius = window.innerWidth <= 680 ? 34 : 40;
+          letters.forEach((letter, index) => {
+            const itemAngle = angle + (index / letters.length) * Math.PI * 2;
+            letter.style.left = `${50 + Math.cos(itemAngle) * orbitRadius}%`;
+            letter.style.top = `${50 + Math.sin(itemAngle) * orbitRadius}%`;
+          });
+        };
+
+        const selectLetter = (selected, spin = true) => {
+          clearTimeout(resumeTimer);
+          paused = true;
+          letters.forEach((letter) => letter.setAttribute('aria-pressed', String(letter === selected)));
+          const word = selected.dataset.word;
+          detailCode.textContent = `${selected.dataset.code} · OMLAYER METHOD`;
+          detailLetter.textContent = word.charAt(0);
+          detailRest.textContent = word.slice(1);
+          detailDefinition.textContent = selected.dataset.definition;
+          if (spin && !reducedMotion) {
+            const glyph = selected.querySelector('.process-glyph');
+            glyph.classList.remove('is-spinning');
+            requestAnimationFrame(() => glyph.classList.add('is-spinning'));
+          }
+        };
+
+        letters.forEach((letter) => {
+          letter.addEventListener('pointerenter', () => selectLetter(letter));
+          letter.addEventListener('focus', () => selectLetter(letter));
+          letter.addEventListener('click', () => {
+            selectLetter(letter);
+            resumeTimer = setTimeout(() => { if (!letter.matches(':focus-visible')) paused = false; }, 2400);
+          });
+        });
+        mandala.addEventListener('pointerleave', () => {
+          resumeTimer = setTimeout(() => { if (!mandala.matches(':focus-within')) paused = false; }, 500);
+        });
+        mandala.addEventListener('focusout', () => {
+          resumeTimer = setTimeout(() => { if (!mandala.matches(':focus-within')) paused = false; }, 250);
+        });
+
+        const orbit = (time) => {
+          if (!previousTime) previousTime = time;
+          const delta = Math.min(time - previousTime, 32);
+          previousTime = time;
+          if (!paused) angle += delta * .000055;
+          positionLetters();
+          requestAnimationFrame(orbit);
+        };
+        positionLetters();
+        if (!reducedMotion) requestAnimationFrame(orbit);
       }
     })();
   </script>
