@@ -79,11 +79,13 @@
     .hero-lead { max-width:700px; margin:34px 0 0; color:#a6adb1; font-size:clamp(1.18rem,1.8vw,1.55rem); line-height:1.55; letter-spacing:-.025em; }
     .hero-meta { display:flex; flex-wrap:wrap; gap:7px; margin-top:34px; }
     .tag { padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:#8c9499; font:300 .61rem/1 "DM Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
-    .identity-field { min-height:480px; display:grid; place-items:center; position:relative; }
+    .identity-field { min-height:620px; display:grid; place-items:center; position:relative; perspective:1300px; }
     .identity-field::before,.identity-field::after { content:""; position:absolute; border:1px solid rgba(240,242,238,.08); border-radius:50%; animation:spin 48s linear infinite; }
     .identity-field::before { width:100%; aspect-ratio:1; border-color:rgba(145,174,252,.12); border-style:dashed; }
     .identity-field::after { width:72%; aspect-ratio:1; box-shadow:0 0 90px rgba(73,107,204,.12); animation-direction:reverse; animation-duration:35s; }
-    .identity-field img { width:min(290px,70%); height:auto; aspect-ratio:640/585; object-fit:contain; position:relative; z-index:2; filter:drop-shadow(0 26px 52px rgba(0,38,112,.34)); animation:float 6s ease-in-out infinite; }
+    .identity-field .device.hero-device { --device-width:min(318px,78vw); position:relative; left:auto; bottom:auto; transform:rotate(5deg) translateY(24px); transition:transform .7s var(--ease); }
+    .identity-field:hover .hero-device { transform:rotate(2deg) translateY(12px); }
+    .hero-okc-badge { position:absolute; z-index:12; right:1%; top:14%; width:112px; aspect-ratio:1; padding:7px; object-fit:contain; border:1px solid rgba(255,255,255,.15); border-radius:50%; background:rgba(7,10,15,.86); box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 45px rgba(70,120,230,.13); backdrop-filter:blur(15px); }
     .field-node { position:absolute; z-index:3; width:7px; aspect-ratio:1; border-radius:50%; background:var(--signal); box-shadow:0 0 13px rgba(185,255,217,.7); }
     .field-node.one { top:12%; right:23%; }
     .field-node.two { bottom:16%; left:13%; width:4px; background:var(--blue); }
@@ -202,11 +204,11 @@
 
     .reveal { opacity:0; transform:translateY(26px); transition:opacity .8s var(--ease),transform .8s var(--ease); }
     .reveal.is-visible { opacity:1; transform:none; }
-    @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.identity-field::before,.identity-field::after,.identity-field img{animation:none} }
+    @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.identity-field::before,.identity-field::after{animation:none}.identity-field .device.hero-device,.identity-field:hover .hero-device{transform:none;transition:none} }
     @media (max-width:980px) {
       .hero { min-height:auto; }
       .hero-grid { grid-template-columns:1fr; }
-      .identity-field { min-height:410px; width:min(520px,100%); margin:auto; }
+      .identity-field { min-height:600px; width:min(520px,100%); margin:auto; }
       .section-head { grid-template-columns:.4fr 1fr; }
       .section-intro { grid-column:2; }
       .scope-grid { grid-template-columns:repeat(2,1fr); }
@@ -230,8 +232,9 @@
       .hero { padding:118px 0 58px; }
       h1 { font-size:clamp(4rem,21vw,6rem); }
       .hero-lead { margin-top:26px; }
-      .identity-field { min-height:330px; }
-      .identity-field img { width:min(225px,68%); }
+      .identity-field { min-height:520px; }
+      .identity-field .device.hero-device { --device-width:min(270px,72vw); }
+      .hero-okc-badge { width:86px; right:2%; top:13%; }
       .section-head,.split-copy { display:block; }
       .section-index { display:block; margin-bottom:22px; }
       .section-intro { margin-top:25px; }
@@ -278,9 +281,14 @@
             <span class="tag">Telegram</span><span class="tag">TypeScript</span><span class="tag">Cloudflare Workers</span><span class="tag">D1</span><span class="tag">Google Sheets</span>
           </div>
         </div>
-        <div class="identity-field reveal" aria-hidden="true">
+        <div class="identity-field reveal" aria-label="Ocean Kids Club bot in Telegram">
           <span class="field-node one"></span><span class="field-node two"></span>
-          <img src="../../ocean-kids-club-logo.png" alt="" width="640" height="585">
+          <img class="hero-okc-badge" src="../../ocean-kids-club-logo.png" alt="" width="640" height="585">
+          <div class="device hero-device">
+            <span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span>
+            <div class="device-screen"><img src="screens/onboarding.png" alt="Ocean Kids Club bot welcome screen in Telegram" width="750" height="1334" fetchpriority="high"></div>
+            <span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span>
+          </div>
         </div>
       </div>
     </section>
