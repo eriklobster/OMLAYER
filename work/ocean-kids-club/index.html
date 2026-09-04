@@ -9,7 +9,7 @@
 
   <title>Ocean Kids Club — OMLAYER case study</title>
   <meta name="description" content="Ocean Kids Club is a bilingual operations system built around Telegram, Cloudflare Workers, D1 and automated reporting.">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://www.omlayer.com/work/ocean-kids-club/">
 
   <meta property="og:type" content="article">
@@ -124,6 +124,53 @@
     .principle strong { font-weight:500; }
     .principle p { margin:12px 0 0; color:#818a8f; line-height:1.65; }
 
+    .product-showcase { position:relative; overflow:hidden; }
+    .product-showcase::before { content:""; position:absolute; width:720px; aspect-ratio:1; right:-250px; top:5%; border:1px solid rgba(145,174,252,.1); border-radius:50%; box-shadow:0 0 170px rgba(68,105,207,.08); pointer-events:none; }
+    .screen-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .screen-card { min-height:650px; padding:28px 24px 0; position:relative; overflow:hidden; border:1px solid var(--line); background:radial-gradient(circle at 50% 70%,rgba(72,112,226,.18),transparent 45%),linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%),#0a0f16; }
+    .screen-card:nth-child(2) { background:radial-gradient(circle at 50% 70%,rgba(88,207,241,.13),transparent 45%),linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%),#0a0f16; }
+    .screen-card:nth-child(3) { background:radial-gradient(circle at 50% 70%,rgba(255,162,60,.1),transparent 45%),linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%),#0a0f16; }
+    .screen-card-head { position:relative; z-index:3; display:flex; align-items:baseline; justify-content:space-between; gap:14px; }
+    .screen-card-head strong { font-size:1.05rem; font-weight:500; }
+    .screen-card-head span { color:#667178; font:300 .57rem/1 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .screen-card p { max-width:330px; margin:12px 0 0; color:#7f898f; font-size:.84rem; line-height:1.6; }
+
+    .device { --device-width:270px; width:var(--device-width); aspect-ratio:750/1334; position:absolute; left:50%; bottom:-122px; z-index:2; transform:translateX(-50%); padding:8px; border-radius:48px; background:linear-gradient(135deg,#81888f 0,#1c2024 14%,#030405 47%,#656c72 84%,#121417 100%); box-shadow:0 38px 78px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.23); }
+    .device::before { content:""; position:absolute; z-index:4; inset:8px; border-radius:41px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); pointer-events:none; }
+    .device-screen { position:absolute; inset:8px; overflow:hidden; border-radius:41px; background:#000; }
+    .device-screen img { width:100%; height:100%; object-fit:cover; }
+    .device-island { position:absolute; z-index:5; top:16px; left:50%; width:29%; height:19px; transform:translateX(-50%); border-radius:999px; background:#020303; box-shadow:inset 0 0 1px rgba(255,255,255,.14); }
+    .device-island::after { content:""; position:absolute; right:7px; top:6px; width:6px; height:6px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#1c3758,#05070b 66%); }
+    .device-button { position:absolute; left:-3px; top:20%; width:3px; height:9%; border-radius:2px 0 0 2px; background:linear-gradient(#282d31,#767d83,#202428); }
+    .device-button::before,.device-button::after { content:""; position:absolute; left:0; width:3px; height:145%; border-radius:2px 0 0 2px; background:inherit; }
+    .device-button::before { top:145%; }
+    .device-button::after { top:345%; }
+    .device-button-right { position:absolute; right:-3px; top:29%; width:3px; height:15%; border-radius:0 2px 2px 0; background:linear-gradient(#282d31,#767d83,#202428); }
+    .device-glass { position:absolute; z-index:6; inset:9px; overflow:hidden; border-radius:40px; pointer-events:none; }
+    .device-glass::before { content:""; position:absolute; width:55%; height:130%; left:-55%; top:-20%; transform:rotate(18deg); background:linear-gradient(90deg,transparent,rgba(255,255,255,.045),transparent); }
+
+    .workflow-panels { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .workflow-panel { min-height:680px; padding:clamp(28px,4vw,54px); position:relative; overflow:hidden; display:grid; grid-template-columns:minmax(0,.8fr) minmax(230px,.55fr); align-items:center; gap:28px; border:1px solid var(--line); background:#090f17; }
+    .workflow-panel::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 78% 45%,rgba(80,120,230,.18),transparent 39%),linear-gradient(145deg,rgba(255,255,255,.02),transparent 40%); pointer-events:none; }
+    .workflow-panel:nth-child(2)::before { background:radial-gradient(circle at 78% 45%,rgba(71,207,241,.13),transparent 39%),linear-gradient(145deg,rgba(255,255,255,.02),transparent 40%); }
+    .workflow-copy { position:relative; z-index:3; align-self:end; padding-bottom:5px; }
+    .workflow-copy span { color:#657078; font:300 .58rem/1 "DM Mono",monospace; letter-spacing:.09em; text-transform:uppercase; }
+    .workflow-copy h3 { margin:21px 0 0; font-size:clamp(2rem,3.3vw,3.9rem); font-weight:500; line-height:.96; letter-spacing:-.055em; }
+    .workflow-copy p { margin:21px 0 0; color:#818b91; line-height:1.72; }
+    .workflow-device { position:relative; z-index:2; height:590px; }
+    .workflow-device .device { --device-width:min(260px,23vw); bottom:-64px; }
+
+    .broadcast-flow { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .broadcast-step { min-height:610px; padding:28px 24px 0; position:relative; overflow:hidden; border:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.022),transparent 32%),#090f17; }
+    .broadcast-step:nth-child(2) { transform:translateY(-24px); }
+    .broadcast-step-head { position:relative; z-index:3; display:flex; justify-content:space-between; align-items:baseline; gap:15px; }
+    .broadcast-step-head strong { font-weight:500; }
+    .broadcast-step-head span { color:#667178; font:300 .56rem/1 "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .broadcast-step .device { --device-width:260px; bottom:-160px; }
+    .broadcast-step:nth-child(2) .device { bottom:-137px; }
+    .broadcast-step:nth-child(3) .device { bottom:-118px; }
+    .demo-note { margin-top:34px; color:#616b72; font:300 .57rem/1.6 "DM Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
+
     .next { padding:clamp(100px,15vw,190px) 0 70px; text-align:center; position:relative; overflow:hidden; }
     .next::before { content:""; position:absolute; width:min(900px,95vw); aspect-ratio:1; left:50%; top:32%; transform:translate(-50%,-10%); border:1px solid rgba(240,242,238,.06); border-radius:50%; box-shadow:0 0 120px rgba(71,105,197,.06); pointer-events:none; }
     .chant { margin:0 0 25px; color:var(--signal); font:300 .68rem/1.4 "DM Mono",monospace; letter-spacing:.11em; text-transform:uppercase; }
@@ -153,6 +200,13 @@
       .architecture { grid-template-columns:1fr; }
       .architecture-copy { border-right:0; border-bottom:1px solid var(--line); }
       .principles { grid-template-columns:repeat(2,1fr); gap:38px 24px; }
+      .screen-grid,.broadcast-flow { grid-template-columns:repeat(3,300px); overflow-x:auto; scroll-snap-type:x mandatory; padding:30px var(--gutter); margin:0 calc(var(--gutter) * -1); scrollbar-width:none; }
+      .screen-grid::-webkit-scrollbar,.broadcast-flow::-webkit-scrollbar { display:none; }
+      .screen-card,.broadcast-step { scroll-snap-align:center; }
+      .broadcast-step:nth-child(2) { transform:none; }
+      .workflow-panels { grid-template-columns:1fr; }
+      .workflow-panel { min-height:620px; grid-template-columns:1fr 290px; }
+      .workflow-device .device { --device-width:260px; }
     }
     @media (max-width:680px) {
       :root { --gutter:18px; --section:76px; }
@@ -175,6 +229,12 @@
       .architecture-copy,.architecture-map { padding:26px 22px; }
       .node { min-height:74px; padding:14px; }
       .principles { grid-template-columns:1fr; }
+      .screen-card { min-height:610px; }
+      .workflow-panel { min-height:720px; padding:28px 22px; grid-template-columns:1fr; }
+      .workflow-copy { align-self:start; }
+      .workflow-device { height:520px; }
+      .workflow-device .device { --device-width:min(270px,72vw); bottom:-74px; }
+      .broadcast-step { min-height:575px; }
       .next { padding-top:92px; }
       .next h2 { font-size:clamp(3.2rem,16vw,4.7rem); }
       .actions { display:grid; grid-template-columns:1fr; }
@@ -247,10 +307,88 @@
       </div>
     </section>
 
+    <section class="section product-showcase" aria-labelledby="product-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">03 / Product in hand</span>
+          <h2 id="product-title">One system.<br>Three views.</h2>
+          <p class="section-intro">Each person sees only the actions relevant to their role, while the records remain connected underneath.</p>
+        </header>
+
+        <div class="screen-grid reveal">
+          <article class="screen-card">
+            <div class="screen-card-head"><strong>Parents</strong><span>Self-service</span></div>
+            <p>Profiles, children, absences, reminders, documents and essential information.</p>
+            <div class="device" aria-label="Parent menu on a modern iPhone">
+              <span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span>
+              <div class="device-screen"><img src="screens/parent-menu.png" alt="Ocean Kids Club parent menu in Telegram" width="750" height="1334" loading="lazy" decoding="async"></div>
+              <span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span>
+            </div>
+          </article>
+          <article class="screen-card">
+            <div class="screen-card-head"><strong>Staff</strong><span>Attendance</span></div>
+            <p>Start, pause, resume and close a workday without a separate timesheet app.</p>
+            <div class="device" aria-label="Staff attendance workflow on a modern iPhone">
+              <span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span>
+              <div class="device-screen"><img src="screens/staff-attendance.png" alt="Staff attendance menu confirming the start of a workday" width="750" height="1334" loading="lazy" decoding="async"></div>
+              <span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span>
+            </div>
+          </article>
+          <article class="screen-card">
+            <div class="screen-card-head"><strong>Administrators</strong><span>Operations</span></div>
+            <p>Live summaries, records, attendance, reporting, broadcasts and administration.</p>
+            <div class="device" aria-label="Administrator overview on a modern iPhone">
+              <span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span>
+              <div class="device-screen"><img src="screens/admin-overview.png" alt="Administrator overview with operational totals and actions" width="750" height="1334" loading="lazy" decoding="async"></div>
+              <span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span>
+            </div>
+          </article>
+        </div>
+        <p class="demo-note">Screens contain demonstration data. The production system is private and invite-only.</p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="workflows-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">04 / Everyday workflows</span>
+          <h2 id="workflows-title">Small actions.<br>Reliable records.</h2>
+          <p class="section-intro">Frequent tasks stay lightweight for people while becoming structured, dependable data for the organisation.</p>
+        </header>
+
+        <div class="workflow-panels">
+          <article class="workflow-panel reveal">
+            <div class="workflow-copy"><span>01 / Child records</span><h3>Useful context,<br>kept together.</h3><p>Parents can maintain child information through a guided interface instead of sending details across separate chats.</p></div>
+            <div class="workflow-device"><div class="device"><span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span><div class="device-screen"><img src="screens/child-records.png" alt="Two demonstration child records with English group names" width="750" height="1334" loading="lazy" decoding="async"></div><span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span></div></div>
+          </article>
+          <article class="workflow-panel reveal">
+            <div class="workflow-copy"><span>02 / Absence</span><h3>Report it<br>in seconds.</h3><p>Select the relevant child and confirm. The absence becomes actionable operational data immediately.</p></div>
+            <div class="workflow-device"><div class="device"><span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span><div class="device-screen"><img src="screens/absence.png" alt="Parent selecting a child to report an absence" width="750" height="1334" loading="lazy" decoding="async"></div><span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span></div></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section product-showcase" aria-labelledby="broadcast-title">
+      <div class="shell">
+        <header class="section-head reveal">
+          <span class="section-index">05 / Communication</span>
+          <h2 id="broadcast-title">Targeted.<br>Checked. Sent.</h2>
+          <p class="section-intro">Administrators choose an audience, preview the message and confirm before a queued broadcast is delivered.</p>
+        </header>
+
+        <div class="broadcast-flow reveal" aria-label="Three-step broadcast workflow">
+          <article class="broadcast-step"><div class="broadcast-step-head"><strong>Choose</strong><span>Audience</span></div><div class="device"><span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span><div class="device-screen"><img src="screens/broadcast-audience.png" alt="Administrator choosing recipient groups for a broadcast" width="750" height="1334" loading="lazy" decoding="async"></div><span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span></div></article>
+          <article class="broadcast-step"><div class="broadcast-step-head"><strong>Preview</strong><span>Review</span></div><div class="device"><span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span><div class="device-screen"><img src="screens/broadcast-preview.png" alt="Preview of a staff broadcast before sending" width="750" height="1334" loading="lazy" decoding="async"></div><span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span></div></article>
+          <article class="broadcast-step"><div class="broadcast-step-head"><strong>Queue</strong><span>Delivery</span></div><div class="device"><span class="device-button" aria-hidden="true"></span><span class="device-button-right" aria-hidden="true"></span><div class="device-screen"><img src="screens/broadcast-sent.png" alt="Confirmation that a broadcast has been queued" width="750" height="1334" loading="lazy" decoding="async"></div><span class="device-island" aria-hidden="true"></span><span class="device-glass" aria-hidden="true"></span></div></article>
+        </div>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="system-title">
       <div class="shell">
         <header class="section-head reveal">
-          <span class="section-index">03 / System design</span>
+          <span class="section-index">06 / System design</span>
           <h2 id="system-title">Layers that<br>hold together.</h2>
           <p class="section-intro">Telegram is the visible layer. Validation, orchestration, records and reporting remain separated behind it so each part can evolve responsibly.</p>
         </header>
@@ -275,7 +413,7 @@
     <section class="section" aria-labelledby="principles-title">
       <div class="shell">
         <header class="section-head reveal">
-          <span class="section-index">04 / Build principles</span>
+          <span class="section-index">07 / Build principles</span>
           <h2 id="principles-title">Designed for<br>daily use.</h2>
           <p class="section-intro">The product is live and largely complete, with ongoing polish based on real operational use.</p>
         </header>
