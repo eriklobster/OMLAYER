@@ -139,7 +139,20 @@
     .device::before { content:""; position:absolute; z-index:4; inset:8px; border-radius:41px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); pointer-events:none; }
     .device-screen { position:absolute; inset:8px; overflow:hidden; border-radius:41px; background:#000; }
     .device-screen img { width:100%; height:100%; object-fit:cover; }
-    .device-island { position:absolute; z-index:5; top:16px; left:50%; width:29%; height:19px; transform:translateX(-50%); border-radius:999px; background:#020303; box-shadow:inset 0 0 1px rgba(255,255,255,.14); }
+    .device-status { position:absolute; z-index:8; top:8px; left:8px; right:8px; height:31px; padding:0 17px 0 18px; display:flex; align-items:center; justify-content:space-between; color:#fff; background:#000; border-radius:40px 40px 0 0; font:600 10px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif; letter-spacing:-.01em; pointer-events:none; }
+    .device-status-icons { display:flex; align-items:center; gap:7px; }
+    .cellular { width:15px; height:10px; display:flex; align-items:flex-end; gap:1.5px; }
+    .cellular i { display:block; width:2.6px; border-radius:1px; background:#fff; }
+    .cellular i:nth-child(1) { height:4px; }
+    .cellular i:nth-child(2) { height:6px; }
+    .cellular i:nth-child(3) { height:8px; }
+    .cellular i:nth-child(4) { height:10px; }
+    .wifi { width:15px; height:11px; }
+    .wifi path { fill:none; stroke:#fff; stroke-width:2.2; stroke-linecap:round; }
+    .battery { width:19px; height:9px; position:relative; border:1.2px solid rgba(255,255,255,.9); border-radius:2.5px; }
+    .battery::before { content:""; position:absolute; inset:1.3px; border-radius:1px; background:#fff; }
+    .battery::after { content:""; position:absolute; right:-2.5px; top:2px; width:1.5px; height:3px; border-radius:0 1px 1px 0; background:rgba(255,255,255,.72); }
+    .device-island { position:absolute; z-index:9; top:16px; left:50%; width:29%; height:19px; transform:translateX(-50%); border-radius:999px; background:#020303; box-shadow:inset 0 0 1px rgba(255,255,255,.14); }
     .device-island::after { content:""; position:absolute; right:7px; top:6px; width:6px; height:6px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#1c3758,#05070b 66%); }
     .device-button { position:absolute; left:-3px; top:20%; width:3px; height:9%; border-radius:2px 0 0 2px; background:linear-gradient(#282d31,#767d83,#202428); }
     .device-button::before,.device-button::after { content:""; position:absolute; left:0; width:3px; height:145%; border-radius:2px 0 0 2px; background:inherit; }
@@ -464,6 +477,9 @@
       } else {
         items.forEach((item) => item.classList.add('is-visible'));
       }
+
+      const statusMarkup = '<span class="device-status" aria-hidden="true"><span>9:20</span><span class="device-status-icons"><span class="cellular"><i></i><i></i><i></i><i></i></span><svg class="wifi" viewBox="0 0 18 13" focusable="false"><path d="M1.5 4.5C5.7.8 12.3.8 16.5 4.5M4.2 7.4c2.7-2.3 6.9-2.3 9.6 0M7.1 10.1c1.1-.9 2.7-.9 3.8 0M9 11.7h0"/></svg><span class="battery"></span></span></span>';
+      document.querySelectorAll('.device').forEach((device) => device.insertAdjacentHTML('beforeend', statusMarkup));
     })();
   </script>
 </body>
