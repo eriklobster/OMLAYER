@@ -82,7 +82,7 @@
     .identity-field { min-height:620px; display:grid; place-items:center; position:relative; perspective:1300px; }
     .identity-field::before,.identity-field::after { content:""; position:absolute; border:1px solid rgba(240,242,238,.08); border-radius:50%; animation:spin 48s linear infinite; }
     .identity-field::before { width:100%; aspect-ratio:1; border-color:rgba(145,174,252,.12); border-style:dashed; }
-    .identity-field::after { width:72%; aspect-ratio:1; box-shadow:0 0 90px rgba(73,107,204,.12); animation-direction:reverse; animation-duration:35s; }
+    .identity-field::after { display:none; }
     .identity-field .device.hero-device { --device-width:min(318px,78vw); position:relative; left:auto; bottom:auto; transform:rotate(5deg) translateY(24px); transition:transform .7s var(--ease); }
     .identity-field:hover .hero-device { transform:rotate(2deg) translateY(12px); }
     .hero-okc-badge { position:absolute; z-index:12; right:1%; top:14%; width:112px; aspect-ratio:1; padding:7px; object-fit:contain; border:1px solid rgba(255,255,255,.15); border-radius:50%; background:rgba(7,10,15,.86); box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 45px rgba(70,120,230,.13); backdrop-filter:blur(15px); }
