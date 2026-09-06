@@ -257,6 +257,55 @@
       .footer-inner { grid-template-columns:1fr auto; }
       .footer-inner span:first-child { display:none; }
     }
+    /* Screens are product evidence, not simulated hardware. Keep their native
+       proportions and normal document flow at every breakpoint. */
+    .identity-field { min-height:0; width:100%; perspective:none; }
+    .identity-field::before,.field-node,.hero-okc-badge { display:none; }
+    .device,.identity-field .device.hero-device,.workflow-device .device,
+    .broadcast-step .device,.broadcast-step:nth-child(2) .device,.broadcast-step:nth-child(3) .device {
+      position:relative; inset:auto; transform:none; transition:none;
+      width:100%; max-width:390px; aspect-ratio:auto; margin:24px auto 0;
+      padding:0; border:1px solid #30343b; border-radius:20px;
+      background:#000; overflow:hidden; box-shadow:0 16px 48px #0005;
+    }
+    .identity-field .device.hero-device { max-width:420px; margin:0 auto; }
+    .identity-field:hover .hero-device { transform:none; }
+    .device::before,.device-island,.device-button,.device-button-right,.device-glass,.device-status { display:none; }
+    .device-screen { position:relative; inset:auto; border-radius:0; overflow:hidden; }
+    .device-screen img { display:block; width:100%; height:auto; object-fit:contain; margin-top:-5.34%; }
+    .device { container-type:inline-size; }
+    .device-status { position:relative; inset:auto; height:auto; padding:3.2% 6%; display:flex; border-radius:0; font-size:4cqw; line-height:1; order:-1; }
+    .device { display:flex; flex-direction:column; }
+    .device-status-icons { display:block; width:21%; aspect-ratio:204/42; background:url('screens/ios-status-reference.png') center/contain no-repeat; }
+    .screen-grid,.broadcast-flow { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin:0; padding:0; overflow:visible; }
+    .screen-card,.broadcast-step { min-height:0; padding:20px; overflow:visible; border-radius:24px; }
+    .screen-card { display:grid; grid-template-rows:auto minmax(64px,auto) auto; align-content:start; }
+    .broadcast-step:nth-child(2) { transform:none; }
+    .workflow-panel { min-height:0; padding:28px; grid-template-columns:1fr; align-content:start; gap:24px; border-radius:24px; }
+    .workflow-copy { align-self:start; padding:0; }
+    .workflow-copy h3 { font-size:clamp(2rem,3vw,3rem); }
+    .workflow-device { height:auto; }
+    .workflow-device .device { margin-top:0; }
+    .product-showcase::before { display:none; }
+    .reveal { opacity:1; transform:none; }
+    @media (max-width:980px) {
+      .hero-grid { gap:40px; }
+      .screen-grid,.broadcast-flow { gap:16px; }
+      .screen-card,.broadcast-step { padding:14px; }
+      .screen-card-head,.broadcast-step-head { flex-wrap:wrap; gap:8px; }
+      .workflow-panels { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:680px) {
+      .screen-grid,.broadcast-flow,.workflow-panels { grid-template-columns:1fr; gap:24px; }
+      .screen-card,.broadcast-step,.workflow-panel { padding:20px 14px 14px; min-height:0; }
+      .screen-card { grid-template-rows:auto auto auto; }
+      .screen-card p { max-width:none; }
+      .screen-card-head,.broadcast-step-head { flex-wrap:nowrap; }
+      .identity-field { min-height:0; }
+      .hero { padding-bottom:40px; }
+      .device,.identity-field .device.hero-device { max-width:420px; }
+      .section-head { margin-bottom:32px; }
+    }
   </style>
 </head>
 <body>
@@ -486,7 +535,7 @@
         items.forEach((item) => item.classList.add('is-visible'));
       }
 
-      const statusMarkup = '<span class="device-status" aria-hidden="true"><span>9:20</span><span class="device-status-icons"><span class="cellular"><i></i><i></i><i></i><i></i></span><svg class="wifi" viewBox="0 0 18 13" focusable="false"><path d="M1.5 4.5C5.7.8 12.3.8 16.5 4.5M4.2 7.4c2.7-2.3 6.9-2.3 9.6 0M7.1 10.1c1.1-.9 2.7-.9 3.8 0M9 11.7h0"/></svg><span class="battery"></span></span></span>';
+      const statusMarkup = '<span class="device-status" aria-hidden="true"><span>9:20</span><span class="device-status-icons"></span></span>';
       document.querySelectorAll('.device').forEach((device) => device.insertAdjacentHTML('beforeend', statusMarkup));
     })();
   </script>
