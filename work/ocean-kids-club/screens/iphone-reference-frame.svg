@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1320" height="2700" viewBox="0 0 1320 2700">
 <defs>
-<mask id="rim"><rect x="12" y="8" width="1290" height="2680" rx="258" fill="white"/><rect x="60" y="55" width="1200" height="2590" rx="212" fill="black"/></mask>
+<mask id="rim"><rect x="12" y="8" width="1290" height="2680" rx="258" fill="white"/><rect x="58" y="52" width="1215" height="2598" rx="190" fill="black"/></mask>
 <clipPath id="top"><rect width="1320" height="1350"/></clipPath>
 <clipPath id="bottom"><rect y="1350" width="1320" height="1350"/></clipPath>
 </defs>
