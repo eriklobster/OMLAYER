@@ -457,6 +457,7 @@
     .work { padding-top: calc(var(--section) * .78); }
     .work .section-header { margin-bottom: clamp(36px, 4vw, 54px); }
     .case-study-link { display: block; border-radius: 3px; }
+    .case-study-link + .case-study-link { margin-top: clamp(28px, 4vw, 52px); }
     .case-study {
       border: 1px solid var(--line);
       border-radius: 3px;
@@ -897,6 +898,39 @@
             <div class="case-fact"><span>Interface</span><p>Bilingual</p></div>
             <div class="case-fact"><span>Operations</span><p>Parents, children, absences and staff attendance</p></div>
             <div class="case-fact"><span>System</span><p>Automated reminders, jobs and reporting</p></div>
+          </div>
+        </article>
+        </a>
+
+        <a class="case-study-link reveal" href="/work/chillum-casa/" aria-label="View the Chillum Casa case study">
+        <article class="case-study">
+          <div class="case-top">
+            <div class="case-copy">
+              <span class="status">In development · Marketplace</span>
+              <div class="case-title-row">
+                <h3>Chillum<br>Casa</h3>
+                <img class="case-logo" src="work/chillum-casa/chillum-casa-mark.svg" alt="Chillum Casa mark" width="112" height="112" loading="lazy" decoding="async">
+              </div>
+              <p class="case-subtitle">A digital home for independent makers and singular pieces.</p>
+              <p class="case-description">A curated marketplace combining artisan profiles, structured listings, multi-image catalogue workflows, role-based accounts, founder moderation and Cloudflare-native commerce infrastructure.</p>
+              <div class="case-tags" aria-label="Technologies used">
+                <span class="tag">Next.js</span><span class="tag">TypeScript</span><span class="tag">Cloudflare Workers</span><span class="tag">D1</span><span class="tag">R2</span>
+              </div>
+              <span class="case-visit">View full case study</span>
+            </div>
+            <div class="system-visual" aria-label="Chillum Casa marketplace architecture">
+              <div class="system-stack">
+                <div class="system-node"><div class="node-main"><strong>Marketplace</strong><span>Collection · Makers · Accounts</span></div><span class="node-light" aria-hidden="true"></span></div>
+                <div class="system-node"><div class="node-main"><strong>Application layer</strong><span>Auth · Roles · Moderation</span></div><span class="node-type">Worker</span></div>
+                <div class="system-node"><div class="node-main"><strong>Catalogue data</strong><span>Profiles · Listings · Products · Orders</span></div><span class="node-type">D1</span></div>
+                <div class="system-node"><div class="node-main"><strong>Media layer</strong><span>Originals · Optimized variants</span></div><span class="node-type">R2</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="case-footer">
+            <div class="case-fact"><span>Product</span><p>Curated artisan marketplace</p></div>
+            <div class="case-fact"><span>Workflow</span><p>Maker submissions and founder review</p></div>
+            <div class="case-fact"><span>Infrastructure</span><p>Cloudflare Workers, D1 and R2</p></div>
           </div>
         </article>
         </a>
