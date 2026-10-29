@@ -140,7 +140,7 @@
     .footer-inner span:nth-child(2) { color:#9ca3a5; letter-spacing:.22em; }
     .footer-inner span:last-child { justify-self:end; }
 
-    .reveal { opacity:0; transform:translateY(26px); transition:opacity .8s var(--ease),transform .8s var(--ease); }
+    .reveal { opacity:1; transform:none; transition:opacity .8s var(--ease),transform .8s var(--ease); }
     .reveal.is-visible { opacity:1; transform:none; }
     @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.identity-field::before,.identity-field::after,.identity-field img{animation:none} }
     @media (max-width:980px) {
@@ -180,6 +180,15 @@
       .actions { display:grid; grid-template-columns:1fr; }
       .footer-inner { grid-template-columns:1fr auto; }
       .footer-inner span:first-child { display:none; }
+    }
+
+    /* Enhance visible content only after observation succeeds. Never hide baseline content. */
+    @keyframes content-enter { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+    .reveal.is-visible, .reveal.on { animation:content-enter .8s var(--ease); }
+    .stagger.is-visible > * { animation:content-enter .65s var(--ease); }
+    @media (prefers-reduced-motion:reduce) {
+      html { scroll-behavior:auto; }
+      *, *::before, *::after { animation:none !important; transition:none !important; }
     }
   </style>
 </head>
@@ -294,7 +303,7 @@
         <h2 id="next-title">Have operations living in chat? <span>Let’s turn them into a system.</span></h2>
         <p>Tell us what people repeat, where information gets lost and what needs to connect. We’ll respond with clear questions and a practical next step.</p>
         <div class="actions">
-          <a class="button primary" href="mailto:hello@omlayer.com">hello@omlayer.com</a>
+          <!--email_off--><a class="button primary" href="mailto:hello@omlayer.com">hello@omlayer.com</a><!--/email_off-->
           <a class="button" href="https://t.me/omlayer" target="_blank" rel="noopener noreferrer">Telegram</a>
           <a class="button" href="https://wa.me/omlayer" target="_blank" rel="noopener noreferrer">WhatsApp</a>
         </div>

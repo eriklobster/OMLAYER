@@ -615,9 +615,9 @@
     .footer-mark { color: #aab0b2; font-weight: 500; letter-spacing: .18em; }
     .footer-copy { justify-self: end; }
 
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+    .reveal { opacity:1; transform:none; transition: opacity .8s var(--ease), transform .8s var(--ease); }
     .reveal.is-visible { opacity: 1; transform: translateY(0); }
-    .stagger > * { opacity: 0; transform: translateY(18px); transition: opacity .65s var(--ease), transform .65s var(--ease); }
+    .stagger > * { opacity:1; transform:none; transition: opacity .65s var(--ease), transform .65s var(--ease); }
     .stagger.is-visible > * { opacity: 1; transform: translateY(0); }
     .stagger.is-visible > *:nth-child(2) { transition-delay: .07s; }
     .stagger.is-visible > *:nth-child(3) { transition-delay: .14s; }
@@ -697,6 +697,15 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
       .reveal, .stagger > * { opacity: 1; transform: none; }
+    }
+
+    /* Enhance visible content only after observation succeeds. Never hide baseline content. */
+    @keyframes content-enter { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+    .reveal.is-visible, .reveal.on { animation:content-enter .8s var(--ease); }
+    .stagger.is-visible > * { animation:content-enter .65s var(--ease); }
+    @media (prefers-reduced-motion:reduce) {
+      html { scroll-behavior:auto; }
+      *, *::before, *::after { animation:none !important; transition:none !important; }
     }
   </style>
 </head>
@@ -972,6 +981,7 @@
             <span class="process-hint">Point · focus · tap</span>
           </article>
         </div>
+<noscript><style>.process-orbit{display:none}</style><ol><li><strong>Observe</strong>: Find the real problem, the people it affects and the constraints reality will enforce.</li><li><strong>Map</strong>: Define the journeys, dependencies and smallest useful version worth building.</li><li><strong>Layer</strong>: Shape the interface, logic, data, automation and visual language as one connected system.</li><li><strong>Assemble</strong>: Turn the design into fast, accessible and maintainable software.</li><li><strong>Yield</strong>: Move the system into real use, test critical paths and let reality challenge our assumptions.</li><li><strong>Evaluate</strong>: Study what works, what creates friction and what delivers genuine value.</li><li><strong>Refine</strong>: Strengthen the system and add the next layer only when it earns its place.</li></ol></noscript>
       </div>
     </section>
 
@@ -981,10 +991,10 @@
         <h2 id="contact-title">Bring the idea.<br><span>We'll build the layer.</span></h2>
         <p class="contact-intro">Tell us what you want to create, improve or connect. We’ll respond with clear questions and a practical next step.</p>
         <div class="contact-grid">
-          <a class="contact-link" href="mailto:hello@omlayer.com">
+          <!--email_off--><a class="contact-link" href="mailto:hello@omlayer.com">
             <span class="contact-label">Email</span>
             <span class="contact-value">hello@omlayer.com</span>
-          </a>
+          </a><!--/email_off-->
           <a class="contact-link" href="https://t.me/omlayer" target="_blank" rel="noopener noreferrer">
             <span class="contact-label">@omlayer</span>
             <span class="contact-value">Telegram</span>
@@ -1008,7 +1018,8 @@
 
   <script>
     (() => {
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const reducedMotion = motionPreference.matches;
       const header = document.querySelector('[data-header]');
       const stage = document.querySelector('[data-layer-stage]');
       const revealItems = document.querySelectorAll('.reveal, .stagger');
@@ -1033,6 +1044,7 @@
       if (stage && !reducedMotion && window.matchMedia('(pointer: fine)').matches) {
         let frame = 0;
         stage.addEventListener('pointermove', (event) => {
+          if (motionPreference.matches) return;
           if (frame) cancelAnimationFrame(frame);
           frame = requestAnimationFrame(() => {
             const bounds = stage.getBoundingClientRect();
@@ -1105,7 +1117,7 @@
           if (!previousTime) previousTime = time;
           const delta = Math.min(time - previousTime, 32);
           previousTime = time;
-          if (!paused) angle += delta * .000055;
+          if (!paused && !motionPreference.matches) angle += delta * .000055;
           positionLetters();
           requestAnimationFrame(orbit);
         };
