@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import {handleRequest,respondToText,aiAnswer} from "../src/worker.mjs";
 
 function fakeDB() {
-  const updates=new Map(),undoOps=new Map(),resets=new Map(),entries=[],notes=[],aiTurns=[];
+  const updates=new Map(),undoOps=new Map(),resets=new Map(),modes=new Map(),entries=[],notes=[],aiTurns=[];
   let next=1;
-  return {updates,undoOps,resets,entries,notes,aiTurns,prepare(sql) {
+  return {updates,undoOps,resets,modes,entries,notes,aiTurns,prepare(sql) {
     let args=[];
     const q={
       bind(...values){args=values;return q;},
@@ -13,6 +13,7 @@ function fakeDB() {
         if(sql.startsWith("SELECT created_at,reply_text")) return updates.get(args[0]) ?? null;
         if(sql.startsWith("SELECT entry_id FROM aumyra_undo_ops")) return undoOps.has(args[0]) ? {entry_id:undoOps.get(args[0])} : null;
         if(sql.startsWith("SELECT name FROM sqlite_master")) return {name:args[0]};
+        if(sql.startsWith("SELECT kind,update_id,started_at FROM aumyra_compose_modes")) return modes.get(args[0]) ?? null;
         if(sql.startsWith("SELECT MAX(id) AS id FROM aumyra_ai_turns")) return {id:aiTurns.length ? Math.max(...aiTurns.map(t=>t.id)) : null};
         if(sql.startsWith("SELECT last_turn_id FROM aumyra_chat_resets")) return resets.has(args[0]) ? {last_turn_id:resets.get(args[0])} : null;
         if(sql.startsWith("SELECT reply FROM aumyra_ai_turns")) return aiTurns.find(t=>t.update_id===args[0]) ?? null;
@@ -47,6 +48,16 @@ function fakeDB() {
         }
         if(sql.startsWith("DELETE FROM aumyra_processed_updates")) {
           const u=updates.get(args[0]);if(u && !u.reply_text)updates.delete(args[0]);return {meta:{changes:1}};
+        }
+        if(sql.startsWith("INSERT INTO aumyra_compose_modes")) {
+          const current=modes.get(args[0]);
+          if(!current || args[2]>=current.update_id) modes.set(args[0],{kind:args[1],update_id:args[2],started_at:args[3]});
+          return {meta:{changes:current && args[2]<current.update_id ? 0 : 1}};
+        }
+        if(sql.startsWith("DELETE FROM aumyra_compose_modes")) {
+          const current=modes.get(args[0]);const match=current && (sql.includes("update_id<?") ? current.update_id<args[1] : current.update_id===args[1]);
+          if(match)modes.delete(args[0]);
+          return {meta:{changes:match ? 1 : 0}};
         }
         if(sql.startsWith("INSERT OR IGNORE INTO aumyra_undo_ops")) {
           if(undoOps.has(args[0]))return {meta:{changes:0}};
@@ -221,8 +232,8 @@ test("iPhone keyboard buttons route to actual bot functions, not stray AI reques
   const chatDisabled=await respondToText("Chat",e);
   assert.match(chatDisabled.text,/AI is not configured/);
   assert.equal(chatDisabled.reply_markup.keyboard[0][0].text,"Chat");
-  assert.match((await respondToText("Expense",e)).text,/Format: \/expense/);
-  assert.match((await respondToText("Income",e)).text,/Format: \/expense/);
+  assert.match((await respondToText("Expense",e)).text,/Send expense as:/);
+  assert.match((await respondToText("Income",e)).text,/Send income as:/);
   assert.match((await respondToText("Summary",e)).text,/No new entries/);
   assert.match((await respondToText("History",e)).text,/No new entries/);
   assert.match((await respondToText("Notes",e)).text,/No notes saved/);
@@ -276,4 +287,48 @@ test("/forget removes only prior AI turns; replay cannot erase newer conversatio
   assert.equal(e.DB.aiTurns[0].prompt,"After reset");
   assert.equal(e.DB.entries.length,1);
   assert.equal(e.DB.notes.length,1);
+});
+
+test("one-tap Expense and Income composer saves a validated next-message amount",async()=>{
+  const e=env();
+  assert.match((await respondToText("Expense",e,fetch,1000)).text,/Send expense as:/);
+  assert.equal(e.DB.modes.get("123").kind,"expense");
+  assert.match((await respondToText("coffee",e,fetch,1001)).text,/Invalid amount/);
+  assert.equal(e.DB.modes.get("123").kind,"expense");
+  assert.equal(e.DB.entries.length,0);
+  assert.match((await respondToText("12.50 USDT food coffee",e,fetch,1002)).text,/Saved expense/);
+  assert.equal(e.DB.entries[0].amount_cents,1250);
+  assert.equal(e.DB.modes.has("123"),false);
+  assert.match((await respondToText("Income",e,fetch,1003)).text,/Send income as:/);
+  assert.match((await respondToText("20 USD teaching lesson",e,fetch,1004)).text,/Saved income/);
+  assert.equal(e.DB.entries[1].kind,"income");
+  assert.equal(e.DB.modes.has("123"),false);
+});
+test("/note composer, /cancel, expired prompts and action switching preserve data",async()=>{
+  const e=env();
+  await respondToText("/note",e,fetch,1100);
+  assert.equal(e.DB.modes.get("123").kind,"note");
+  assert.match((await respondToText("Remember this",e,fetch,1101)).text,/Note saved/);
+  assert.equal(e.DB.notes[0].body,"Remember this");
+  await respondToText("Expense",e,fetch,1102);
+  assert.match((await respondToText("Cancel",e,fetch,1103)).text,/Input cancelled/);
+  assert.equal(e.DB.modes.has("123"),false);
+  assert.equal(e.DB.entries.length,0);
+  await respondToText("Expense",e,fetch,1104);
+  assert.match((await respondToText("Chat",e,fetch,1105)).text,/AI is not configured/);
+  assert.equal(e.DB.modes.has("123"),false);
+  await respondToText("Expense",e,fetch,1106);
+  e.DB.modes.get("123").started_at="2020-01-01T00:00:00.000Z";
+  assert.match((await respondToText("Hello friend",e,fetch,1107)).text,/AI chat is not configured/);
+  assert.equal(e.DB.entries.length,0);
+  assert.equal(e.DB.notes.length,1);
+});
+test("stale Telegram messages cannot replace a newer finance input mode",async()=>{
+  const e=env();
+  await respondToText("Income",e,fetch,1200);
+  await respondToText("Expense",e,fetch,1201);
+  await respondToText("Income",e,fetch,1199);
+  assert.equal(e.DB.modes.get("123").kind,"expense");
+  assert.match((await respondToText("/cancel",e,fetch,1202)).text,/cancelled/);
+  assert.equal(e.DB.modes.has("123"),false);
 });
