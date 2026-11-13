@@ -26,6 +26,19 @@ jobs:
           node-version: '22'
       - name: Node 22 behavior tests
         run: node --test apps/aumyra/test/worker.test.mjs
+      - name: Cloudflare Worker bundle dry run (no remote deployment)
+        working-directory: apps/aumyra
+        shell: bash
+        run: |
+          npm install --no-audit --no-fund
+          python3 - <<'PY'
+          from pathlib import Path
+          cfg=Path("wrangler.toml")
+          source=cfg.read_text()
+          assert "REPLACE_WITH_AUMYRA_D1_ID" in source
+          cfg.write_text(source.replace("REPLACE_WITH_AUMYRA_D1_ID","00000000-0000-0000-0000-000000000000"))
+          PY
+          npx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/aumyra-bundle"
       - name: SQLite schema smoke
         shell: bash
         run: |
