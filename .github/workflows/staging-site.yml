@@ -31,6 +31,8 @@ jobs:
           mkdir dist
           rsync -a --exclude='.git*' --exclude='PROJECT-HQ.md' --exclude='TASKS.md' --exclude='README.md' --exclude='docs/' --exclude='scripts/' --exclude='CNAME' --exclude='dist/' ./ dist/
           test -f dist/index.html
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+          printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > dist/_headers
       - name: Deploy to dedicated staging Pages project only
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
