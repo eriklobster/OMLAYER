@@ -14,3 +14,14 @@
 
 ## Existing site reliability (separate scope)
 - [ ] Continue PR #3 visual QA and Reduced Motion/keyboard verification before its own merge.
+
+## Staging and weekly backup foundation · 2026-11-13
+- [x] Recover current `main`, PR #8, PR #3, staging absence, and incident scope.
+- [x] Create `staging` from PR #8 for an isolated latest-homepage QA candidate.
+- [x] Pin immediate 2026-W46 production and staging restore branches.
+- [x] Add GitHub Actions weekly source tag/Release workflow and staging smoke/deploy gate on infrastructure branch.
+- [ ] Merge infrastructure-only PR into `main` without merging draft website changes; observe Actions passing.
+- [ ] Bring infrastructure workflow onto `staging` and confirm stage smoke CI.
+- [ ] Configure separate staging Pages project, GitHub variable/secrets and `test.omlayer.com` binding; verify real HTTPS rendered page.
+- [ ] Exercise `workflow_dispatch` to generate 2 immutable tagged source Releases and verify ZIP/tar.gz.
+- [ ] Review PR #8 on iPhone; keep PR #3 reliability and P0 bot migration issues separate.
