@@ -33,6 +33,12 @@
 - **CI #163 passed** at `3d16391e` after delivery-lease code fix; confirm newest CI after documentation commits before release.
 - Cloudflare Worker and Telegram bot have **not** been verified live. No assumption about worker hostname, secret existence, owner Telegram ID or historical finance import.
 
+## 2026-11-14 release reliability follow-up
+- A safe postdeploy synthetic `/start` is sent directly to the dedicated Worker **only after** getMe validates @AumyraBot, HTTPS /health is ready, Telegram webhook/menu are verified and the owner can receive Telegram messages. Request carries local `TELEGRAM_WEBHOOK_SECRET`, negative test-only update ID, and no finance action. Worker must return `delivered`, confirming an actual sendMessage result. This does **not** verify a real Telegram-originated /start: owner iPhone test remains required.
+- GitHub CI now uses one `pull_request` run per change, cancels superseded checks, and never automatically deploys.
+- Existing dedicated D1 export safety: installer saves a full remote SQL dump locally in `%USERPROFILE%\\AUMYRA-backups` **before** any remote schema migration, fails closed on invalid/empty export, and never uploads it. New D1 creation skips backup. Preserve these private files.
+- Verified tests: CI #182 success at `5bf3b5ac` including installer syntax/backup presence, simulated Telegram, D1 schema smoke and Worker build. Newer docs commits require latest CI check before release.
+
 ## What is *not* done
 - No verified Aumyra production Worker URL. Do not assume `aumyra.omlayer.com` exists.
 - No verified dedicated Aumyra D1 ID, Worker binding or production migrations.
