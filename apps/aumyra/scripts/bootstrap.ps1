@@ -73,6 +73,7 @@ try {
   }
   $owner = Read-Host "YOUR numeric Telegram user ID (find via @userinfobot)"
   if ($owner -notmatch '^[1-9][0-9]{3,19}$') { throw "Owner ID must be a numeric Telegram user ID." }
+  $newDatabase = $false
   $databases = @(D1-List)
   $matches = @($databases | Where-Object { $_.name -eq "aumyra" })
   if ($matches.Count -gt 1) { throw "Ambiguous duplicate Aumyra D1 names. Resolve manually." }
@@ -80,6 +81,7 @@ try {
     Write-Host "No Aumyra D1 exists. Creating dedicated aumyra database..."
     & npx.cmd --no-install wrangler d1 create aumyra
     Check-Step "Create dedicated Aumyra D1"
+    $newDatabase = $true
     $databases = @(D1-List)
     $matches = @($databases | Where-Object { $_.name -eq "aumyra" })
     if ($matches.Count -ne 1) { throw "Created D1 was not discoverable; no migration attempted." }
@@ -97,7 +99,22 @@ try {
   $chooseAi = Read-Host "Enable optional Cloudflare Workers AI? It may incur charges. Type YES, or Enter to skip"
   if ($chooseAi -ceq "YES") { $config += [Environment]::NewLine + '[ai]' + [Environment]::NewLine + 'binding = "AI"' + [Environment]::NewLine }
   [IO.File]::WriteAllText($cfgPath, $config, (New-Object System.Text.UTF8Encoding($false)))
-  Write-Host "Applying only Aumyra migrations; Wrangler creates a pre-migration D1 backup..."
+  if (-not $newDatabase) {
+    # A full remote export is taken BEFORE any schema migration on existing data.
+    # It remains on this user's Windows computer, never in public GitHub.
+    $backupDir = Join-Path $env:USERPROFILE "AUMYRA-backups"
+    New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+    $timestamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd-HHmmss")
+    $backupFile = Join-Path $backupDir ("aumyra-pre-migration-" + $timestamp + ".sql")
+    Write-Host "Exporting existing Aumyra D1 to a private local file before migration..."
+    & npx.cmd --no-install wrangler d1 export aumyra --remote --output $backupFile --skip-confirmation
+    Check-Step "Aumyra pre-migration D1 export"
+    if (-not (Test-Path -LiteralPath $backupFile -PathType Leaf) -or (Get-Item -LiteralPath $backupFile).Length -le 0) {
+      throw "Local backup is missing or empty. Refusing to migrate existing data."
+    }
+    Write-Host "Backup preserved at $backupFile (keep private; do NOT upload to chat or public GitHub)."
+  }
+  Write-Host "Applying forward-only Aumyra migrations. Cloudflare records a migration backup after applying."
   & npx.cmd --no-install wrangler d1 migrations list aumyra --remote
   Check-Step "D1 migration list"
   & npx.cmd --no-install wrangler d1 migrations apply aumyra --remote
