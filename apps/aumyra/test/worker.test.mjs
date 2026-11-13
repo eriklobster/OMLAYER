@@ -3,16 +3,19 @@ import assert from "node:assert/strict";
 import {handleRequest,respondToText,aiAnswer} from "../src/worker.mjs";
 
 function fakeDB() {
-  const updates=new Map(),undoOps=new Map(),entries=[],notes=[];
+  const updates=new Map(),undoOps=new Map(),resets=new Map(),entries=[],notes=[],aiTurns=[];
   let next=1;
-  return {updates,undoOps,entries,notes,prepare(sql) {
+  return {updates,undoOps,resets,entries,notes,aiTurns,prepare(sql) {
     let args=[];
     const q={
       bind(...values){args=values;return q;},
       async first(){
         if(sql.startsWith("SELECT created_at,reply_text")) return updates.get(args[0]) ?? null;
         if(sql.startsWith("SELECT entry_id FROM aumyra_undo_ops")) return undoOps.has(args[0]) ? {entry_id:undoOps.get(args[0])} : null;
-        if(sql.startsWith("SELECT name FROM sqlite_master")) return {name:"aumyra_undo_ops"};
+        if(sql.startsWith("SELECT name FROM sqlite_master")) return {name:args[0]};
+        if(sql.startsWith("SELECT MAX(id) AS id FROM aumyra_ai_turns")) return {id:aiTurns.length ? Math.max(...aiTurns.map(t=>t.id)) : null};
+        if(sql.startsWith("SELECT last_turn_id FROM aumyra_chat_resets")) return resets.has(args[0]) ? {last_turn_id:resets.get(args[0])} : null;
+        if(sql.startsWith("SELECT reply FROM aumyra_ai_turns")) return aiTurns.find(t=>t.update_id===args[0]) ?? null;
         if(sql.startsWith("SELECT id FROM aumyra_entries")) return [...entries].reverse().find(e=>!e.voided_at) ?? null;
         throw Error("Unsupported first: "+sql);
       },
@@ -28,6 +31,7 @@ function fakeDB() {
         }
         if(sql.startsWith("SELECT kind,amount_cents,currency")) return {results:[...entries].reverse().filter(e=>!e.voided_at).slice(0,10)};
         if(sql.startsWith("SELECT body,created_at")) return {results:[...notes].reverse().slice(0,10)};
+        if(sql.startsWith("SELECT prompt,reply FROM aumyra_ai_turns")) return {results:[...aiTurns].reverse().slice(0,6)};
         throw Error("Unsupported all: "+sql);
       },
       async run(){
@@ -55,6 +59,21 @@ function fakeDB() {
         }
         if(sql.startsWith("UPDATE aumyra_entries SET voided_at")) {
           const e=entries.find(e=>e.id===args[1]);if(e)e.voided_at=args[0];return {meta:{changes:e?1:0}};
+        }
+        if(sql.startsWith("INSERT OR IGNORE INTO aumyra_ai_turns")) {
+          if(aiTurns.some(t=>t.update_id===args[0])) return {meta:{changes:0}};
+          aiTurns.push({id:next++,update_id:args[0],prompt:args[1],reply:args[2],created_at:args[3]});return {meta:{changes:1}};
+        }
+        if(sql.startsWith("INSERT OR IGNORE INTO aumyra_chat_resets")) {
+          if(resets.has(args[0])) return {meta:{changes:0}};
+          resets.set(args[0],args[1]);return {meta:{changes:1}};
+        }
+        if(sql.startsWith("DELETE FROM aumyra_ai_turns")) {
+          const before=aiTurns.length;
+          if(sql.includes("WHERE id<=")) {
+            for(let i=aiTurns.length-1;i>=0;i--) if(aiTurns[i].id<=args[0]) aiTurns.splice(i,1);
+          } else aiTurns.splice(0,aiTurns.length);
+          return {meta:{changes:before-aiTurns.length}};
         }
         if(sql.startsWith("INSERT OR IGNORE INTO aumyra_notes")) {
           if(args[2]!=null && notes.some(n=>n.update_id===args[2]))return {meta:{changes:0}};
@@ -224,4 +243,37 @@ test("Telegram keyboard selection is owner-only and retry-safe",async()=>{
   assert.equal(sent[0].body.reply_markup.keyboard[0][0].text,"Chat");
   assert.equal((await handleRequest(webhook("Menu",902),e,deliver)).status,200);
   assert.equal(sent.length,1);
+});
+
+test("AI chat remembers up to six owner turns, and never re-infers replayed updates",async()=>{
+  const e=env();e.OPENAI_API_KEY="fake";
+  const requests=[];
+  const ai=async(url,opts)=>{
+    const body=JSON.parse(opts.body);requests.push(body.messages);
+    return Response.json({choices:[{message:{content:"Answer "+requests.length}}]});
+  };
+  assert.equal((await respondToText("Hello",e,ai,500)).text,"Answer 1");
+  assert.equal((await respondToText("What did I say?",e,ai,501)).text,"Answer 2");
+  assert.equal(requests.length,2);
+  assert.deepEqual(requests[1].map(m=>m.role),["system","user","assistant","user"]);
+  assert.equal(requests[1][1].content,"Hello");
+  assert.equal((await respondToText("What did I say?",e,ai,501)).text,"Answer 2");
+  assert.equal(requests.length,2);
+  assert.equal(e.DB.aiTurns.length,2);
+});
+test("/forget removes only prior AI turns; replay cannot erase newer conversation",async()=>{
+  const e=env();e.OPENAI_API_KEY="fake";
+  const ai=async()=>Response.json({choices:[{message:{content:"Answer"}}]});
+  await respondToText("One",e,ai,601);
+  await respondToText("/expense 5 USDT food",e,fetch,602);
+  await respondToText("/note Keep this",e,fetch,603);
+  const cleared=await respondToText("/forget",e,fetch,604);
+  assert.match(cleared.text,/Finance and notes were not changed/);
+  assert.equal(e.DB.aiTurns.length,0);
+  await respondToText("After reset",e,ai,605);
+  await respondToText("/forget",e,fetch,604);
+  assert.equal(e.DB.aiTurns.length,1);
+  assert.equal(e.DB.aiTurns[0].prompt,"After reset");
+  assert.equal(e.DB.entries.length,1);
+  assert.equal(e.DB.notes.length,1);
 });
