@@ -1,0 +1,43 @@
+name: OMLAYER staging smoke and preview
+on:
+  push:
+    branches: [staging]
+  pull_request:
+    branches: [staging]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: website-staging-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate static pages, assets and anchors
+        run: python3 scripts/validate-static-site.py
+  preview:
+    needs: smoke
+    if: ${{ github.event_name != 'pull_request' && vars.OMLAYER_STAGING_PAGES_PROJECT != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package public static files only
+        shell: bash
+        run: |
+          mkdir dist
+          rsync -a --exclude='.git*' --exclude='PROJECT-HQ.md' --exclude='TASKS.md' --exclude='README.md' --exclude='docs/' --exclude='scripts/' --exclude='CNAME' --exclude='dist/' ./ dist/
+          test -f dist/index.html
+      - name: Deploy to dedicated staging Pages project only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STAGING_PROJECT: ${{ vars.OMLAYER_STAGING_PAGES_PROJECT }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test "$STAGING_PROJECT" != 'omlayer'  # never deploy to known production Pages project
+          npx --yes wrangler@4 pages deploy dist --project-name "$STAGING_PROJECT" --branch main
