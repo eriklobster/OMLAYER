@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '22'
       - name: Node 22 behavior tests
-        run: node --test apps/aumyra/test/worker.test.mjs
+        run: node --test apps/aumyra/test/*.test.mjs
       - name: Cloudflare Worker bundle dry run (no remote deployment)
         working-directory: apps/aumyra
         shell: bash
