@@ -92,7 +92,8 @@ test("Telegram /start replies with menu and deduplicates delivered update",async
   const transport=async(_url,opts)=>{calls++;body=JSON.parse(opts.body);return Response.json({ok:true})};
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.match(body.text,/Aumyra is ready/);
-  assert.equal(body.reply_markup.keyboard.length,3);
+  assert.equal(body.reply_markup.keyboard.length,4);
+  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["/expense","/income"]);
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.equal(calls,1);
 });
