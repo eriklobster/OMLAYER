@@ -21,6 +21,11 @@ Prompts/settings: confirm correct Cloudflare account after Wrangler login; paste
 
 **After installer success:** From your owner Telegram account, send `/start` to [@AumyraBot](https://t.me/AumyraBot), then `/note hello` and `/notes`. Tap **Expense**, then send `12.50 USDT food coffee`; check Summary and `/undo` the test entry. Tap **Chat** to send ordinary questions (only works after opting into AI), **Menu** to restore controls, and use `/forget` to clear AI history. Report any error output **with token values hidden**; never send or screenshot the token/secret.
 
+## Live deployment smoke and reliability
+The one-line installer now runs `scripts/postdeploy-smoke.mjs` after registering the webhook. It checks HTTPS `/health`, the exact @AumyraBot identity, Telegram webhook target, command menu and chat menu, then attempts an owner-only Telegram welcome message. If Telegram has not yet permitted the bot to message you, the script reports `ownerNotification:not_delivered`; open the bot and send `/start`. A welcome message by itself is **not** proof that incoming `/start` and database writes work.
+
+Webhook retries use an atomic D1 claim and conditional lease recovery to prevent simultaneous inference or duplicate expense records. Telegram sendMessage cannot guarantee exactly-once delivery if a network failure occurs after a message is delivered; live retries must still be observed. Health returns ready only when every required D1 table exists. Photos and voice currently receive a clear text-only notice rather than being silently treated as chat.
+
 ## Release gates
 1. In Cloudflare, inspect Workers and D1. Reuse the **existing Aumyra** resource if present; never touch ROAMDOTS or another project's database. Otherwise create a D1 named aumyra using `npx wrangler d1 create aumyra`.
 2. Edit `wrangler.toml` locally: replace `REPLACE_WITH_AUMYRA_D1_ID` with the *dedicated* database ID; never publish sensitive customer data here.
