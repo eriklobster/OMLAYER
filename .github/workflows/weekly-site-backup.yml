@@ -1,0 +1,65 @@
+name: OMLAYER Weekly Source Backup
+# Active only after owner approves and merges this workflow to main.
+on:
+  schedule:
+    - cron: "17 3 * * 0"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  website-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive main and current staging branch without secrets
+        shell: bash
+        env:
+          STAGING_BRANCH: design/omlayer-cta-contact-20261113
+        run: |
+          set -euo pipefail
+          mkdir -p snapshot/main snapshot/staging
+          git fetch origin '+refs/heads/main:refs/remotes/origin/main'
+          git archive --format=tar origin/main | tar -xf - -C snapshot/main
+          MAIN_SHA="$(git rev-parse origin/main)"
+          STAGING_SHA="not-found"
+          if git ls-remote --exit-code --heads origin "$STAGING_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "+refs/heads/${STAGING_BRANCH}:refs/remotes/origin/${STAGING_BRANCH}"
+            git archive --format=tar "origin/${STAGING_BRANCH}" | tar -xf - -C snapshot/staging
+            STAGING_SHA="$(git rev-parse "origin/${STAGING_BRANCH}")"
+          else
+            printf 'staging branch absent: %s\n' "$STAGING_BRANCH" > snapshot/staging/README.txt
+          fi
+          printf 'UTC=%s\nMAIN_SHA=%s\nSTAGING_BRANCH=%s\nSTAGING_SHA=%s\n' "$(date -u --iso-8601=seconds)" "$MAIN_SHA" "$STAGING_BRANCH" "$STAGING_SHA" > snapshot/MANIFEST.txt
+          tar -czf omlayer-weekly-source.tar.gz snapshot
+          sha256sum omlayer-weekly-source.tar.gz > omlayer-weekly-source.sha256
+          WEEK="$(date -u +%G-W%V)"
+          for branch in main "$STAGING_BRANCH"; do
+            if [ "$branch" = "main" ]; then
+              ref="origin/main"
+              label="main"
+            elif [ "$STAGING_SHA" != "not-found" ]; then
+              ref="origin/$STAGING_BRANCH"
+              label="staging"
+            else
+              continue
+            fi
+            tag="backup/omlayer-${label}-${WEEK}"
+            if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              git tag -a "$tag" "$ref" -m "Website weekly backup $label $WEEK"
+              git push origin "refs/tags/$tag"
+            fi
+          done
+      - name: Keep downloadable backup and checksum for 90 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: omlayer-weekly-source-${{ github.run_id }}
+          path: |
+            omlayer-weekly-source.tar.gz
+            omlayer-weekly-source.sha256
+          retention-days: 90
+# This copies website repository content, not Cloudflare Worker code, databases,
+# Cloudflare DNS, secrets or external mail. For disaster recovery add an approved
+# independent offsite backup target later.
