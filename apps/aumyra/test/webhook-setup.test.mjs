@@ -32,10 +32,11 @@ test("Aumyra verifies BotFather identity first and configures menu without dropp
     "getWebhookInfo","getMyCommands","getChatMenuButton"
   ]);
   assert.equal(calls[1].body.drop_pending_updates,false);
-  assert.deepEqual(calls[1].body.allowed_updates,["message"]);
+  assert.deepEqual(calls[1].body.allowed_updates,["message","widget_query"]);
   assert.equal(calls[1].body.secret_token,SECRET);
   assert.equal(calls[3].body.menu_button.type,"commands");
   assert.ok(COMMANDS.some(c=>c.command==="chat"));
+  assert.ok(COMMANDS.some(c=>c.command==="app"));
   assert.ok(COMMANDS.some(c=>c.command==="cancel"));
   assert.ok(!JSON.stringify(result).includes(TOKEN));
   assert.ok(!JSON.stringify(result).includes(SECRET));
