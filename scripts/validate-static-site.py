@@ -68,7 +68,6 @@ def main():
                 other = parsed.get(dest)
                 if other is None:
                     other = parse(dest)
-                    parsed[dest] = other
                 if unquote(target.fragment) not in other.ids:
                     failures.append(f"{label}: missing anchor: {value}")
     if failures:
