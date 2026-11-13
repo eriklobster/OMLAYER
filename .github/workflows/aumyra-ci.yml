@@ -1,0 +1,42 @@
+name: Aumyra MVP tests
+
+on:
+  push:
+    branches:
+      - feat/aumyra-assistant-mvp
+    paths:
+      - 'apps/aumyra/**'
+      - '.github/workflows/aumyra-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/aumyra/**'
+      - '.github/workflows/aumyra-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node 22 behavior tests
+        run: node --test apps/aumyra/test/worker.test.mjs
+      - name: SQLite schema smoke
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import sqlite3, pathlib
+          db=sqlite3.connect(":memory:")
+          db.executescript(pathlib.Path("apps/aumyra/migrations/0001_init.sql").read_text())
+          for table in ("aumyra_entries","aumyra_notes","aumyra_processed_updates"):
+              assert db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone()
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',637,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
+          db.execute("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',637,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
+          assert db.execute("SELECT COUNT(*) FROM aumyra_entries").fetchone()[0]==1
+          print("SQL schema + unique update_id smoke OK")
+          PY
