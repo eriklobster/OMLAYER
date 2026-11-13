@@ -122,15 +122,19 @@ try {
   if (-not $ready) { throw "Aumyra /health not ready. Webhook NOT changed. Inspect Cloudflare Worker logs." }
   $env:TELEGRAM_BOT_TOKEN = $token
   $env:TELEGRAM_WEBHOOK_SECRET = $hookSecret
+  $env:TELEGRAM_OWNER_ID = $owner
   & node.exe ./scripts/setup-webhook.mjs "$workerUrl/telegram/webhook"
   Check-Step "Telegram webhook and menu configuration"
+  & node.exe ./scripts/postdeploy-smoke.mjs "$workerUrl"
+  Check-Step "Worker health + Telegram production smoke"
   Write-Host ""
-  Write-Host "AUMYRA core DEPLOYED: $workerUrl" -ForegroundColor Green
-  Write-Host "NEXT: Open @AumyraBot in Telegram and send /start. Then test /note hello -> /notes."
+  Write-Host "AUMYRA core DEPLOYED and production smoke passed: $workerUrl" -ForegroundColor Green
+  Write-Host "NEXT: Open @AumyraBot in Telegram and send /start. Then test guided Expense, /summary, /undo, /note and Chat."
   if ($chooseAi -cne "YES") { Write-Host "AI is optional and currently disabled; finance and notes should work." }
 } finally {
   Remove-Item Env:TELEGRAM_BOT_TOKEN -ErrorAction SilentlyContinue
   Remove-Item Env:TELEGRAM_WEBHOOK_SECRET -ErrorAction SilentlyContinue
+  Remove-Item Env:TELEGRAM_OWNER_ID -ErrorAction SilentlyContinue
   $token = $null
   $hookSecret = $null
 }
