@@ -70,6 +70,12 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - Aumyra CI optimized to one pull_request run per code change, cancel superseded runs. No automatic production deploy, no changes to unrelated OMLAYER website.
 - Still blocked on Cloudflare account authorization, dedicated D1/Worker/secrets and owner Telegram first contact. Cannot claim live until /health 200, real /start and finance/notes flow.
 
+## 2026-11-14 Cloudflare D1 existing-data preservation
+- Installer now exports **existing** dedicated Aumyra D1 with `wrangler d1 export aumyra --remote --output ... --skip-confirmation` into owner Windows `%USERPROFILE%\\AUMYRA-backups` **before** any of five migrations. It refuses to proceed if export fails/empty. New database creation skips backup. Private SQL exports must never be committed, attached, or pasted.
+- Official Cloudflare D1 docs describe `d1 migrations apply` recording a backup **after** applying, not before. Console guidance corrected.
+- GitHub CI #182 **success**, commit `5bf3b5ac` for installer syntax, structure gates, bot tests, all migrations and Worker dry-run. No remote account access or migration was attempted by this agent.
+- Synthetic /start probe with signed test request remains distinct from actual Telegram webhook delivery; owner iPhone /start remains a release gate.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
