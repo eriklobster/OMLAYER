@@ -6,7 +6,7 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Create persistent GitHub HQ issue #22 and new-chat recovery file.
 - [x] Implement Worker webhook with owner and webhook-secret verification.
 - [x] Add working /start, /menu, /help, /status, /income, /expense, /summary, /history, /undo, /note, /notes, /banks, AI fallback.
-- [x] Add five forward-only D1 migrations: finance/notes, /undo journal, AI conversation reset, guided-input composer, and Telegram delivery lease.
+- [x] Add six forward-only D1 migrations: finance/notes, /undo journal, AI conversation reset, guided-input composer, Telegram delivery lease and native widget reply kind.
 - [x] Require migrated D1 schema in HTTP /health readiness.
 - [x] Implement Telegram getMe identity check before modifying webhook, then verify getWebhookInfo.
 - [x] Validate Node tests and SQL migrations in GitHub Actions. CI #121 success on SHA `4ee7c88f` with behavior tests, schema smoke and Wrangler dry-run. Recheck latest after handoff changes.
@@ -25,8 +25,13 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Optimize Aumyra CI to one pull_request run per commit, cancel obsolete in-flight checks; manual workflow_dispatch retained; no auto deploy.
 - [ ] **LIVE RELEASE:** Verify actual owner /start reply + D1 persistence + user-facing AI response after bot provisioning. Passing CI alone is not a live bot.
 - [x] Export existing Aumyra D1 SQL locally before any remote migration; fail closed if backup missing or empty. Do not copy private data to public GitHub; skip only for newly created empty D1. Wrangler command documented in official Cloudflare D1 reference.
+- [x] Integrate Bot API 10.4 native Telegram message widget: /app and App button, theme-adaptive 2-column dashboard, owner-private widget_query answer handler, readonly Summary/History/Notes/Goals, clear instructions for Chat/Expense/Income.
+- [x] Add `0006_widget_reply_kind.sql` for replay-safe sendWidget vs sendMessage delivery. Keep private finance and notes untouched.
+- [x] Register `/app` and `widget_query` in webhook allowed_updates, test BotFather integration, widget HTML raw+zlib limits, disabled wallet/payment paths, unauthorized query rejection, no ledger mutations, and native sendWidget retry dedupe.
+- [x] Extend signed production smoke with synthetic `/app`, reporting `widgetProbe` separately from core Telegram readiness. CI #196 success at `fbbe4433` before handoff changes.
+- [ ] **LIVE WIDGET ACCEPTANCE:** from the real owner Telegram app tap App, verify widget renders, Summary loads, keyboard fallback works, owner-only access holds; do not assume rollout to all clients or use wallet/payments.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
-- [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0005 before remote migration.
+- [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0006 before remote migration.
 - [ ] Configure existing @AumyraBot Telegram BotFather token, webhook secret, numeric owner ID in Worker **private secrets** (not chat or repo).
 - [ ] Deploy dedicated Worker, verify HTTPS GET /health = 200 `ready:true`, and save verified Worker URL in this HQ (public host is safe, tokens are not).
 - [ ] Run verified Telegram setup script with existing bot token, check Telegram getWebhookInfo URL, delivery errors and pending updates.
