@@ -36,6 +36,13 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - Required on owner Windows computer: Node.js LTS+npm, PowerShell, Cloudflare login, existing @AumyraBot BotFather token, own numeric Telegram ID. Keep token and screenshots of secrets private. Both connected RDC machines were offline at last inspection.
 - Owner should run exactly the command shown in `README.md` rather than manually repeating 10 settings steps. Report only sanitized errors. Production release still blocked until actual /start and finance/notes E2E tests.
 
+## 2026-11-14 AUMYRA 2: Telegram menu and persistent chat
+- **Menu first:** Owner-private 4-row Telegram reply keyboard `Chat | Menu`, `Expense | Income`, `Summary | History`, `Notes | Goals`. Pressing any exact label routes to the right command or data view; pressing Chat shows readiness, then ordinary text enters AI. Existing Telegram bot menu commands include `/chat` and `/forget` after owner runs webhook setup.
+- **Chat context:** New additive `0003_ai_history.sql`, table `aumyra_ai_turns` (up to six recent completed turns supplied to AI), stable replay deduplication by update ID, journaled `/forget` with `aumyra_chat_resets`. Reset never touches income, expenses, notes or future chat turns. D1 `/health` now checks both new tables.
+- **Verified code tests:** Node behavior suite includes keyboard, unauthorized selection, duplicate webhook, chat context, /forget replay. GitHub CI #92 **success** at `f9b7b2b0`, including SQL 0003 migration smoke and Wrangler dry-run. Newer docs/task commits follow; recheck latest CI before release.
+- **Runtime not launched:** Neither Windows RDC machine online in this session. No Cloudflare app authorization, D1 UUID, configured Worker secrets, public Aumyra Worker URL or live Telegram webhook verified. The existing PowerShell one-command install in README is still the shortest owner-only release route.
+- **No other apps** changed. Continue from PR #20 only. When owner completes first authenticated Cloudflare deployment, verify `/health`, `/start` Chat/Menu, /expense→/summary→/undo, /note→/notes, AI with chosen provider, `/forget`, owner-only denial.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
