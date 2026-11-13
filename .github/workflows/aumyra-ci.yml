@@ -72,7 +72,17 @@ jobs:
           assert db.execute("SELECT COUNT(*) FROM aumyra_entries").fetchone()[0]==1
           cols=[row[1] for row in db.execute("PRAGMA table_info(aumyra_processed_updates)")]
           assert "delivery_claimed_at" in cols
+          assert "reply_kind" in cols
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone() is None
           db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at,reply_text) VALUES (88,'2026-11-14T00:00:00Z','cached')")
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone()[0]=="text"
+          assert db.execute("UPDATE aumyra_processed_updates SET reply_kind='widget' WHERE update_id=88").rowcount==1
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone()[0]=="widget"
+          try:
+              db.execute("UPDATE aumyra_processed_updates SET reply_kind='invalid' WHERE update_id=88")
+              raise AssertionError("D1 permitted invalid widget reply kind")
+          except sqlite3.IntegrityError:
+              pass
           first=db.execute("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)",
                            ("2026-11-14T00:00:01Z",88,"2026-11-13T23:59:01Z"))
           assert first.rowcount==1
