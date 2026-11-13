@@ -22,7 +22,7 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 ## Latest implementation state
 - Source and tests isolated under `apps/aumyra/`; workflows under `.github/workflows/aumyra-*.yml`.
 - Worker: /health, /telegram/webhook, owner/secret validation, /start /menu /help /status /banks /income /expense /summary /history /undo /note /notes, AI questions.
-- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`, `0003_ai_history.sql`, `0004_compose_modes.sql`, `0005_delivery_lease.sql`.
+- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`, `0003_ai_history.sql`, `0004_compose_modes.sql`, `0005_delivery_lease.sql`, `0006_widget_reply_kind.sql`.
 - Telegram setup script checks bot username via getMe **before** setWebhook, then validates getWebhookInfo.
 - AI: current verified model defaults `gpt-4o-mini` via OpenAI if configured; Cloudflare AI optional `@cf/google/gemma-4-26b-a4b-it`.
 - GET /health requires actual D1 schema migrated, not just bound credentials.
@@ -76,6 +76,14 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - GitHub CI #182 **success**, commit `5bf3b5ac` for installer syntax, structure gates, bot tests, all migrations and Worker dry-run. No remote account access or migration was attempted by this agent.
 - Synthetic /start probe with signed test request remains distinct from actual Telegram webhook delivery; owner iPhone /start remains a release gate.
 
+## November 14, 2026: Telegram 10.4 native widget implementation
+- Telegram announcement https://t.me/BotNews/122 refers to **Bot API 10.4 Widgets**: 32 KB HTML raw / 4 KB zlib compressed, native sandbox, `sendWidget`, `widget_query`, `answerWidgetQuery`. Production currently supports private bot chats; not group/forward/inline distribution.
+- New `src/widget.mjs` includes a no-network, theme-adaptive in-message AUMYRA dashboard. `/app` and **App** keyboard tile send it. Eight widget actions: Summary, History, Notes, Goals, New expense, New income, Chat, Help. **Read-only:** all widget queries are authenticated for the private owner, only expose read-only D1 ledger/notes views; no widget payments, wallet, or finance mutations. Entering new data and free-text Chat still happens via classic Telegram keyboard.
+- Telegram webhook now explicitly accepts `widget_query` and responds with `answerWidgetQuery` after owner/private chat authorization and data allowlist. Telegram delivery uses the same atomic claim/delivery lease with `reply_kind='widget'` cache in additive migration `0006_widget_reply_kind.sql`. The /health schema gate checks both delivery and reply columns.
+- Tests cover native widget limit, no network/wallet, own chat query, unauthorized queries, missing D1 migration, retry behavior, BotFather allowed_updates and /app. Existing test suite remains green at **CI #196** commit `fbbe4433` before docs commits.
+- Smoke now tests signed synthetic /app after /start when owner's bot chat can receive messages; native widget failure is separately reported instead of taking core assistant offline. Real iPhone App render and interactions **remain unverified** until Cloudflare launch. Payments remain OFF.
+- Owner's latest instruction: **Dell connected = use authorized Dell; Dell offline = work in GitHub only.** Last device query shows Dell OFFLINE; no remote access granted by mere instruction. Keep moving in GitHub and do not repeat laptop questions without need.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
@@ -85,7 +93,7 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
 ## Live release acceptance
 1. Confirm actual Cloudflare worker + dedicated D1 exist, no conflict with other products.
-2. Apply all five additive migrations (0001–0005) and configure Worker secrets securely.
+2. Apply all six additive migrations (0001–0006) and configure Worker secrets securely.
 3. Deploy, GET /health = 200 with `ready:true`, verify HTTPS, correct path and no redirection errors.
 4. Set and inspect Telegram webhook using the verified existing @AumyraBot token, keep pending messages.
 5. From owner's Telegram: /start menu, /expense test -> /summary -> /undo, /note -> /notes; unauthorized account must get no private response.
