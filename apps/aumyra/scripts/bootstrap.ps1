@@ -34,6 +34,15 @@ if (-not (Get-Command npm.cmd -ErrorAction SilentlyContinue)) { throw "npm is mi
 if (-not (Test-Path "./wrangler.toml") -or -not (Test-Path "./scripts/setup-webhook.mjs")) {
   throw "Run this file from the apps/aumyra directory of PR #20."
 }
+# Wrangler may validate the D1 binding even for list/create commands.
+# Use a syntactically valid zero UUID until the real Aumyra D1 is identified.
+$cfgPath = Join-Path (Get-Location) "wrangler.toml"
+$temporaryId = "00000000-0000-0000-0000-000000000000"
+$config = [IO.File]::ReadAllText($cfgPath)
+if (-not $config.Contains("REPLACE_WITH_AUMYRA_D1_ID")) {
+  throw "Expected clean Aumyra Wrangler configuration. Do not reuse a patched config."
+}
+[IO.File]::WriteAllText($cfgPath, $config.Replace("REPLACE_WITH_AUMYRA_D1_ID", $temporaryId), (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "AUMYRA setup - Cloudflare Worker, dedicated D1, Telegram webhook" -ForegroundColor Cyan
 Write-Host "Existing ROAMDOTS, Ocean Cafe, and OMLAYER resources are never selected by this installer."
 & npm.cmd install --no-audit --no-fund
@@ -82,10 +91,9 @@ try {
   $db = $matches[0]
   $dbId = if ($db.PSObject.Properties["uuid"]) { [string]$db.uuid } elseif ($db.PSObject.Properties["id"]) { [string]$db.id } else { "" }
   if ($dbId -notmatch '^[0-9a-fA-F-]{36}$') { throw "Invalid D1 database ID." }
-  $cfgPath = Join-Path (Get-Location) "wrangler.toml"
   $config = [IO.File]::ReadAllText($cfgPath)
-  if (-not $config.Contains('REPLACE_WITH_AUMYRA_D1_ID')) { throw "Local Wrangler placeholder missing; stop before mutation." }
-  $config = $config.Replace('REPLACE_WITH_AUMYRA_D1_ID', $dbId)
+  if (-not $config.Contains($temporaryId)) { throw "Temporary D1 identifier missing; stop before migration." }
+  $config = $config.Replace($temporaryId, $dbId)
   $chooseAi = Read-Host "Enable optional Cloudflare Workers AI? It may incur charges. Type YES, or Enter to skip"
   if ($chooseAi -ceq "YES") { $config += [Environment]::NewLine + '[ai]' + [Environment]::NewLine + 'binding = "AI"' + [Environment]::NewLine }
   [IO.File]::WriteAllText($cfgPath, $config, (New-Object System.Text.UTF8Encoding($false)))
