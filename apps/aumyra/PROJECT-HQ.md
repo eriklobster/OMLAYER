@@ -51,6 +51,13 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - **Production gate unchanged:** Cannot claim bot is live without authenticated Cloudflare control, verified `/health` 200, correct BotFather webhook, owner /start and an end-to-end finance+notes+AI test. Both authorized Windows machines were offline at last inspection. No secrets or historical ledger data on this public PR.
 - **Only required owner action:** Run the existing one-line Windows PowerShell bootstrap from `apps/aumyra/README.md` on a trusted laptop with Node LTS and Cloudflare login, or reconnect an authorized RDC laptop so this chat can assist. Supply token in masked local prompt only. Let script discover/create D1; no earlier manual D1 action required.
 
+## 2026-11-14 next release-hardening slice
+- **Deploy smoke:** `scripts/postdeploy-smoke.mjs` validates actual HTTPS /health ready, exact @AumyraBot getMe, webhook URL, commands and chat menu after setup, attempts one safe owner-only welcome, and reports delivery separately from Worker readiness. The one-line PowerShell bootstrap runs it automatically. No auto-send from this ChatGPT session.
+- **Race fix:** D1 `aumyra_processed_updates` claim now uses INSERT changes to pick one compute winner. Stale unfinished requests are conditionally reclaimed after 60 seconds; reply caching prevents duplicate writes or simultaneous inference. Existing delivery remains best-effort if Telegram sends but DB delivery confirmation fails (Telegram has no idempotency key for sendMessage).
+- **Readiness:** all seven required D1 tables checked; SQL smoke exercises atomic claim, composer ordering and soft-void; fake D1 and negative health tests cover missing primary table.
+- **Text media:** owner sending voice/photo gets clear text-only instructions; no unapproved media AI processing.
+- **Release boundary remains:** neither Cloudflare Worker nor Telegram /start has been observed live. Both RDC machines offline at last check. Only owner can authorize proper Cloudflare account + BotFather token via trusted local installer. Do not deploy other bots or merge draft PR to main as substitute.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
