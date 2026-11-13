@@ -356,10 +356,11 @@ test("parallel webhook retries claim one update and send one Telegram reply",asy
   const second=handleRequest(webhook("/expense 3 USDT food tea",2100),e,transport);
   const duplicate=await second;
   assert.equal(duplicate.status,503);
-  assert.equal(e.DB.entries.length,1);
-  assert.equal(sending,1);
+  // The winner may still be processing; wait for it before verifying writes.
   release();
   assert.equal((await first).status,200);
+  assert.equal(e.DB.entries.length,1);
+  assert.equal(sending,1);
   assert.equal((await handleRequest(webhook("/expense 3 USDT food tea",2100),e,transport)).status,200);
   assert.equal(sending,1);
   assert.equal(e.DB.entries.length,1);
