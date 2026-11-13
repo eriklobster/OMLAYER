@@ -1,11 +1,11 @@
 # AUMYRA tasks (2026-11-13)
 - [x] Recover prior HERMAYA/AUMYRA name, reported local tests and deployment blocker.
 - [x] Confirm no linked dedicated GitHub repository or previously committed Aumyra code.
-- [x] Add isolated Telegram Worker with owner-only guard, webhook secret verification, /start, /help, /status, AI fallback, notes, finance, and target banks.
+- [x] Add isolated Telegram Worker with owner-only guard, webhook secret verification, /start, /help, /status, AI fallback, notes, finance, and owner-configurable savings targets.
 - [x] Add additive D1 schema with replay receipts and idempotent entries.
 - [x] Node tests and SQL migration validated in GitHub Actions (latest run 43382552628, success).
 - [ ] Add a dedicated private repo and move subtree if authorized (currently only public OMLAYER repository accessible).
-- [ ] Locate previously tested prior private finance archive (contents unavailable from connected GitHub)
+- [ ] Recover the original private historical import package and reconcile against a backup before any migration.
 - [ ] Confirm dedicated Cloudflare Worker, D1 ID, existing bot token and owner Telegram ID using private controls.
 - [ ] Deploy, set webhook, configure Telegram commands, test real replies from owner's iPhone.
 - [ ] Verify AI key/model and cost settings before first AI call.
