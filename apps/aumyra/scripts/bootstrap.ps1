@@ -11,7 +11,7 @@ function D1-List {
   $first = $raw.IndexOf("[")
   $last = $raw.LastIndexOf("]")
   if ($first -lt 0 -or $last -lt $first) { throw "Cannot parse D1 JSON. No changes made to databases." }
-  return ,@(($raw.Substring($first, $last - $first + 1) | ConvertFrom-Json))
+  return @($raw.Substring($first, $last - $first + 1) | ConvertFrom-Json)
 }
 function Put-Secret([string]$name, [string]$value) {
   if ([string]::IsNullOrWhiteSpace($value)) { throw "Empty secret: $name" }
@@ -79,7 +79,7 @@ try {
     if ($agree -cne "YES") { throw "Stopped; no database changes." }
   }
   $db = $matches[0]
-  $dbId = if ($db.uuid) { [string]$db.uuid } else { [string]$db.id }
+  $dbId = if ($db.PSObject.Properties["uuid"]) { [string]$db.uuid } elseif ($db.PSObject.Properties["id"]) { [string]$db.id } else { "" }
   if ($dbId -notmatch '^[0-9a-fA-F-]{36}$') { throw "Invalid D1 database ID." }
   $cfgPath = Join-Path (Get-Location) "wrangler.toml"
   $config = [IO.File]::ReadAllText($cfgPath)
