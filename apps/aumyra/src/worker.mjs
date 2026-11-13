@@ -1,6 +1,6 @@
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
-const MENU = "Aumyra is ready.\n\nAssistant: send a message, or /ask your question.\nFinance: /expense 6.37 USDT food lunch\n         /income 20 USD teaching lesson\n         /summary, /history, /undo, /banks\nNotes: /note buy coffee beans, /notes\nOther: /help, /status";
+const MENU = "Aumyra is ready.\n\nAssistant: send a message, or /ask your question.\nFinance: /expense 12.50 USDT food lunch\n         /income 20 USD teaching lesson\n         /summary, /history, /undo, /banks\nNotes: /note buy coffee beans, /notes\nOther: /help, /status";
 const BUTTONS = {keyboard:[[{text:"/summary"},{text:"/history"}],[{text:"/notes"},{text:"/banks"}],[{text:"/help"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
 const HELP = MENU + "\n\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
@@ -50,7 +50,7 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   }
   if (command === "/income" || command === "/expense") {
     const match = MONEY.exec(text);
-    if (!match) return reply("Format: /expense 6.37 USDT food lunch\nOr: /income 20 USD teaching lesson");
+    if (!match) return reply("Format: /expense 12.50 USDT food lunch\nOr: /income 20 USD teaching lesson");
     const [,kind,amount,currency,category,note=""] = match;
     const cents = Math.round(Number(amount)*100);
     if (!Number.isSafeInteger(cents) || cents <= 0 || cents > 1e11) return reply("Enter a positive amount smaller than 1 billion.");
