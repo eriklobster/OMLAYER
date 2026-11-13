@@ -1,5 +1,5 @@
 # AUMYRA — PROJECT-HQ
-Status checked 2026-11-13. Owner-only Telegram AI and Finance assistant `@AumyraBot`.
+Status checked 2026-11-14. Owner-only Telegram AI and Finance assistant `@AumyraBot`.
 Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
 ## Recovery entrypoints
@@ -22,11 +22,11 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 ## Latest implementation state
 - Source and tests isolated under `apps/aumyra/`; workflows under `.github/workflows/aumyra-*.yml`.
 - Worker: /health, /telegram/webhook, owner/secret validation, /start /menu /help /status /banks /income /expense /summary /history /undo /note /notes, AI questions.
-- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`.
+- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`, `0003_ai_history.sql`, `0004_compose_modes.sql`.
 - Telegram setup script checks bot username via getMe **before** setWebhook, then validates getWebhookInfo.
 - AI: current verified model defaults `gpt-4o-mini` via OpenAI if configured; Cloudflare AI optional `@cf/google/gemma-4-26b-a4b-it`.
 - GET /health requires actual D1 schema migrated, not just bound credentials.
-- Last independently confirmed CI: run 43418093513 at SHA `12417330fcc48fb179a9c08380abac4095eaab94` succeeded; newer CI after health changes must be verified.
+- Newest independently confirmed CI: GitHub Actions #121, SHA `4ee7c88f`, success; newer CI after handoff edits must be verified.
 
 ## Windows one-command release preparation (2026-11-13)
 - Added `scripts/bootstrap.ps1` (review source before running) and the single PowerShell launcher in `README.md`.
@@ -43,6 +43,14 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - **Runtime not launched:** Neither Windows RDC machine online in this session. No Cloudflare app authorization, D1 UUID, configured Worker secrets, public Aumyra Worker URL or live Telegram webhook verified. The existing PowerShell one-command install in README is still the shortest owner-only release route.
 - **No other apps** changed. Continue from PR #20 only. When owner completes first authenticated Cloudflare deployment, verify `/health`, `/start` Chat/Menu, /expense→/summary→/undo, /note→/notes, AI with chosen provider, `/forget`, owner-only denial.
 
+## 2026-11-14 AUMYRA 2 continuation: guided input and deployment reliability
+- **One-tap composer:** On Telegram, tap Expense or Income; next message is e.g. `12.50 USDT food coffee` (no slash). `/note` opens a one-message note input. Bad entries keep the prompt open; `/cancel` safely exits. Mode expires after 15 minutes and switching to Menu/Chat cancels it. `0004_compose_modes.sql` persists only pending mode metadata, no extra personal ledger values.
+- **Telegram verification:** `scripts/setup-webhook.mjs` exports a mockable `configureWebhook`. Confirms token username exactly @AumyraBot before changing webhook. After setup it verifies real `getWebhookInfo`, `getMyCommands` and `getChatMenuButton`. Tests reject incorrect BotFather token, unsafe URL and malformed webhook secret without mutating Telegram; pending message queue preserved.
+- **Cloudflare bootstrap hardening:** First-run PowerShell installer uses a valid all-zero temporary D1 UUID during account/database discovery to avoid malformed Wrangler config, then replaces with the actual dedicated Aumyra DB ID before applying migrations. No changes to ROAMDOTS or OMLAYER Pages.
+- **CI:** #121 at `4ee7c88f` green, including Worker tests, Telegram setup API mocks, all four SQL migrations, Windows bootstrap parser and Wrangler dry-run. Updated README/TASKS after; newest branch CI should be queried for final status.
+- **Production gate unchanged:** Cannot claim bot is live without authenticated Cloudflare control, verified `/health` 200, correct BotFather webhook, owner /start and an end-to-end finance+notes+AI test. Both authorized Windows machines were offline at last inspection. No secrets or historical ledger data on this public PR.
+- **Only required owner action:** Run the existing one-line Windows PowerShell bootstrap from `apps/aumyra/README.md` on a trusted laptop with Node LTS and Cloudflare login, or reconnect an authorized RDC laptop so this chat can assist. Supply token in masked local prompt only. Let script discover/create D1; no earlier manual D1 action required.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
@@ -52,7 +60,7 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
 ## Live release acceptance
 1. Confirm actual Cloudflare worker + dedicated D1 exist, no conflict with other products.
-2. Apply 0001 + 0002 migrations and configure Worker secrets securely.
+2. Apply all four additive migrations (0001–0004) and configure Worker secrets securely.
 3. Deploy, GET /health = 200 with `ready:true`, verify HTTPS, correct path and no redirection errors.
 4. Set and inspect Telegram webhook using the verified existing @AumyraBot token, keep pending messages.
 5. From owner's Telegram: /start menu, /expense test -> /summary -> /undo, /note -> /notes; unauthorized account must get no private response.
