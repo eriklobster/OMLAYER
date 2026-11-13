@@ -1,0 +1,37 @@
+name: OMLAYER Staging Browser QA
+on:
+  pull_request:
+    paths:
+      - "**/*.html"
+      - "site-theme.css"
+      - "site-theme.js"
+      - "tests/site-theme-check.cjs"
+      - ".github/workflows/staging-browser-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chrome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright Chromium (test-only)
+        run: |
+          npm install --no-save playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Test dark/light behavior and layout
+        run: node tests/site-theme-check.cjs
+        env:
+          OMLAYER_SCREENSHOTS: ${{ runner.temp }}/omlayer-theme-qa
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omlayer-theme-screenshots
+          path: ${{ runner.temp }}/omlayer-theme-qa
+          if-no-files-found: warn
+          retention-days: 14
