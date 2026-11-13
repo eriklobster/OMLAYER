@@ -18,13 +18,19 @@
 ## Website staging and discoverability — 2026-11-13
 - [x] Separate staging design PR #8; production unchanged pending owner approval.
 - [x] Stage shared accessible theme toggle across four pages with blue/green/cyan dark style and monochrome light logo.
-- [x] Stage browser QA for mobile sizes and theme persistence; review actual GitHub Actions results before merge.
+- [x] Staged Chromium QA passing at 320/390/768/1366 on four pages; real iPhone Safari still pending.
 - [ ] P0 finish PR #3 no-JS visibility, Chillum keyboard and reduced-motion QA before release.
 - [ ] P0 send/receive real email test for hello@omlayer.com and confirm Telegram/WhatsApp destinations.
-- [ ] P1 Google/DuckDuckGo favicon: add stable crawlable 96px PNG/ICO, verify request in preview then request recrawl. The SVG-only head is insufficient for Google's current supported favicon formats.
-- [ ] P1 update sitemap for ROAMDOTS case and verify crawler access, OAI-SearchBot at edge.
+- [x] P1 Staged 96px PNG search favicon on all four pages; real crawler recrawl and public request verification remain pending.
+- [x] P1 Staged ROAMDOTS portfolio case sitemap entry. Edge crawler access remains unverified.
 - [ ] P1 recover actual approved ROAMDOTS bot avatar artwork; no invented replacement.
 - [x] Stage weekly source backup action and restore notes in independent PR/branch.
 - [ ] Verify first archive and restore checksum; schedule activates only after approval/merge.
 - [ ] Arrange an independent offsite copy if full disaster recovery is required.
 - [ ] Enable recurring staging agent only after automation capacity is freed (current five-active-task quota reached).
+
+## Current review evidence — November 13
+- Theme, CTA, favicon, sitemap: draft PR #8.
+- Browser evidence: https://github.com/eriklobster/OMLAYER/actions/runs/43382822706 (Chromium passed, screenshots available).
+- Backlog handoff: https://github.com/eriklobster/OMLAYER/issues/21.
+- Site production unchanged; owner must approve merges.
