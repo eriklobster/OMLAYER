@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080a0d">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
   <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 
   <title>Ocean Kids Club — OMLAYER case study</title>
@@ -31,7 +32,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <style>
+  <script>try{if(localStorage.getItem("omlayer-theme")==="light")document.documentElement.dataset.theme="light"}catch(_){}</script>
+<style>
     :root {
       --ink: #080a0d;
       --ink-2: #0c1014;
@@ -182,6 +184,7 @@
       .footer-inner span:first-child { display:none; }
     }
   </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -190,7 +193,7 @@
     <nav class="shell nav" aria-label="Case study navigation">
       <a class="wordmark" href="/#top" aria-label="OMLAYER home"><img src="../../brand-mark.svg" alt="" width="38" height="38"><span>LAYER</span></a>
       <a class="back-link" href="/#work">Back to selected work</a>
-      <a class="nav-cta" href="#contact">Get in touch</a>
+      <div class="theme-actions"><a class="nav-cta" href="#contact">Get in touch</a><button class="theme-toggle" type="button" data-theme-toggle hidden aria-label="Use light theme" aria-pressed="false"><span class="theme-icon" aria-hidden="true"></span></button></div>
     </nav>
   </header>
 
@@ -328,5 +331,6 @@
       }
     })();
   </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>
