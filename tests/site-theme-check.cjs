@@ -48,6 +48,10 @@ const server = createServer((req,res) => {
           const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth));
           if(overflow>2)failures.push({route,width,error:"Horizontal overflow "+overflow+"px"});
           const label=route==="/"?"home":route.split("/")[2];
+          // For complete-page review, first reveal all off-screen content.
+          // Browser assertions above still test the real untouched application.
+          await page.evaluate(() => document.querySelectorAll(".reveal,.stagger").forEach(e => e.classList.add("is-visible","on")));
+          await page.waitForTimeout(950);
           await page.screenshot({path:resolve(out,label+"-"+width+"-light.png"),fullPage:true});
           findings.push({route,width,mode:"light",overflow});
         } catch(e) { failures.push({route,width,error:e.message}); }
