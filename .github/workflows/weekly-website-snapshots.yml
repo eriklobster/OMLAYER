@@ -1,0 +1,42 @@
+name: Weekly website source snapshots
+on:
+  schedule:
+    - cron: '17 3 * * 1'  # Monday UTC; source is snapshotted, not deployed
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: website-weekly-snapshots
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Save pinned weekly GitHub Releases for production and staging
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          WEEK="$(date -u +%G-W%V)"
+          for PAIR in 'production:main' 'staging:staging'; do
+            TRACK="${PAIR%%:*}"
+            BRANCH="${PAIR#*:}"
+            SHA="$(gh api "repos/${GH_REPO}/git/ref/heads/${BRANCH}" --jq '.object.sha')"
+            TAG="website/${TRACK}/${WEEK}"
+            if gh api "repos/${GH_REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+              echo "Existing restore tag retained: ${TAG}"
+            else
+              gh api --method POST "repos/${GH_REPO}/git/refs" -f "ref=refs/tags/${TAG}" -f "sha=${SHA}" >/dev/null
+              echo "New restore tag: ${TAG} -> ${SHA}"
+            fi
+            if gh release view "${TAG}" --repo "${GH_REPO}" >/dev/null 2>&1; then
+              echo "Existing source release retained: ${TAG}"
+            else
+              printf 'OMLAYER %s website source snapshot for ISO week %s.\nBranch: %s\nPinned commit: %s\nIncludes committed source and site assets (not Cloudflare settings, DNS, data, or secrets).\nUse the auto-generated Source code ZIP/tar.gz to restore.\n' "${TRACK}" "${WEEK}" "${BRANCH}" "${SHA}" > "${RUNNER_TEMP}/release-notes.txt"
+              gh release create "${TAG}" --repo "${GH_REPO}" --verify-tag --title "OMLAYER ${TRACK} ${WEEK}" --notes-file "${RUNNER_TEMP}/release-notes.txt"
+            fi
+          done
+          echo "Weekly website source snapshots completed for ${WEEK}"
