@@ -6,8 +6,8 @@ Previously named HERMAYA (internal) and OMYRA. Aumyra is the public owner name.
 - Owner-only MVP, private Telegram chat; bot never discloses personal data to other IDs.
 - Cloudflare Worker with dedicated D1 named aumyra, independently deployed; no changes to ROAMDOTS, Ocean Cafe, or OMLAYER production website.
 - Finance transactions accept USD, USDT and THB separately; no invented FX conversion or balances.
-- Finance bank plan: Living 50%, donations 10%, immediate purchases 10%; scooter 10% target ฿8,000, laptop 10% target ฿10,000, tower 10% target ฿5,000. These are targets, not evidence of actual balances.
-- Preserve previously tested 4,715-entry HERMAYA import archive; it is NOT present in this new GitHub repo and must not be silently replaced, reconstructed, or claimed live.
+- Savings targets are private owner configuration stored in the BANK_PLAN_JSON Worker secret; no values in public code.
+- Preserve previously tested prior private finance archive (contents unavailable from connected GitHub)
 - No bot token, auth token, personal finance file or secret committed to source control.
 
 ## Release status
