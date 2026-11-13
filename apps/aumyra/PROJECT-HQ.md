@@ -64,6 +64,12 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - GET /health validates the new lease column before declaring ready. Node concurrency and network-failure tests and SQLite migration smoke added. CI #163 green at `3d16391e` before documentation commits.
 - Only owner-authorized Cloudflare deployment and real Telegram /start remain outstanding. No live bot activity claimed.
 
+## 2026-11-14 release gate reduction
+- Added authenticated **synthetic** /start probe to `postdeploy-smoke.mjs`: once getMe, webhook, commands, health and ability to message owner succeed, send safe negative-ID /start to dedicated Worker with the locally supplied secret. Require reply body `delivered`, indicating Worker actually invoked Telegram sendMessage successfully. No finance/notes touched. iPhone real inbound /start remains unverified until owner test.
+- Added negative tests for failed outbound/synthetic probe and invalid owner/secret; **CI #175 and #176 passed** at `46eeb44f` before latest CI configuration change.
+- Aumyra CI optimized to one pull_request run per code change, cancel superseded runs. No automatic production deploy, no changes to unrelated OMLAYER website.
+- Still blocked on Cloudflare account authorization, dedicated D1/Worker/secrets and owner Telegram first contact. Cannot claim live until /health 200, real /start and finance/notes flow.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
