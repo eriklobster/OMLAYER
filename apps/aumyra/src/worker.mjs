@@ -248,18 +248,40 @@ export async function handleRequest(request,env,transport = fetch) {
       .bind(update.update_id,claimTime).run();
     return new Response("Retry later",{status:503});
   }
+  // A cached answer may be retried concurrently after a failed request. Claim a
+  // separate delivery lease so two Workers never send it at the same instant.
+  // A lost network acknowledgement still prevents exactly-once guarantees.
+  const deliveryLease=new Date().toISOString();
+  let claimed=false;
+  try {
+    const expired=new Date(Date.now()-60000).toISOString();
+    const acquired=await env.DB.prepare("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)")
+      .bind(deliveryLease,update.update_id,expired).run();
+    claimed=acquired?.meta?.changes===1;
+  } catch { return new Response("Retry later",{status:503}); }
+  if (!claimed) return new Response("Delivery in progress",{status:503});
+
+  let definitelyRejected=false;
   try {
     const response = await transport("https://api.telegram.org/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
       method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})})
+      body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup}:{})})
     });
-    if (!response.ok) throw new Error("Telegram status " + response.status);
+    if (!response.ok) { definitelyRejected=true; throw new Error("Telegram status " + response.status); }
     const result = await response.json();
-    if (!result.ok) throw new Error("Telegram send failed");
-    await env.DB.prepare("UPDATE aumyra_processed_updates SET delivered_at=? WHERE update_id=?").bind(new Date().toISOString(),update.update_id).run();
+    if (!result.ok) { definitelyRejected=true; throw new Error("Telegram send failed"); }
+    await env.DB.prepare("UPDATE aumyra_processed_updates SET delivered_at=?,delivery_claimed_at=NULL WHERE update_id=? AND delivery_claimed_at=?")
+      .bind(new Date().toISOString(),update.update_id,deliveryLease).run();
     return new Response("ok");
   } catch {
-    // Keep the cached answer: retry delivery without repeating financial writes.
+    if (definitelyRejected) {
+      // A definite Telegram rejection can be retried immediately; an uncertain
+      // network outcome holds the lease for 60 seconds to avoid rapid duplicates.
+      try {
+        await env.DB.prepare("UPDATE aumyra_processed_updates SET delivery_claimed_at=NULL WHERE update_id=? AND delivery_claimed_at=? AND delivered_at IS NULL")
+          .bind(update.update_id,deliveryLease).run();
+      } catch { /* Leave the lease to expire; no ledger mutation. */ }
+    }
     return new Response("Retry later",{status:503});
   }
 }
