@@ -21,6 +21,8 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Eliminate concurrent webhook read/insert race with atomic D1 update claim, conditional 60-second stale lease recovery, and retry tests; extend real SQLite CI smoke for lease, composer ordering and soft-void.
 - [x] Require all seven D1 tables for health readiness and test missing-table refusal; show explicit text-only media fallback for unsupported voice/photo.
 - [x] Add conditional reply-delivery lease (0005) and tests for simultaneous cached-answer retries, explicit Telegram failures and ambiguous network outcomes. Exact-once delivery across unknown network failures is not guaranteed.
+- [x] On authenticated deployment, exercise synthetic owner-only `/start` against the actual Worker with local webhook secret, assert Telegram-accepted reply and real keyboard; test failure and non-owner chat boundaries. This is not a substitute for owner iPhone `/start`.
+- [x] Optimize Aumyra CI to one pull_request run per commit, cancel obsolete in-flight checks; manual workflow_dispatch retained; no auto deploy.
 - [ ] **LIVE RELEASE:** Verify actual owner /start reply + D1 persistence + user-facing AI response after bot provisioning. Passing CI alone is not a live bot.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0005 before remote migration.
