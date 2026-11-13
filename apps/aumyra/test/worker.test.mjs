@@ -148,3 +148,10 @@ test("opt-in Cloudflare Workers AI answers without an OpenAI key", async()=>{
   assert.equal(await aiAnswer("Hello",e),"Hello from Cloudflare.");
   assert.match((await respondToText("/status",e)).text,/AI chat: configured/);
 });
+
+test("savings targets require a private Worker setting",async()=>{
+  const e=env();
+  assert.match((await respondToText("/banks",e)).text,/not configured yet/);
+  e.BANK_PLAN_JSON=JSON.stringify({Reserve:"12.00 USDT target"});
+  assert.match((await respondToText("/banks",e)).text,/Reserve: 12.00 USDT target/);
+});
