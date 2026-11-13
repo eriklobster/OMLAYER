@@ -26,3 +26,10 @@
 - Financial features remain OFF pending safety/release acceptance.
 - Physical BLE sign connector remains prototype/test-gated, not a verified production installation.
 - Portfolio wording must be updated when actual release evidence changes.
+
+## Staging and recovery (13 November 2026)
+- Production source stays on `main`; `staging` is based on draft homepage PR #8 for browser/iPhone review, not an approved production release.
+- `test.omlayer.com` must be backed by a **separate** Cloudflare Pages project; this has not yet been verified. The optional deployment job is gated on the `OMLAYER_STAGING_PAGES_PROJECT` repository variable and existing encrypted Cloudflare credentials.
+- Weekly production and staging GitHub source Releases are defined in `.github/workflows/weekly-website-snapshots.yml`, after merging this infrastructure change into default `main` and observing a successful run.
+- Current-week source restore branches: `archive/website-production-2026-W46`, `archive/website-staging-2026-W46`.
+- Full staging, release and restoration contract: `docs/STAGING-AND-BACKUPS.md`. Production HTML and DNS must remain unchanged in this infrastructure PR.
