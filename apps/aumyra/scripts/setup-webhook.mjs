@@ -27,6 +27,7 @@ await call("setMyCommands",{commands:[
   {command:"menu",description:"Show Chat and finance buttons"},
   {command:"chat",description:"Open assistant chat"},
   {command:"ask",description:"Ask the AI assistant"},
+  {command:"forget",description:"Clear AI chat memory"},
   {command:"expense",description:"Record an expense"},
   {command:"income",description:"Record income"},
   {command:"summary",description:"Current month finances"},
