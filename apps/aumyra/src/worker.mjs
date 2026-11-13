@@ -3,7 +3,7 @@
 const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
 const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -186,7 +186,10 @@ export async function handleRequest(request,env,transport = fetch) {
           .bind("aumyra_ai_turns").first();
         const resets = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
           .bind("aumyra_chat_resets").first();
-        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns" && resets?.name === "aumyra_chat_resets";
+        const composer = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+          .bind("aumyra_compose_modes").first();
+        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns"
+          && resets?.name === "aumyra_chat_resets" && composer?.name === "aumyra_compose_modes";
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
