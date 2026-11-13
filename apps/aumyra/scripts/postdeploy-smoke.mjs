@@ -2,11 +2,13 @@
 // installed commands, and send an owner-only welcome message when possible.
 // Does not mutate D1 ledger, other bots or Cloudflare configuration.
 import {pathToFileURL} from "node:url";
+import {randomInt} from "node:crypto";
 
-export async function smoke({workerUrl, token, ownerId, transport=fetch}) {
+export async function smoke({workerUrl, token, ownerId, webhookSecret=null, transport=fetch}) {
   if (!token || !ownerId || !workerUrl) throw new Error("Worker URL, bot token and owner ID are required.");
   if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(token)) throw new Error("Invalid BotFather token.");
-  if (!/^[1-9][0-9]{3,19}$/.test(String(ownerId))) throw new Error("Invalid numeric Telegram owner ID.");
+  if (!/^[1-9][0-9]{3,19}$/.test(String(ownerId)) || !Number.isSafeInteger(Number(ownerId))) throw new Error("Invalid numeric Telegram owner ID.");
+  if (webhookSecret!==null && !/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) throw new Error("Invalid webhook secret.");
 
   let base;
   try { base = new URL(workerUrl); } catch { throw new Error("Invalid Worker URL."); }
@@ -51,10 +53,34 @@ export async function smoke({workerUrl, token, ownerId, transport=fetch}) {
   } catch {
     ownerNotification="not_delivered";
   }
+  let webhookProbe="not_run";
+  if (ownerNotification==="delivered" && webhookSecret) {
+    // Safe synthetic /start is sent only after bot identity, webhook URL, and
+    // ability to message the owner are independently verified.
+    // Negative IDs are outside Telegram's normal update-id space and touch
+    // only the processed-update journal, never the finance ledger.
+    const syntheticId=-(Date.now()*1000+randomInt(0,1000));
+    const probe=await transport(new URL("/telegram/webhook",base),{
+      method:"POST",
+      headers:{"content-type":"application/json","X-Telegram-Bot-Api-Secret-Token":webhookSecret},
+      body:JSON.stringify({
+        update_id:syntheticId,
+        message:{
+          message_id:1,chat:{id:Number(ownerId),type:"private"},
+          from:{id:Number(ownerId),is_bot:false},text:"/start"
+        }
+      })
+    });
+    const result=await probe.text();
+    if (!probe.ok || result!=="delivered") {
+      throw new Error("Worker webhook /start did not complete Telegram sendMessage.");
+    }
+    webhookProbe="accepted";
+  }
   return {
     service:"aumyra",ready:true,webhookMatches:true,commandMenuVerified:true,
     pendingUpdates:Number.isSafeInteger(hook?.pending_update_count)?hook.pending_update_count:null,
-    ownerNotification
+    ownerNotification,webhookProbe
   };
 }
 
@@ -63,7 +89,8 @@ if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
     const result=await smoke({
       workerUrl:process.argv[2],
       token:process.env.TELEGRAM_BOT_TOKEN,
-      ownerId:process.env.TELEGRAM_OWNER_ID
+      ownerId:process.env.TELEGRAM_OWNER_ID,
+      webhookSecret:process.env.TELEGRAM_WEBHOOK_SECRET || null
     });
     console.log("Aumyra smoke:",JSON.stringify(result));
     if (result.ownerNotification!=="delivered") {
