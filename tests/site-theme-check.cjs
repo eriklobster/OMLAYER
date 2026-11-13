@@ -61,6 +61,8 @@ const server = createServer((req,res) => {
       assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),"dark");
       const darkBackground=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);
       assert.equal(darkBackground,"rgb(8, 10, 13)");
+      await page.evaluate(() => document.querySelectorAll(".reveal,.stagger").forEach(e => e.classList.add("is-visible","on")));
+      await page.waitForTimeout(950);
       await page.screenshot({path:resolve(out,"home-"+width+"-dark.png"),fullPage:true});
       findings.push({route:"/",width,mode:"dark",overflow:await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth))});
       await context.close();
