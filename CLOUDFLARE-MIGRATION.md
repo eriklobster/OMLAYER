@@ -21,3 +21,15 @@ OMLAYER owns studio domain architecture and portfolio links. Each product reposi
 4. Document observed URLs, SHA, Cloudflare versions and rollback steps.
 
 Never copy production secrets into source control or switch production payments on during this migration.
+
+## ROAMDOTS canonical domain — owner decision (2026-11-13)
+- **Primary:** `https://roamdots.omlayer.com` (website, Telegram Web App, login callbacks, QR and board sharing links).
+- **Short alias:** `https://rd.omlayer.com` redirects permanently to the primary, preserving request path and query parameters. Verify redirects before publishing QR codes.
+- **Technical fallback:** `https://roamdots.omlayer.workers.dev` remains active until the custom domain and integrations are proven.
+- **Implementation owner:** OMLAYER/Cloudflare owns DNS and Worker custom domain binding; ROAMDOTS owns canonical URLs, bot menu, OAuth callbacks, CORS, QR and share links.
+- **Cloudflare activation gate:** confirm `roamdots.omlayer.com` is attached to the existing `roamdots` Worker (no duplicate Worker or database), valid TLS, no redirect loops. Configure `rd.omlayer.com` via a safe redirect rule or dedicated route; do not blindly redirect webhook POSTs.
+- **Telegram gate:** inspect `getWebhookInfo` first. Set only the correct existing webhook path on the canonical host, preserving the existing webhook secret token. Verify `/start`, menu callbacks and actual webhook delivery.
+- **Auth gate:** update authorized Google OAuth redirect origins/URIs and magic-link callbacks only after domain is live. Verify sign-in, Publish and reload persistence on iPhone.
+- **Rollback:** retain workers.dev URL and previous webhook URL/config until end-to-end tests pass. No secret rotation, no payment flag changes.
+
+**State:** Domain choice recorded in GitHub; DNS binding, redirect and Telegram integration are NOT yet deployed or verified.
