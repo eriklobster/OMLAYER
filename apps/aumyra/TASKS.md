@@ -17,6 +17,10 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Add one-tap guided Expense/Income and /note input modes, 15-minute expiry, safe /cancel, replay ordering and migration `0004_compose_modes.sql`; validate with CI.
 - [x] Refactor Telegram webhook setup to verify getMe identity before changing bot, assert getWebhookInfo, getMyCommands and getChatMenuButton after configuration; add tests rejecting wrong tokens and malformed URL.
 - [x] Patch temporary D1 UUID in first-run PowerShell installer so Wrangler can discover/create a new database without malformed config.
+- [x] Add importable non-destructive post-deploy smoke (`scripts/postdeploy-smoke.mjs`) validating Worker /health, exact @AumyraBot webhook/menu/commands and a best-effort owner welcome without altering finance.
+- [x] Eliminate concurrent webhook read/insert race with atomic D1 update claim, conditional 60-second stale lease recovery, and retry tests; extend real SQLite CI smoke for lease, composer ordering and soft-void.
+- [x] Require all seven D1 tables for health readiness and test missing-table refusal; show explicit text-only media fallback for unsupported voice/photo.
+- [ ] **LIVE RELEASE:** Verify actual owner /start reply + D1 persistence + user-facing AI response after bot provisioning. Passing CI alone is not a live bot.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0004 before remote migration.
 - [ ] Configure existing @AumyraBot Telegram BotFather token, webhook secret, numeric owner ID in Worker **private secrets** (not chat or repo).
