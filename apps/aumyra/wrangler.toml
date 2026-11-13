@@ -1,0 +1,16 @@
+name = "aumyra"
+main = "src/worker.mjs"
+compatibility_date = "2026-11-13"
+workers_dev = true
+
+# Create a dedicated D1 database named aumyra, then replace this ID.
+# Never reuse or overwrite the ROAMDOTS database.
+[[d1_databases]]
+binding = "DB"
+database_name = "aumyra"
+database_id = "REPLACE_WITH_AUMYRA_D1_ID"
+migrations_dir = "migrations"
+
+# Secrets set out of band (not in this file):
+# TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, TELEGRAM_OWNER_ID
+# Optional: OPENAI_API_KEY, OPENAI_MODEL
