@@ -40,7 +40,14 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
   if (command === "/help") return reply(HELP);
   if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.AI || env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
-  if (command === "/banks") return reply("Savings plan (targets, not balances):\nLiving 50% • Donations 10% • Immediate purchases 10%\nScooter 10% (target ฿8,000)\nLaptop 10% (target ฿10,000)\nTower 10% (target ฿5,000)\nUse /summary for recorded transactions; savings are not assumed to exist.");
+  if (command === "/banks") {
+    if (!env.BANK_PLAN_JSON) return reply("Savings targets are not configured yet. Store owner targets privately using the BANK_PLAN_JSON Worker secret. /summary shows only recorded transactions.");
+    let plan;
+    try { plan=JSON.parse(env.BANK_PLAN_JSON); } catch { return reply("Savings target configuration is invalid; use a JSON object."); }
+    if (!plan || typeof plan !== "object" || Array.isArray(plan)) return reply("Savings targets must be a JSON object.");
+    const rows=Object.entries(plan).slice(0,12).map(([name,goal])=>name.slice(0,40)+": "+String(goal).slice(0,120));
+    return reply("Savings targets (not actual balances):\n"+(rows.length?rows.join("\n"):"No targets entered.")+"\nOnly the owner can read these private settings.");
+  }
   if (command === "/income" || command === "/expense") {
     const match = MONEY.exec(text);
     if (!match) return reply("Format: /expense 6.37 USDT food lunch\nOr: /income 20 USD teaching lesson");
