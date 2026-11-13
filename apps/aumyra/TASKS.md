@@ -6,7 +6,7 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Create persistent GitHub HQ issue #22 and new-chat recovery file.
 - [x] Implement Worker webhook with owner and webhook-secret verification.
 - [x] Add working /start, /menu, /help, /status, /income, /expense, /summary, /history, /undo, /note, /notes, /banks, AI fallback.
-- [x] Add four forward-only D1 migrations: finance/notes, /undo journal, AI conversation reset, and guided-input composer.
+- [x] Add five forward-only D1 migrations: finance/notes, /undo journal, AI conversation reset, guided-input composer, and Telegram delivery lease.
 - [x] Require migrated D1 schema in HTTP /health readiness.
 - [x] Implement Telegram getMe identity check before modifying webhook, then verify getWebhookInfo.
 - [x] Validate Node tests and SQL migrations in GitHub Actions. CI #121 success on SHA `4ee7c88f` with behavior tests, schema smoke and Wrangler dry-run. Recheck latest after handoff changes.
@@ -20,9 +20,10 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Add importable non-destructive post-deploy smoke (`scripts/postdeploy-smoke.mjs`) validating Worker /health, exact @AumyraBot webhook/menu/commands and a best-effort owner welcome without altering finance.
 - [x] Eliminate concurrent webhook read/insert race with atomic D1 update claim, conditional 60-second stale lease recovery, and retry tests; extend real SQLite CI smoke for lease, composer ordering and soft-void.
 - [x] Require all seven D1 tables for health readiness and test missing-table refusal; show explicit text-only media fallback for unsupported voice/photo.
+- [x] Add conditional reply-delivery lease (0005) and tests for simultaneous cached-answer retries, explicit Telegram failures and ambiguous network outcomes. Exact-once delivery across unknown network failures is not guaranteed.
 - [ ] **LIVE RELEASE:** Verify actual owner /start reply + D1 persistence + user-facing AI response after bot provisioning. Passing CI alone is not a live bot.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
-- [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0004 before remote migration.
+- [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0005 before remote migration.
 - [ ] Configure existing @AumyraBot Telegram BotFather token, webhook secret, numeric owner ID in Worker **private secrets** (not chat or repo).
 - [ ] Deploy dedicated Worker, verify HTTPS GET /health = 200 `ready:true`, and save verified Worker URL in this HQ (public host is safe, tokens are not).
 - [ ] Run verified Telegram setup script with existing bot token, check Telegram getWebhookInfo URL, delivery errors and pending updates.
