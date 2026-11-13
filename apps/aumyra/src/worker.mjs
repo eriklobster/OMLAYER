@@ -27,7 +27,7 @@ export async function aiAnswer(text, env, transport = fetch) {
   const response = await transport("https://api.openai.com/v1/chat/completions", {
     method:"POST",
     headers:{"content-type":"application/json","authorization":"Bearer " + env.OPENAI_API_KEY},
-    body:JSON.stringify({model:env.OPENAI_MODEL || "gpt-6-luna",max_completion_tokens:600,reasoning_effort:"none",messages})
+    body:JSON.stringify({model:env.OPENAI_MODEL || "gpt-4o-mini",max_completion_tokens:600,messages})
   });
   if (!response.ok) throw new Error("AI provider error: " + response.status);
   const data = await response.json();
@@ -70,10 +70,22 @@ export async function respondToText(message, env, transport = fetch, updateId = 
     return reply(lines.length ? "Recent Aumyra entries:\n" + lines.join("\n") : "No new entries yet.");
   }
   if (command === "/undo") {
-    const last = await env.DB.prepare("SELECT id FROM aumyra_entries WHERE voided_at IS NULL ORDER BY id DESC LIMIT 1").first();
-    if (!last) return reply("Nothing to undo.");
-    await env.DB.prepare("UPDATE aumyra_entries SET voided_at=? WHERE id=? AND voided_at IS NULL").bind(new Date().toISOString(),last.id).run();
-    return reply("Last entry voided. Audit record preserved (ID " + last.id + ").");
+    let targetId;
+    if (updateId != null) {
+      // Journal the target before the mutation; Telegram may redeliver after Worker termination.
+      // Replaying the same update must not void a different entry.
+      const candidate = await env.DB.prepare("SELECT id FROM aumyra_entries WHERE voided_at IS NULL ORDER BY id DESC LIMIT 1").first();
+      await env.DB.prepare("INSERT OR IGNORE INTO aumyra_undo_ops(update_id,entry_id,created_at) VALUES(?,?,?)")
+        .bind(updateId,candidate?.id ?? 0,new Date().toISOString()).run();
+      const journal = await env.DB.prepare("SELECT entry_id FROM aumyra_undo_ops WHERE update_id=?").bind(updateId).first();
+      targetId = journal?.entry_id ?? 0;
+    } else {
+      const last = await env.DB.prepare("SELECT id FROM aumyra_entries WHERE voided_at IS NULL ORDER BY id DESC LIMIT 1").first();
+      targetId = last?.id ?? 0;
+    }
+    if (!targetId) return reply("Nothing to undo.");
+    await env.DB.prepare("UPDATE aumyra_entries SET voided_at=? WHERE id=? AND voided_at IS NULL").bind(new Date().toISOString(),targetId).run();
+    return reply("Last entry voided. Audit record preserved (ID " + targetId + ").");
   }
   if (command === "/note") {
     const note = text.replace(/^\/note(?:@\w+)?\s*/i,"").trim();
@@ -108,7 +120,7 @@ export async function handleRequest(request,env,transport = fetch) {
   let update;
   try { update = JSON.parse(body); } catch { return new Response("Bad JSON",{status:400}); }
   const msg = update?.message;
-  if (!msg || msg.chat?.type !== "private" || String(msg.from?.id) !== String(env.TELEGRAM_OWNER_ID) || !Number.isSafeInteger(update.update_id)) return new Response("ok");
+  if (!msg || msg.chat?.type !== "private" || String(msg.chat?.id) !== String(env.TELEGRAM_OWNER_ID) || String(msg.from?.id) !== String(env.TELEGRAM_OWNER_ID) || !Number.isSafeInteger(update.update_id)) return new Response("ok");
   let saved = await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).first();
   if (saved?.delivered_at) return new Response("ok");
   if (saved && !saved.reply_text && Date.now()-Date.parse(saved.created_at)<10000) return new Response("In progress",{status:503});
