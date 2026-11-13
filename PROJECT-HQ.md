@@ -26,3 +26,10 @@
 - Financial features remain OFF pending safety/release acceptance.
 - Physical BLE sign connector remains prototype/test-gated, not a verified production installation.
 - Portfolio wording must be updated when actual release evidence changes.
+
+## Site backups and release boundary — 2026-11-13
+- Owner decision: website changes remain staging/PR-only until approval in the OMLAYER conversation. No automatic merge to main.
+- Owner decision: maintain weekly source backups of main and staging independent of Workers deployment. Proposed workflow and recovery notes are in `docs/WEBSITE-BACKUP.md`.
+- The weekly schedule is **not active until the workflow is approved and merged to main**; staging may execute manually only with review.
+- UX staging branch: `design/omlayer-cta-contact-20261113`; preview through Cloudflare Pages. Light/dark theme switch applies to homepage and three case-study pages on staging.
+- Domain migrations for ROAMDOTS, other Workers and shared APIs are separate; never alter them as part of OMLAYER website backup.
