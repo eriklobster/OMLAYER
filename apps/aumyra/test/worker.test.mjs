@@ -12,6 +12,7 @@ function fakeDB() {
       async first(){
         if(sql.startsWith("SELECT created_at,reply_text")) return updates.get(args[0]) ?? null;
         if(sql.startsWith("SELECT entry_id FROM aumyra_undo_ops")) return undoOps.has(args[0]) ? {entry_id:undoOps.get(args[0])} : null;
+        if(sql.startsWith("SELECT name FROM sqlite_master")) return {name:"aumyra_undo_ops"};
         if(sql.startsWith("SELECT id FROM aumyra_entries")) return [...entries].reverse().find(e=>!e.voided_at) ?? null;
         throw Error("Unsupported first: "+sql);
       },
