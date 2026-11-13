@@ -24,7 +24,8 @@ if(String(me.username||"").toLowerCase()!=="aumyrabot") throw new Error("Token b
 await call("setWebhook",{url:endpoint.toString(),secret_token:secret,allowed_updates:["message"],drop_pending_updates:false});
 await call("setMyCommands",{commands:[
   {command:"start",description:"Open Aumyra"},
-  {command:"menu",description:"Show action keyboard"},
+  {command:"menu",description:"Show Chat and finance buttons"},
+  {command:"chat",description:"Open assistant chat"},
   {command:"ask",description:"Ask the AI assistant"},
   {command:"expense",description:"Record an expense"},
   {command:"income",description:"Record income"},
