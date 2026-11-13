@@ -32,8 +32,9 @@ jobs:
           python3 - <<'PY'
           import sqlite3, pathlib
           db=sqlite3.connect(":memory:")
-          db.executescript(pathlib.Path("apps/aumyra/migrations/0001_init.sql").read_text())
-          for table in ("aumyra_entries","aumyra_notes","aumyra_processed_updates"):
+          for migration in sorted(pathlib.Path("apps/aumyra/migrations").glob("*.sql")):
+              db.executescript(migration.read_text())
+          for table in ("aumyra_entries","aumyra_notes","aumyra_processed_updates","aumyra_undo_ops"):
               assert db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone()
           db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
           db.execute("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
