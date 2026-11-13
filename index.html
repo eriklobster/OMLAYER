@@ -654,8 +654,10 @@
       .hero { min-height: auto; padding: 118px 0 52px; }
       .hero h1 { font-size: clamp(3.55rem, 18vw, 5.25rem); line-height: .91; }
       .hero-intro { margin-top: 27px; }
-      .hero-actions { display: grid; grid-template-columns: 1fr 1fr; }
-      .button { padding-inline: 14px; font-size: .65rem; }
+      .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .button { padding-inline: 18px; font-size: .7rem; }
+      .button.primary { width: min(100%, 280px); }
+      .button:not(.primary) { min-height: 44px; padding-left: 0; }
       .layer-stage { min-height: 340px; margin-top: 10px; }
       .spirit-shell { width: min(350px, 92vw); }
       .spirit-orb-a { left: 8%; top: 19%; }
