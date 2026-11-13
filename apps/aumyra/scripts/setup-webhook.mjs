@@ -1,28 +1,8 @@
-// Run after Cloudflare deploy. Do not log tokens or secrets.
-const url=process.argv[2];
-const token=process.env.TELEGRAM_BOT_TOKEN;
-const secret=process.env.TELEGRAM_WEBHOOK_SECRET;
-if(!url || !token || !secret) {
-  console.error("Usage: TELEGRAM_BOT_TOKEN=... TELEGRAM_WEBHOOK_SECRET=... node scripts/setup-webhook.mjs https://YOUR-WORKER/telegram/webhook");
-  process.exit(1);
-}
-let endpoint;
-try { endpoint=new URL(url); } catch { console.error("Provide a valid HTTPS URL"); process.exit(1); }
-if(endpoint.protocol!=="https:" || endpoint.pathname!=="/telegram/webhook" || endpoint.search) {
-  console.error("Webhook URL must be HTTPS and end in /telegram/webhook (no query)");
-  process.exit(1);
-}
-const api="https://api.telegram.org/bot"+token+"/";
-async function call(path,data) {
-  const response=await fetch(api+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(data)});
-  const result=await response.json();
-  if(!response.ok || !result.ok) throw new Error(path+" failed: "+(result.description||response.status));
-  return result.result;
-}
-const me=await call("getMe",{});
-if(String(me.username||"").toLowerCase()!=="aumyrabot") throw new Error("Token belongs to a different bot; refusing to change its webhook");
-await call("setWebhook",{url:endpoint.toString(),secret_token:secret,allowed_updates:["message"],drop_pending_updates:false});
-await call("setMyCommands",{commands:[
+// AUMYRA Telegram setup: validates bot identity before updating webhooks.
+// Safe to import from tests: nothing runs on import.
+import {pathToFileURL} from "node:url";
+
+export const COMMANDS = [
   {command:"start",description:"Open Aumyra"},
   {command:"menu",description:"Show Chat and finance buttons"},
   {command:"chat",description:"Open assistant chat"},
@@ -39,8 +19,61 @@ await call("setMyCommands",{commands:[
   {command:"banks",description:"Savings plan targets"},
   {command:"status",description:"Assistant status"},
   {command:"help",description:"Commands and examples"}
-]});
-await call("setChatMenuButton",{menu_button:{type:"commands"}});
-const actual=await call("getWebhookInfo",{});
-if(actual.url!==endpoint.toString()) throw new Error("Webhook registration URL mismatch");
-console.log("Aumyra webhook and menu verified: "+endpoint.origin+endpoint.pathname);
+];
+
+export async function configureWebhook({webhookUrl,token,secret,transport=fetch}) {
+  if (!token || !secret || !webhookUrl) throw new Error("Missing bot token, webhook secret, or Worker URL.");
+  if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(token)) throw new Error("Invalid BotFather token format.");
+  if (!/^[A-Za-z0-9_-]{1,256}$/.test(secret)) throw new Error("Webhook secret must use only A-Z, a-z, 0-9, _ and -.");
+  let endpoint;
+  try { endpoint = new URL(webhookUrl); } catch { throw new Error("Invalid Worker webhook URL."); }
+  if (endpoint.protocol!=="https:" || endpoint.pathname!=="/telegram/webhook" || endpoint.search
+      || endpoint.hash || endpoint.username || endpoint.password) {
+    throw new Error("Webhook URL must be a clean HTTPS /telegram/webhook endpoint.");
+  }
+  const api="https://api.telegram.org/bot"+token+"/";
+  async function call(method,data={}) {
+    const response=await transport(api+method,{
+      method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error("Telegram "+method+" HTTP "+response.status);
+    const payload=await response.json();
+    if (!payload.ok) throw new Error("Telegram "+method+" API request rejected.");
+    return payload.result;
+  }
+  const me=await call("getMe");
+  if (String(me?.username||"").toLowerCase()!=="aumyrabot") {
+    throw new Error("Token belongs to another bot; refusing to modify its webhook.");
+  }
+  await call("setWebhook",{
+    url:endpoint.toString(),
+    secret_token:secret,
+    allowed_updates:["message"],
+    drop_pending_updates:false
+  });
+  await call("setMyCommands",{commands:COMMANDS});
+  await call("setChatMenuButton",{menu_button:{type:"commands"}});
+  const actual=await call("getWebhookInfo");
+  if (actual?.url!==endpoint.toString()) throw new Error("Telegram webhook registration did not match Worker URL.");
+  const commands=await call("getMyCommands");
+  const menu=await call("getChatMenuButton");
+  const received=new Set((commands||[]).map(item=>item.command));
+  if (!COMMANDS.every(item=>received.has(item.command))) throw new Error("Telegram command menu missing expected commands.");
+  if (menu?.type!=="commands") throw new Error("Telegram chat menu is not configured for commands.");
+  return {webhook: endpoint.origin+endpoint.pathname, commandCount:COMMANDS.length, bot:"@AumyraBot"};
+}
+
+if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
+  try {
+    const result=await configureWebhook({
+      webhookUrl:process.argv[2],
+      token:process.env.TELEGRAM_BOT_TOKEN,
+      secret:process.env.TELEGRAM_WEBHOOK_SECRET
+    });
+    console.log("Aumyra webhook and command menu verified: "+result.webhook+" ("+result.commandCount+" commands)");
+  } catch (error) {
+    console.error("Aumyra setup failed: "+error.message);
+    process.exitCode=1;
+  }
+}
