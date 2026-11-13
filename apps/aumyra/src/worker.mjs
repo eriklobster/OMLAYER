@@ -205,20 +205,47 @@ export async function handleRequest(request,env,transport = fetch) {
   if (!msg || msg.chat?.type !== "private" || String(msg.chat?.id) !== String(env.TELEGRAM_OWNER_ID) || String(msg.from?.id) !== String(env.TELEGRAM_OWNER_ID) || !Number.isSafeInteger(update.update_id)) return new Response("ok");
   let saved = await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).first();
   if (saved?.delivered_at) return new Response("ok");
-  if (saved && !saved.reply_text && Date.now()-Date.parse(saved.created_at)<10000) return new Response("In progress",{status:503});
-  if (!saved) await env.DB.prepare("INSERT OR IGNORE INTO aumyra_processed_updates(update_id,created_at) VALUES(?,?)").bind(update.update_id,new Date().toISOString()).run();
+  let ownsReply = false;
+  let claimTime = null;
+  if (!saved) {
+    claimTime = new Date().toISOString();
+    // A read-then-write alone is not a lock. Only the INSERT winner may infer AI
+    // or save an expense; concurrent webhook retries must wait for a cached reply.
+    const inserted=await env.DB.prepare("INSERT OR IGNORE INTO aumyra_processed_updates(update_id,created_at) VALUES(?,?)")
+      .bind(update.update_id,claimTime).run();
+    ownsReply = inserted?.meta?.changes === 1;
+    if (!ownsReply) saved=await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?")
+      .bind(update.update_id).first();
+  }
+  if (saved?.delivered_at) return new Response("ok");
+  if (saved && !saved.reply_text) {
+    // A crashed Worker may leave an unfinished reply. A conditional timestamp swap
+    // lets exactly one later retry resume processing after the lease expires.
+    const age=Date.now()-Date.parse(saved.created_at);
+    if (!Number.isFinite(age) || age<60000) return new Response("In progress",{status:503});
+    claimTime=new Date().toISOString();
+    const recovered=await env.DB.prepare("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL")
+      .bind(claimTime,update.update_id,saved.created_at).run();
+    if (recovered?.meta?.changes!==1) return new Response("In progress",{status:503});
+    ownsReply=true;
+  }
   let answer;
   try {
     if (saved?.reply_text) {
       answer = {text:saved.reply_text,reply_markup:saved.reply_markup_json ? JSON.parse(saved.reply_markup_json) : null};
-    } else {
+    } else if (ownsReply) {
       answer = await respondToText(msg.text || "/help",env,transport,update.update_id);
-      await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=? WHERE update_id=?")
-        .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,update.update_id).run();
+      const stored=await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=? WHERE update_id=? AND created_at=? AND reply_text IS NULL")
+        .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,update.update_id,claimTime).run();
+      if (stored?.meta?.changes!==1) return new Response("Reply lease expired",{status:503});
+    } else {
+      return new Response("In progress",{status:503});
     }
   } catch {
-    // A failed database operation or assistant call can be safely retried.
-    await env.DB.prepare("DELETE FROM aumyra_processed_updates WHERE update_id=? AND reply_text IS NULL").bind(update.update_id).run();
+    // Only the current claimant may remove an unfinished update. A stale retry
+    // must not erase another concurrent request or a later claimant's lease.
+    if (ownsReply && claimTime) await env.DB.prepare("DELETE FROM aumyra_processed_updates WHERE update_id=? AND reply_text IS NULL AND created_at=?")
+      .bind(update.update_id,claimTime).run();
     return new Response("Retry later",{status:503});
   }
   try {
