@@ -13,14 +13,21 @@ function normalizeCommand(text) { return (text.trim().split(/\s+/)[0] || "").spl
 function available(env) { return !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_WEBHOOK_SECRET && env.TELEGRAM_OWNER_ID && env.DB); }
 
 export async function aiAnswer(text, env, transport = fetch) {
-  if (!env.OPENAI_API_KEY) return "AI chat is not configured yet. Finance, notes and the Telegram menu are available. Add OPENAI_API_KEY as a Worker secret to enable questions.";
+  const messages = [
+    {role:"system",content:"You are Aumyra, a concise, practical personal AI assistant. Do not invent bank balances, transactions, dates, completed actions or tool access. This chat message does not include the user's private data. Ask before irreversible operations. You cannot execute actions from this chat. Reply in the user's language."},
+    {role:"user",content:text.slice(0,3000)}
+  ];
+  if (env.AI) {
+    const data = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
+      messages, chat_template_kwargs:{enable_thinking:false}, max_completion_tokens:600
+    });
+    return String(data?.response || data?.choices?.[0]?.message?.content || "No assistant response was returned.").trim();
+  }
+  if (!env.OPENAI_API_KEY) return "AI chat is not configured yet. Finance, notes and the Telegram menu are available. Enable an AI binding or add OPENAI_API_KEY as a Worker secret.";
   const response = await transport("https://api.openai.com/v1/chat/completions", {
     method:"POST",
     headers:{"content-type":"application/json","authorization":"Bearer " + env.OPENAI_API_KEY},
-    body:JSON.stringify({model:env.OPENAI_MODEL || "gpt-4o-mini",max_tokens:600,messages:[
-      {role:"system",content:"You are Aumyra, a concise, practical personal AI assistant. Do not invent bank balances, transactions, dates, completed actions or tool access. This chat message does not include the user's private data. Ask before irreversible operations. You cannot execute actions from this chat. Reply in the user's language."},
-      {role:"user",content:text.slice(0,3000)}
-    ]})
+    body:JSON.stringify({model:env.OPENAI_MODEL || "gpt-6-luna",max_completion_tokens:600,reasoning_effort:"none",messages})
   });
   if (!response.ok) throw new Error("AI provider error: " + response.status);
   const data = await response.json();
@@ -32,7 +39,7 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   const command = normalizeCommand(text);
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
   if (command === "/help") return reply(HELP);
-  if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
+  if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.AI || env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
   if (command === "/banks") return reply("Savings plan (targets, not balances):\nLiving 50% • Donations 10% • Immediate purchases 10%\nScooter 10% (target ฿8,000)\nLaptop 10% (target ฿10,000)\nTower 10% (target ฿5,000)\nUse /summary for recorded transactions; savings are not assumed to exist.");
   if (command === "/income" || command === "/expense") {
     const match = MONEY.exec(text);
