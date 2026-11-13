@@ -1,21 +1,48 @@
-# AUMYRA — project HQ
-Updated 2026-11-13. Private personal assistant for Telegram @AumyraBot.
-Previously named HERMAYA (internal) and OMYRA. Aumyra is the public owner name.
+# AUMYRA — PROJECT-HQ
+Status checked 2026-11-13. Owner-only Telegram AI and Finance assistant `@AumyraBot`.
+Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
-## Owner decisions
-- Owner-only MVP, private Telegram chat; bot never discloses personal data to other IDs.
-- Cloudflare Worker with dedicated D1 named aumyra, independently deployed; no changes to ROAMDOTS, Ocean Cafe, or OMLAYER production website.
-- Finance transactions accept USD, USDT and THB separately; no invented FX conversion or balances.
-- Savings targets are private owner configuration stored in the BANK_PLAN_JSON Worker secret; no values in public code.
-- Preserve the previously tested private finance archive; it is not accessible from connected GitHub and must not be reconstructed or overwritten.
-- No bot token, auth token, personal finance file or secret committed to source control.
+## Recovery entrypoints
+- Permanent release/owner handoff: https://github.com/eriklobster/OMLAYER/issues/22
+- Current draft implementation PR: https://github.com/eriklobster/OMLAYER/pull/20
+- Integration branch: `feat/aumyra-assistant-mvp`; **not** merged to `main`.
+- Read `RESTART-HERE.md`, `TASKS.md`, `README.md`, and latest PR CI before modifying code.
+- New-chat bootstrap: "Continue AUMYRA from GitHub issue #22 and PR #20. Follow apps/aumyra/RESTART-HERE.md and TASKS.md; recover commits and CI before code changes."
 
-## Release status
-- GitHub draft PR #20 on isolated feature branch: code prepared for Telegram/Workers; Node behavior + SQLite schema GitHub CI successful (run 43382552628).
-- Dedicated aumyra repository not accessible; temporarily isolated under apps/aumyra in OMLAYER. Do not deploy OMLAYER website from this branch.
-- Cloudflare D1 ID, Worker secrets, domain and Telegram webhook not yet verified.
-- AI chat is opt-in through an owner-configured Cloudflare AI binding or OPENAI_API_KEY; no AI inference is enabled by default.
-- Real @AumyraBot /start, /expense, /summary, /note, and AI replies remain release gates.
+## Owner decisions (must preserve)
+- Aumyra is a single-user **private** Telegram assistant. Only verified owner user/chat ID may access finance, notes or AI.
+- Deploy in a dedicated Cloudflare Worker + **dedicated** D1 `aumyra`; no ROAMDOTS, Ocean Cafe, Ocean Kids Club, OMLAYER website production mutations.
+- USD, USDT, THB are tracked separately. Do not invent exchange rates, bank balances, transactions, historical imports or user data.
+- Private savings targets are configured only with Worker secret `BANK_PLAN_JSON`, never embedded in public code/PR/issue.
+- Finance entries are append-only plus soft-void; `/undo` must journal target update ID before changing any entry.
+- Optional AI provider must be separately authorized and budgeted; without one, core finance and notes still work.
+- Never rotate a Telegram token, redirect another bot's webhook, or drop Telegram pending updates during setup.
+- Preserve original HERMAYA private import/archive if recovered. It is **not** in connected GitHub; do not treat historical counts as confirmed or migrate blindly.
 
-## Handoff
-The next release owner must verify existing Cloudflare resources before creating duplicates; configure dedicated D1 and secrets, run migration, deploy Worker, setWebhook with path /telegram/webhook, and test a real owner Telegram chat. Do not claim operational status solely from code or CI.
+## Latest implementation state
+- Source and tests isolated under `apps/aumyra/`; workflows under `.github/workflows/aumyra-*.yml`.
+- Worker: /health, /telegram/webhook, owner/secret validation, /start /menu /help /status /banks /income /expense /summary /history /undo /note /notes, AI questions.
+- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`.
+- Telegram setup script checks bot username via getMe **before** setWebhook, then validates getWebhookInfo.
+- AI: current verified model defaults `gpt-4o-mini` via OpenAI if configured; Cloudflare AI optional `@cf/google/gemma-4-26b-a4b-it`.
+- GET /health requires actual D1 schema migrated, not just bound credentials.
+- Last independently confirmed CI: run 43418093513 at SHA `12417330fcc48fb179a9c08380abac4095eaab94` succeeded; newer CI after health changes must be verified.
+
+## Release blockers / status honesty
+- **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
+- Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
+- Telegram bot currently must be described as **release candidate**, not operating, until real /start and /expense persistence have been tested.
+- The repo is public and earlier branch commits may expose removed *savings target examples*, though no actual bank ledgers or secrets were committed. Do not replay these numbers into public docs. Migrate to private repository when available.
+- Cloudflare Worker GitHub manual deployment workflow exists **only in draft branch**. It must be reviewed/approved before merge and invocation. Do not merge unrelated staging or homepage changes.
+
+## Live release acceptance
+1. Confirm actual Cloudflare worker + dedicated D1 exist, no conflict with other products.
+2. Apply 0001 + 0002 migrations and configure Worker secrets securely.
+3. Deploy, GET /health = 200 with `ready:true`, verify HTTPS, correct path and no redirection errors.
+4. Set and inspect Telegram webhook using the verified existing @AumyraBot token, keep pending messages.
+5. From owner's Telegram: /start menu, /expense test -> /summary -> /undo, /note -> /notes; unauthorized account must get no private response.
+6. Duplicate webhook update must not double-save /expense or double-void /undo.
+7. Optional AI chat works after owner approves usage and provider configured. No untested statements of success.
+
+## Handoff protocol
+Every agent commits changes and updates `TASKS.md`, this HQ, and issue #22 with verified results and remaining blocker. Keep one actionable owner phone step at a time; report DONE | COMMIT/PR | TESTS | BLOCKER | NEXT ACTION.
