@@ -267,7 +267,7 @@ export async function handleRequest(request,env,transport = fetch) {
   try {
     const response = await transport("https://api.telegram.org/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
       method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup}:{})})
+      body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})})
     });
     if (!response.ok) { definitelyRejected=true; throw new Error("Telegram status " + response.status); }
     const result = await response.json();
