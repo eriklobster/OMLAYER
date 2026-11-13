@@ -145,7 +145,7 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   if (command === "/notes") {
     const data = await env.DB.prepare("SELECT body,created_at FROM aumyra_notes ORDER BY id DESC LIMIT 10").all();
     const lines = (data.results || []).map((r,i) => (i+1) + ". " + r.body);
-    return reply(lines.length ? "Recent notes:\n" + lines.join("\n") : "No notes saved.");
+    return reply((lines.length ? "Recent notes:\n" + lines.join("\n") : "No notes saved.") + "\n\nTap /note to add a note, then send its text.");
   }
   if (command.startsWith("/") && command !== "/ask") return reply("Unknown command. Use /help.");
   const question = command === "/ask" ? text.replace(/^\/ask(?:@\w+)?\s*/i,"").trim() : text;
