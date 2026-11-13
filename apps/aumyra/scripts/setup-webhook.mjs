@@ -24,12 +24,18 @@ if(String(me.username||"").toLowerCase()!=="aumyrabot") throw new Error("Token b
 await call("setWebhook",{url:endpoint.toString(),secret_token:secret,allowed_updates:["message"],drop_pending_updates:false});
 await call("setMyCommands",{commands:[
   {command:"start",description:"Open Aumyra"},
-  {command:"help",description:"Commands and examples"},
-  {command:"summary",description:"Month finances"},
-  {command:"history",description:"Recent entries"},
-  {command:"banks",description:"Savings plan"},
-  {command:"notes",description:"Saved notes"},
-  {command:"status",description:"Assistant status"}
+  {command:"menu",description:"Show action keyboard"},
+  {command:"ask",description:"Ask the AI assistant"},
+  {command:"expense",description:"Record an expense"},
+  {command:"income",description:"Record income"},
+  {command:"summary",description:"Current month finances"},
+  {command:"history",description:"Recent transactions"},
+  {command:"undo",description:"Void last transaction"},
+  {command:"note",description:"Save a note"},
+  {command:"notes",description:"Read recent notes"},
+  {command:"banks",description:"Savings plan targets"},
+  {command:"status",description:"Assistant status"},
+  {command:"help",description:"Commands and examples"}
 ]});
 await call("setChatMenuButton",{menu_button:{type:"commands"}});
 const actual=await call("getWebhookInfo",{});
