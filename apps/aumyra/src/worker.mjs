@@ -188,6 +188,8 @@ export async function handleRequest(request,env,transport = fetch) {
             .bind(name).first();
           if (table?.name!==name) {ok=false;break;}
         }
+        // The delivery-lease column is added by migration 0005.
+        if (ok) await env.DB.prepare("SELECT delivery_claimed_at FROM aumyra_processed_updates LIMIT 1").all();
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
