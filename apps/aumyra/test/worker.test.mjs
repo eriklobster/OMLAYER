@@ -378,3 +378,17 @@ test("stale unfinished webhook update is reclaimed once without double entry",as
   assert.equal(sends,1);
   assert.ok(Date.parse(e.DB.updates.get(2200).created_at)>Date.parse("2020-01-01T00:00:00Z"));
 });
+
+test("health refuses to report ready when any primary D1 table is missing",async()=>{
+  const required=["aumyra_processed_updates","aumyra_entries","aumyra_notes",
+    "aumyra_undo_ops","aumyra_ai_turns","aumyra_chat_resets","aumyra_compose_modes"];
+  for(const absent of required){
+    const db={prepare(sql){
+      assert.match(sql,/sqlite_master/);
+      return {bind(name){return {first:async()=>name===absent?null:{name}}}};
+    }};
+    const r=await handleRequest(new Request("https://example.test/health"),env(db));
+    assert.equal(r.status,503,"should refuse incomplete schema: "+absent);
+    assert.deepEqual(await r.json(),{service:"aumyra",ready:false});
+  }
+});
