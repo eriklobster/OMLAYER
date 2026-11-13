@@ -11,7 +11,7 @@ Previously named HERMAYA (internal) and OMYRA. Aumyra is the public owner name.
 - No bot token, auth token, personal finance file or secret committed to source control.
 
 ## Release status
-- GitHub build on isolated feature branch: code prepared for Telegram/Workers.
+- GitHub draft PR #20 on isolated feature branch: code prepared for Telegram/Workers; Node behavior + SQLite schema GitHub CI successful (run 43382552628).
 - Dedicated aumyra repository not accessible; temporarily isolated under apps/aumyra in OMLAYER. Do not deploy OMLAYER website from this branch.
 - Cloudflare D1 ID, Worker secrets, domain and Telegram webhook not yet verified.
 - Chat AI requires explicit owner-supplied OPENAI_API_KEY; no AI usage is billed by default.
