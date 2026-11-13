@@ -40,14 +40,26 @@ function fakeDB() {
           if(updates.has(args[0]))return {meta:{changes:0}};
           updates.set(args[0],{created_at:args[1],reply_text:null,reply_markup_json:null,delivered_at:null});return {meta:{changes:1}};
         }
+        if(sql.startsWith("UPDATE aumyra_processed_updates SET created_at")) {
+          const u=updates.get(args[1]);
+          const allowed=!!u && !u.reply_text && u.created_at===args[2];
+          if(allowed)u.created_at=args[0];
+          return {meta:{changes:allowed ? 1 : 0}};
+        }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET reply_text")) {
-          Object.assign(updates.get(args[2]),{reply_text:args[0],reply_markup_json:args[1]});return {meta:{changes:1}};
+          const u=updates.get(args[2]);
+          const allowed=!!u && !u.reply_text && u.created_at===args[3];
+          if(allowed)Object.assign(u,{reply_text:args[0],reply_markup_json:args[1]});
+          return {meta:{changes:allowed ? 1 : 0}};
         }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET delivered_at")) {
           updates.get(args[1]).delivered_at=args[0];return {meta:{changes:1}};
         }
         if(sql.startsWith("DELETE FROM aumyra_processed_updates")) {
-          const u=updates.get(args[0]);if(u && !u.reply_text)updates.delete(args[0]);return {meta:{changes:1}};
+          const u=updates.get(args[0]);
+          const allowed=!!u && !u.reply_text && u.created_at===args[1];
+          if(allowed)updates.delete(args[0]);
+          return {meta:{changes:allowed ? 1 : 0}};
         }
         if(sql.startsWith("INSERT INTO aumyra_compose_modes")) {
           const current=modes.get(args[0]);
@@ -331,4 +343,37 @@ test("stale Telegram messages cannot replace a newer finance input mode",async()
   assert.equal(e.DB.modes.get("123").kind,"expense");
   assert.match((await respondToText("/cancel",e,fetch,1202)).text,/cancelled/);
   assert.equal(e.DB.modes.has("123"),false);
+});
+
+test("parallel webhook retries claim one update and send one Telegram reply",async()=>{
+  const e=env();
+  let release;
+  const gate=new Promise(r=>{release=r});
+  let sending=0;
+  const transport=async()=>{sending++;await gate;return Response.json({ok:true})};
+  const first=handleRequest(webhook("/expense 3 USDT food tea",2100),e,transport);
+  // The second request races the first while delivery is still blocked.
+  const second=handleRequest(webhook("/expense 3 USDT food tea",2100),e,transport);
+  const duplicate=await second;
+  assert.equal(duplicate.status,503);
+  assert.equal(e.DB.entries.length,1);
+  assert.equal(sending,1);
+  release();
+  assert.equal((await first).status,200);
+  assert.equal((await handleRequest(webhook("/expense 3 USDT food tea",2100),e,transport)).status,200);
+  assert.equal(sending,1);
+  assert.equal(e.DB.entries.length,1);
+});
+test("stale unfinished webhook update is reclaimed once without double entry",async()=>{
+  const e=env();
+  e.DB.updates.set(2200,{
+    created_at:"2020-01-01T00:00:00.000Z",
+    reply_text:null,reply_markup_json:null,delivered_at:null
+  });
+  let sends=0;
+  const transport=async()=>{sends++;return Response.json({ok:true})};
+  assert.equal((await handleRequest(webhook("/expense 2 USDT food milk",2200),e,transport)).status,200);
+  assert.equal(e.DB.entries.length,1);
+  assert.equal(sends,1);
+  assert.ok(Date.parse(e.DB.updates.get(2200).created_at)>Date.parse("2020-01-01T00:00:00Z"));
 });
