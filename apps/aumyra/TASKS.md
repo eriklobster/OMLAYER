@@ -24,6 +24,7 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] On authenticated deployment, exercise synthetic owner-only `/start` against the actual Worker with local webhook secret, assert Telegram-accepted reply and real keyboard; test failure and non-owner chat boundaries. This is not a substitute for owner iPhone `/start`.
 - [x] Optimize Aumyra CI to one pull_request run per commit, cancel obsolete in-flight checks; manual workflow_dispatch retained; no auto deploy.
 - [ ] **LIVE RELEASE:** Verify actual owner /start reply + D1 persistence + user-facing AI response after bot provisioning. Passing CI alone is not a live bot.
+- [x] Export existing Aumyra D1 SQL locally before any remote migration; fail closed if backup missing or empty. Do not copy private data to public GitHub; skip only for newly created empty D1. Wrangler command documented in official Cloudflare D1 reference.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0005 before remote migration.
 - [ ] Configure existing @AumyraBot Telegram BotFather token, webhook secret, numeric owner ID in Worker **private secrets** (not chat or repo).
