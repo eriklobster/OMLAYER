@@ -21,6 +21,7 @@ function fakeDB() {
         throw Error("Unsupported first: "+sql);
       },
       async all(){
+        if(sql.startsWith("SELECT delivery_claimed_at FROM aumyra_processed_updates")) return {results:[]};
         if(sql.startsWith("SELECT kind,currency,SUM")) {
           const found=new Map();
           for(const e of entries.filter(e=>!e.voided_at)) {
@@ -473,4 +474,16 @@ test("uncertain network failure retains lease until expiry, then retries cached 
   e.DB.updates.get(3200).delivery_claimed_at="2020-01-01T00:00:00.000Z";
   assert.equal((await handleRequest(webhook("/start",3200),e,transport)).status,200);
   assert.equal(attempts,2);
+});
+
+test("health rejects missing delivery-lease migration even if tables exist",async()=>{
+  const missingColumn={prepare(sql) {
+    if(sql.startsWith("SELECT name FROM sqlite_master"))
+      return {bind(name){return {first:async()=>({name})}}};
+    if(sql.startsWith("SELECT delivery_claimed_at FROM aumyra_processed_updates"))
+      return {all:async()=>{throw new Error("no such column: delivery_claimed_at")}};
+    throw Error("Unexpected health SQL");
+  }};
+  const r=await handleRequest(new Request("https://example.test/health"),env(missingColumn));
+  assert.equal(r.status,503);
 });
