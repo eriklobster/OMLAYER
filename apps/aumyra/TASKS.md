@@ -5,7 +5,7 @@
 - [x] Add additive D1 schema with replay receipts and idempotent entries.
 - [x] Node tests and SQL migration validated in GitHub Actions (latest run 43382552628, success).
 - [ ] Add a dedicated private repo and move subtree if authorized (currently only public OMLAYER repository accessible).
-- [ ] Locate previously tested 4,715-record HERMAYA import/replay package without losing data; inspect it before migration.
+- [ ] Locate previously tested prior private finance archive (contents unavailable from connected GitHub)
 - [ ] Confirm dedicated Cloudflare Worker, D1 ID, existing bot token and owner Telegram ID using private controls.
 - [ ] Deploy, set webhook, configure Telegram commands, test real replies from owner's iPhone.
 - [ ] Verify AI key/model and cost settings before first AI call.
