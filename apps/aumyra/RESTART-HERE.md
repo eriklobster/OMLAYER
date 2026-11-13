@@ -21,7 +21,8 @@
   - `migrations/0002_undo_journal.sql`: idempotent /undo target journal;
   - `migrations/0003_ai_history.sql`: conversation turns and /forget replay journal;
   - `migrations/0004_compose_modes.sql`: one-tap expense/income/note input mode and 15-minute timeout;
-  - `migrations/0005_delivery_lease.sql`: safe Telegram reply-delivery lease for concurrent retries.
+  - `migrations/0005_delivery_lease.sql`: safe Telegram reply-delivery lease for concurrent retries;
+  - `migrations/0006_widget_reply_kind.sql`: preserve native widget vs text reply kind on retries.
 - Replay-safe transaction writes; Telegram reply caching; current AI fallback model `gpt-4o-mini` (or opt-in Cloudflare Workers AI `@cf/google/gemma-4-26b-a4b-it`).
 - Telegram webhook script validates BotFather token's getMe.username == `aumyrabot` **before** updating webhooks, then verifies getWebhookInfo, getMyCommands, getChatMenuButton. Mocked negative-token/unsafe-URL tests pass.
 - Latest verified CI before handoff edits: GitHub Actions #121 at `4ee7c88f`: **success**, Node bot + webhook setup tests, all four SQL migrations, PowerShell parser and Wrangler dry-run. Read latest CI again because later commits supersede this checkpoint.
@@ -38,6 +39,13 @@
 - GitHub CI now uses one `pull_request` run per change, cancels superseded checks, and never automatically deploys.
 - Existing dedicated D1 export safety: installer saves a full remote SQL dump locally in `%USERPROFILE%\\AUMYRA-backups` **before** any remote schema migration, fails closed on invalid/empty export, and never uploads it. New D1 creation skips backup. Preserve these private files.
 - Verified tests: CI #182 success at `5bf3b5ac` including installer syntax/backup presence, simulated Telegram, D1 schema smoke and Worker build. Newer docs commits require latest CI check before release.
+
+## New Telegram 10.4 native Widgets (2026-11-14)
+- Telegram announcement: https://t.me/BotNews/122 ; official docs: https://core.telegram.org/bots/widgets . Message-native Widgets are **not** hosted Mini Apps. Production supports private chats only; widget code ≤32 KB raw / ≤4 KB zlib compressed, cannot use network or input fields.
+- In PR #20, `src/widget.mjs` is a theme-adaptive private AUMYRA message dashboard with Summary, History, Notes, Goals, and guidance to record new Expense/Income or chat. `/app` and **App** reply-keyboard button call `sendWidget`; `widget_query` updates use exact-owner private-chat auth, allowlisted read-only commands, and `answerWidgetQuery`.
+- `0006_widget_reply_kind.sql` adds retry-safe text/widget type; /health requires its new column. BotFather setup accepts `widget_query` and registers `/app`; postdeploy-smoke tests a signed synthetic /app and reports it separately from core availability. No payments, TON wallet, sharing or network calls enabled.
+- **CI #196 passed** at `fbbe4433`; newer docs may generate runs. Real Telegram /app on iPhone **not verified**, and Worker remains unprovisioned. Dell is OFFLINE as last reported. Work via GitHub while offline.
+- On live deployment, owner must tap App on iPhone, verify widget rendering and taps, and validate classic Menu fallback. Do not claim the Telegram rollout applies beyond private chats.
 
 ## What is *not* done
 - No verified Aumyra production Worker URL. Do not assume `aumyra.omlayer.com` exists.
