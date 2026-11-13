@@ -12,6 +12,8 @@ Updated 2026-11-13. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Validate Node tests and SQL migrations in GitHub Actions. CI #44 success at SHA `e7568a555a5a0ce77d03bbccbe6cc09db8a1c0b0`. Recheck CI after later commits.
 - [x] Keep personal finance values/credentials out of the current code; targets are private `BANK_PLAN_JSON`.
 - [x] Add Windows PowerShell one-command bootstrap (`scripts/bootstrap.ps1`) to discover/create dedicated D1, migrate, deploy, set secret prompts privately, verify health, then register webhook. Document one-liner in README. Static parser CI added; verify latest run before claiming pass.
+- [x] Add accessible iPhone Telegram reply keyboard with functional Chat, Menu, Expense, Income, Summary, History, Notes, Goals controls. Register /chat; verify owner-only button handlers and Telegram retry idempotency.
+- [x] Add optional AI chat short-term context (last six turns), duplicate-replay cache, /forget with stable reset journal and additive migration `0003_ai_history.sql`. Require migrated tables in health. CI #92 passed at `f9b7b2b0` before latest documentation changes.
 - [ ] **P0 OWNER ACCESS:** Confirm correct authenticated Cloudflare account and whether D1 database `aumyra` exists. Avoid creating duplicates.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001 + 0002 before remote migration.
 - [ ] Configure existing @AumyraBot Telegram BotFather token, webhook secret, numeric owner ID in Worker **private secrets** (not chat or repo).
