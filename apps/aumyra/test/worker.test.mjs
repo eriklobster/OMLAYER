@@ -137,3 +137,14 @@ test("malformed JSON and unknown route are handled",async()=>{
   assert.equal((await handleRequest(bad,e)).status,400);
   assert.equal((await handleRequest(new Request("https://example.test/"),e)).status,404);
 });
+
+test("opt-in Cloudflare Workers AI answers without an OpenAI key", async()=>{
+  const e=env();
+  e.AI={run:async(model,opts)=>{
+    assert.equal(model,"@cf/google/gemma-4-26b-a4b-it");
+    assert.equal(opts.messages.at(-1).content,"Hello");
+    return {choices:[{message:{content:"Hello from Cloudflare."}}]};
+  }};
+  assert.equal(await aiAnswer("Hello",e),"Hello from Cloudflare.");
+  assert.match((await respondToText("/status",e)).text,/AI chat: configured/);
+});
