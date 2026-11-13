@@ -154,7 +154,9 @@ export async function handleRequest(request,env,transport = fetch) {
           .bind("aumyra_undo_ops").first();
         const history = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
           .bind("aumyra_ai_turns").first();
-        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns";
+        const resets = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+          .bind("aumyra_chat_resets").first();
+        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns" && resets?.name === "aumyra_chat_resets";
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
