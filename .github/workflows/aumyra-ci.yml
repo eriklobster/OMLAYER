@@ -39,6 +39,18 @@ jobs:
           cfg.write_text(source.replace("REPLACE_WITH_AUMYRA_D1_ID","00000000-0000-0000-0000-000000000000"))
           PY
           npx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/aumyra-bundle"
+      - name: Aumyra PowerShell bootstrap syntax validation (no remote changes)
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          $scriptPath = "apps/aumyra/scripts/bootstrap.ps1"
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $scriptPath), [ref]$tokens, [ref]$errors)
+          if ($errors.Count -gt 0) {
+            $errors | Format-List | Out-String | Write-Error
+            exit 1
+          }
+          Write-Host "PowerShell bootstrap syntax valid."
       - name: SQLite schema smoke
         shell: bash
         run: |
