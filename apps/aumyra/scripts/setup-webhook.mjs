@@ -6,6 +6,7 @@ export const COMMANDS = [
   {command:"start",description:"Open Aumyra"},
   {command:"menu",description:"Show Chat and finance buttons"},
   {command:"chat",description:"Open assistant chat"},
+  {command:"app",description:"Open native dashboard widget"},
   {command:"ask",description:"Ask the AI assistant"},
   {command:"forget",description:"Clear AI chat memory"},
   {command:"cancel",description:"Exit a finance or note prompt"},
@@ -49,7 +50,7 @@ export async function configureWebhook({webhookUrl,token,secret,transport=fetch}
   await call("setWebhook",{
     url:endpoint.toString(),
     secret_token:secret,
-    allowed_updates:["message"],
+    allowed_updates:["message","widget_query"],
     drop_pending_updates:false
   });
   await call("setMyCommands",{commands:COMMANDS});
