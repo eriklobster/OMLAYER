@@ -33,3 +33,10 @@
 - Weekly production and staging GitHub source Releases are defined in `.github/workflows/weekly-website-snapshots.yml`, after merging this infrastructure change into default `main` and observing a successful run.
 - Current-week source restore branches: `archive/website-production-2026-W46`, `archive/website-staging-2026-W46`.
 - Full staging, release and restoration contract: `docs/STAGING-AND-BACKUPS.md`. Production HTML and DNS must remain unchanged in this infrastructure PR.
+
+## Verified staging and source backup state (13 November 2026)
+- Merged infrastructure PRs [#12](https://github.com/eriklobster/OMLAYER/pull/12), [#13](https://github.com/eriklobster/OMLAYER/pull/13), and bootstrap [#14](https://github.com/eriklobster/OMLAYER/pull/14). Production website HTML remains unchanged, with the newer CTAs on `staging` only.
+- Staging static QA: [GitHub Actions SUCCESS](https://github.com/eriklobster/OMLAYER/actions/runs/43380756005). The actual staging deployment job was SKIPPED because its dedicated Cloudflare Pages project variable is not set.
+- Weekly GitHub backup: [2026-W46 Actions SUCCESS](https://github.com/eriklobster/OMLAYER/actions/runs/43380943364). GitHub source Releases tagged `website/production/2026-W46` and `website/staging/2026-W46` are present; scheduled Monday runs remain enabled on default `main`.
+- Live `https://test.omlayer.com` is not verified. Tracking [issue #15](https://github.com/eriklobster/OMLAYER/issues/15) for owner-side staging Pages project, credentials and hostname binding.
+- Next worker: verify public HTTPS stage and mobile visual QA after GitHub staging deployment becomes active. Never publish draft PR #8 or PR #3 to production without owner review. Separate P0 Telegram/webhook incident remains higher priority.
