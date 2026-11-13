@@ -3,7 +3,7 @@
 - [x] Confirm no linked dedicated GitHub repository or previously committed Aumyra code.
 - [x] Add isolated Telegram Worker with owner-only guard, webhook secret verification, /start, /help, /status, AI fallback, notes, finance, and target banks.
 - [x] Add additive D1 schema with replay receipts and idempotent entries.
-- [ ] Run Node tests and SQL migration validation on GitHub.
+- [x] Node tests and SQL migration validated in GitHub Actions (latest run 43382552628, success).
 - [ ] Add a dedicated private repo and move subtree if authorized (currently only public OMLAYER repository accessible).
 - [ ] Locate previously tested 4,715-record HERMAYA import/replay package without losing data; inspect it before migration.
 - [ ] Confirm dedicated Cloudflare Worker, D1 ID, existing bot token and owner Telegram ID using private controls.
