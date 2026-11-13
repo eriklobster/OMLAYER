@@ -1,5 +1,9 @@
 name: Weekly website source snapshots
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekly-website-snapshots.yml'
   schedule:
     - cron: '17 3 * * 1'  # Monday UTC; source is snapshotted, not deployed
   workflow_dispatch:
