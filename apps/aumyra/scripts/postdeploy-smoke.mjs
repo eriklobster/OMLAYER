@@ -53,34 +53,39 @@ export async function smoke({workerUrl, token, ownerId, webhookSecret=null, tran
   } catch {
     ownerNotification="not_delivered";
   }
-  let webhookProbe="not_run";
+  let webhookProbe="not_run",widgetProbe="not_run";
   if (ownerNotification==="delivered" && webhookSecret) {
-    // Safe synthetic /start is sent only after bot identity, webhook URL, and
-    // ability to message the owner are independently verified.
-    // Negative IDs are outside Telegram's normal update-id space and touch
-    // only the processed-update journal, never the finance ledger.
-    const syntheticId=-(Date.now()*1000+randomInt(0,1000));
-    const probe=await transport(new URL("/telegram/webhook",base),{
-      method:"POST",
-      headers:{"content-type":"application/json","X-Telegram-Bot-Api-Secret-Token":webhookSecret},
-      body:JSON.stringify({
-        update_id:syntheticId,
-        message:{
-          message_id:1,chat:{id:Number(ownerId),type:"private"},
-          from:{id:Number(ownerId),is_bot:false},text:"/start"
-        }
-      })
-    });
-    const result=await probe.text();
-    if (!probe.ok || result!=="delivered") {
+    // These are authenticated local deployment probes, not claims that Telegram
+    // itself delivered an incoming update. They never mutate the finance ledger.
+    // Negative update IDs avoid collisions with real Telegram update IDs.
+    const baseId=-(Date.now()*1000+randomInt(0,995));
+    const sendSynthetic=async(command,id)=>{
+      const response=await transport(new URL("/telegram/webhook",base),{
+        method:"POST",
+        headers:{"content-type":"application/json","X-Telegram-Bot-Api-Secret-Token":webhookSecret},
+        body:JSON.stringify({
+          update_id:baseId-id,
+          message:{
+            message_id:1,chat:{id:Number(ownerId),type:"private"},
+            from:{id:Number(ownerId),is_bot:false},text:command
+          }
+        })
+      });
+      return response.ok && await response.text()==="delivered";
+    };
+    if (!await sendSynthetic("/start",0)) {
       throw new Error("Worker webhook /start did not complete Telegram sendMessage.");
     }
     webhookProbe="accepted";
+    // Widgets are new, and some clients may still be unsupported. Do not mark
+    // core bot offline just because its optional native widget is unavailable.
+    try { widgetProbe=await sendSynthetic("/app",1)?"accepted":"failed"; }
+    catch { widgetProbe="failed"; }
   }
   return {
     service:"aumyra",ready:true,webhookMatches:true,commandMenuVerified:true,
     pendingUpdates:Number.isSafeInteger(hook?.pending_update_count)?hook.pending_update_count:null,
-    ownerNotification,webhookProbe
+    ownerNotification,webhookProbe,widgetProbe
   };
 }
 
@@ -96,6 +101,7 @@ if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
     if (result.ownerNotification!=="delivered") {
       console.log("Telegram cannot yet send to owner. Open @AumyraBot on your phone and send /start.");
     }
+    if (result.widgetProbe==="failed") console.log("Native App widget was not accepted. Core bot is still available; use /menu and review Bot API 10.4 support.");
   } catch (error) {
     console.error("Aumyra smoke failed: "+error.message);
     process.exitCode=1;
