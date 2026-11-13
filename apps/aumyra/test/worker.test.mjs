@@ -21,7 +21,7 @@ function fakeDB() {
         throw Error("Unsupported first: "+sql);
       },
       async all(){
-        if(sql.startsWith("SELECT delivery_claimed_at FROM aumyra_processed_updates")) return {results:[]};
+        if(sql.startsWith("SELECT delivery_claimed_at,reply_kind FROM aumyra_processed_updates")) return {results:[]};
         if(sql.startsWith("SELECT kind,currency,SUM")) {
           const found=new Map();
           for(const e of entries.filter(e=>!e.voided_at)) {
@@ -39,7 +39,7 @@ function fakeDB() {
       async run(){
         if(sql.startsWith("INSERT OR IGNORE INTO aumyra_processed_updates")) {
           if(updates.has(args[0]))return {meta:{changes:0}};
-          updates.set(args[0],{created_at:args[1],reply_text:null,reply_markup_json:null,delivered_at:null,delivery_claimed_at:null});return {meta:{changes:1}};
+          updates.set(args[0],{created_at:args[1],reply_text:null,reply_markup_json:null,reply_kind:"text",delivered_at:null,delivery_claimed_at:null});return {meta:{changes:1}};
         }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET created_at")) {
           const u=updates.get(args[1]);
@@ -48,9 +48,9 @@ function fakeDB() {
           return {meta:{changes:allowed ? 1 : 0}};
         }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET reply_text")) {
-          const u=updates.get(args[2]);
-          const allowed=!!u && !u.reply_text && u.created_at===args[3];
-          if(allowed)Object.assign(u,{reply_text:args[0],reply_markup_json:args[1]});
+          const u=updates.get(args[3]);
+          const allowed=!!u && !u.reply_text && u.created_at===args[4];
+          if(allowed)Object.assign(u,{reply_text:args[0],reply_markup_json:args[1],reply_kind:args[2]});
           return {meta:{changes:allowed ? 1 : 0}};
         }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET delivery_claimed_at=NULL")) {
@@ -151,7 +151,7 @@ test("Telegram /start replies with menu and deduplicates delivered update",async
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.match(body.text,/AUMYRA · personal command center/);
   assert.equal(body.reply_markup.keyboard.length,4);
-  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["Chat","Menu"]);
+  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["Chat","Menu","App"]);
   assert.deepEqual(body.reply_markup.keyboard[1].map(x=>x.text),["Expense","Income"]);
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.equal(calls,1);
@@ -480,10 +480,55 @@ test("health rejects missing delivery-lease migration even if tables exist",asyn
   const missingColumn={prepare(sql) {
     if(sql.startsWith("SELECT name FROM sqlite_master"))
       return {bind(name){return {first:async()=>({name})}}};
-    if(sql.startsWith("SELECT delivery_claimed_at FROM aumyra_processed_updates"))
+    if(sql.startsWith("SELECT delivery_claimed_at,reply_kind FROM aumyra_processed_updates"))
       return {all:async()=>{throw new Error("no such column: delivery_claimed_at")}};
     throw Error("Unexpected health SQL");
   }};
   const r=await handleRequest(new Request("https://example.test/health"),env(missingColumn));
   assert.equal(r.status,503);
+});
+
+test("App button sends a native private Telegram widget and safely retries the same update",async()=>{
+  const e=env();const calls=[];
+  const transport=async(url,opts)=>{calls.push({url,body:JSON.parse(opts.body)});return Response.json({ok:true})};
+  assert.equal((await respondToText("App",e)).kind,"widget");
+  assert.equal((await handleRequest(webhook("App",3300),e,transport)).status,200);
+  assert.equal(calls.length,1);
+  assert.match(calls[0].url,/\/sendWidget$/);
+  assert.equal(calls[0].body.allow_queries,true);
+  assert.match(calls[0].body.html,/TelegramWidget\.request/);
+  assert.equal(calls[0].body.chat_id,123);
+  assert.equal(calls[0].body.reply_markup.keyboard[0][2].text,"App");
+  assert.equal(e.DB.updates.get(3300).reply_kind,"widget");
+  assert.equal((await handleRequest(webhook("App",3300),e,transport)).status,200);
+  assert.equal(calls.length,1);
+});
+test("owner-only widget queries return read-only D1 views via answerWidgetQuery",async()=>{
+  const e=env(),calls=[];
+  const transport=async(url,opts)=>{calls.push({url,body:JSON.parse(opts.body)});return Response.json({ok:true})};
+  const widgetRequest=(data,id=3400,owner=123,chat=123)=>new Request("https://example.test/telegram/webhook",{
+    method:"POST",headers:{"X-Telegram-Bot-Api-Secret-Token":"test-secret"},
+    body:JSON.stringify({update_id:id,widget_query:{
+      id:"widget-request-"+id,from:{id:owner},chat:{id:chat,type:"private"},message_id:100,data
+    }})
+  });
+  assert.equal((await handleRequest(widgetRequest("summary"),e,transport)).status,200);
+  assert.equal(calls.length,1);
+  assert.match(calls[0].url,/\/answerWidgetQuery$/);
+  assert.match(calls[0].body.data,/No new entries/);
+  assert.equal(calls[0].body.widget_query_id,"widget-request-3400");
+  let id=3400;
+  for(const action of ["history","notes","goals","help","chat","expense","income"]){
+    assert.equal((await handleRequest(widgetRequest(action,++id),e,transport)).status,200);
+  }
+  assert.equal(e.DB.entries.length,0);
+  assert.equal(e.DB.notes.length,0);
+  assert.equal(e.DB.aiTurns.length,0);
+  assert.equal(calls.length,8);
+  assert.equal((await handleRequest(widgetRequest("summary",3600,999),e,transport)).status,200);
+  assert.equal((await handleRequest(widgetRequest("summary",3601,123,999),e,transport)).status,200);
+  assert.equal((await handleRequest(widgetRequest("transfer_funds",3602),e,transport)).status,200);
+  assert.equal(calls.length,8);
+  assert.equal((await handleRequest(widgetRequest("notes",3603),e,transport)).status,200);
+  assert.equal(calls.length,9);
 });
