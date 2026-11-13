@@ -93,7 +93,8 @@ test("Telegram /start replies with menu and deduplicates delivered update",async
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.match(body.text,/Aumyra is ready/);
   assert.equal(body.reply_markup.keyboard.length,4);
-  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["/expense","/income"]);
+  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["Chat","Menu"]);
+  assert.deepEqual(body.reply_markup.keyboard[1].map(x=>x.text),["Expense","Income"]);
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.equal(calls,1);
 });
@@ -193,4 +194,34 @@ test("OpenAI default uses supported model and no unsupported reasoning override"
    assert.equal(Object.hasOwn(request,"reasoning_effort"),false);
    return Response.json({choices:[{message:{content:"ack"}}]});
  });
+});
+
+test("iPhone keyboard buttons route to actual bot functions, not stray AI requests",async()=>{
+  const e=env();
+  assert.match((await respondToText("Menu",e)).text,/personal command center/);
+  const chatDisabled=await respondToText("Chat",e);
+  assert.match(chatDisabled.text,/AI is not configured/);
+  assert.equal(chatDisabled.reply_markup.keyboard[0][0].text,"Chat");
+  assert.match((await respondToText("Expense",e)).text,/Format: \/expense/);
+  assert.match((await respondToText("Income",e)).text,/Format: \/expense/);
+  assert.match((await respondToText("Summary",e)).text,/No new entries/);
+  assert.match((await respondToText("History",e)).text,/No new entries/);
+  assert.match((await respondToText("Notes",e)).text,/No notes saved/);
+  assert.match((await respondToText("Goals",e)).text,/not configured yet/);
+  e.OPENAI_API_KEY="fake";
+  assert.match((await respondToText("Chat",e)).text,/Chat is ready/);
+  const response=await respondToText("Explain my day",e,async()=>Response.json({choices:[{message:{content:"AI works"}}]}));
+  assert.equal(response.text,"AI works");
+});
+test("Telegram keyboard selection is owner-only and retry-safe",async()=>{
+  const e=env();
+  const sent=[];
+  const deliver=async(url,opts)=>{sent.push({url,body:JSON.parse(opts.body)});return Response.json({ok:true})};
+  assert.equal((await handleRequest(webhook("Chat",901,999),e,deliver)).status,200);
+  assert.equal(sent.length,0);
+  assert.equal((await handleRequest(webhook("Menu",902),e,deliver)).status,200);
+  assert.equal(sent.length,1);
+  assert.equal(sent[0].body.reply_markup.keyboard[0][0].text,"Chat");
+  assert.equal((await handleRequest(webhook("Menu",902),e,deliver)).status,200);
+  assert.equal(sent.length,1);
 });
