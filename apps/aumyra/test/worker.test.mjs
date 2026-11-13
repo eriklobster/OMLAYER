@@ -3,14 +3,15 @@ import assert from "node:assert/strict";
 import {handleRequest,respondToText,aiAnswer} from "../src/worker.mjs";
 
 function fakeDB() {
-  const updates=new Map(),entries=[],notes=[];
+  const updates=new Map(),undoOps=new Map(),entries=[],notes=[];
   let next=1;
-  return {updates,entries,notes,prepare(sql) {
+  return {updates,undoOps,entries,notes,prepare(sql) {
     let args=[];
     const q={
       bind(...values){args=values;return q;},
       async first(){
         if(sql.startsWith("SELECT created_at,reply_text")) return updates.get(args[0]) ?? null;
+        if(sql.startsWith("SELECT entry_id FROM aumyra_undo_ops")) return undoOps.has(args[0]) ? {entry_id:undoOps.get(args[0])} : null;
         if(sql.startsWith("SELECT id FROM aumyra_entries")) return [...entries].reverse().find(e=>!e.voided_at) ?? null;
         throw Error("Unsupported first: "+sql);
       },
@@ -41,6 +42,10 @@ function fakeDB() {
         }
         if(sql.startsWith("DELETE FROM aumyra_processed_updates")) {
           const u=updates.get(args[0]);if(u && !u.reply_text)updates.delete(args[0]);return {meta:{changes:1}};
+        }
+        if(sql.startsWith("INSERT OR IGNORE INTO aumyra_undo_ops")) {
+          if(undoOps.has(args[0]))return {meta:{changes:0}};
+          undoOps.set(args[0],args[1]);return {meta:{changes:1}};
         }
         if(sql.startsWith("INSERT OR IGNORE INTO aumyra_entries")) {
           if(args[6]!=null && entries.some(e=>e.update_id===args[6]))return {meta:{changes:0}};
@@ -154,4 +159,36 @@ test("savings targets require a private Worker setting",async()=>{
   assert.match((await respondToText("/banks",e)).text,/not configured yet/);
   e.BANK_PLAN_JSON=JSON.stringify({Reserve:"12.00 USDT target"});
   assert.match((await respondToText("/banks",e)).text,/Reserve: 12.00 USDT target/);
+});
+
+test("Telegram /undo retry cannot void an additional expense",async()=>{
+  const e=env();
+  let attempts=0;
+  const deliver=async()=>{attempts++;return attempts===1?new Response("gateway error",{status:502}):Response.json({ok:true})};
+  await respondToText("/expense 7 USD supplies old",e,fetch,100);
+  await respondToText("/expense 3 USD food new",e,fetch,101);
+  assert.equal((await handleRequest(webhook("/undo",102),e,deliver)).status,503);
+  assert.equal(e.DB.entries.filter(x=>x.voided_at).length,1);
+  assert.equal((await handleRequest(webhook("/undo",102),e,deliver)).status,200);
+  assert.equal(e.DB.entries.filter(x=>x.voided_at).length,1);
+  assert.equal(e.DB.entries.find(x=>!x.voided_at).category,"supplies");
+  assert.equal(e.DB.undoOps.get(102),2);
+});
+test("two identical /undo requests with same update ID never void two rows even outside webhook",async()=>{
+  const e=env();
+  await respondToText("/income 1 USD teaching",e,fetch,201);
+  await respondToText("/expense 1 USD food",e,fetch,202);
+  await respondToText("/undo",e,fetch,203);
+  await respondToText("/undo",e,fetch,203);
+  assert.equal(e.DB.entries.filter(x=>x.voided_at).length,1);
+});
+test("OpenAI default uses supported model and no unsupported reasoning override",async()=>{
+ const e=env();e.OPENAI_API_KEY="fake";
+ await aiAnswer("test",e,async(url,opts)=>{
+   assert.equal(url,"https://api.openai.com/v1/chat/completions");
+   const request=JSON.parse(opts.body);
+   assert.equal(request.model,"gpt-4o-mini");
+   assert.equal(Object.hasOwn(request,"reasoning_effort"),false);
+   return Response.json({choices:[{message:{content:"ack"}}]});
+ });
 });
