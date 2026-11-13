@@ -8,6 +8,19 @@ New chats should first read [GitHub issue #22](https://github.com/eriklobster/OM
 ## Features
 Owner-only Telegram webhook; /start, /help, /status; /income, /expense, /summary, /history, /undo; /note, /notes; /banks; optional AI conversation. USD, USDT and THB remain separate. Soft-voids preserve audit records, and repeated Telegram update IDs cannot duplicate entries.
 
+## One-command Windows PowerShell bootstrap (first release)
+Requires **Windows PowerShell 5.1+** and **Node.js LTS + npm** installed. The command downloads this exact GitHub PR branch into a *new temporary directory*, then runs the auditable [bootstrap installer](scripts/bootstrap.ps1). It does not require Git, Python, SSH, or Cloudflare API tokens pasted into chat. **Only run the command on a trusted Windows machine with permission to access your Cloudflare account.**
+
+Open Windows **PowerShell** (not the browser JavaScript console), paste this as **one line**, and follow its prompts:
+
+```powershell
+$w=Join-Path $env:TEMP ('aumyra-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory $w | Out-Null;Invoke-WebRequest 'https://github.com/eriklobster/OMLAYER/archive/refs/heads/feat/aumyra-assistant-mvp.zip' -OutFile "$w\src.zip";Expand-Archive "$w\src.zip" -DestinationPath "$w\repo";$a=(Get-ChildItem "$w\repo" -Directory | ForEach-Object {Join-Path $_.FullName 'apps\aumyra'} | Where-Object {Test-Path $_} | Select-Object -First 1);if(-not $a){throw 'Source folder not found'};Set-Location $a;powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
+```
+
+Prompts/settings: confirm correct Cloudflare account after Wrangler login; paste the **existing @AumyraBot BotFather API token** into a masked local prompt; supply your own numeric Telegram ID (obtain from @userinfobot), confirm if reusing an existing Aumyra database; optionally enable **billable** Cloudflare Workers AI with explicit YES. The installer securely sends secrets to the **dedicated** Aumyra Worker, patches local Wrangler config only, migrates dedicated D1, deploys, requires HTTP /health ready, registers webhook only after getMe identity verification, and configures BotFather commands. It does not touch OMLAYER Pages, ROAMDOTS, or other bots. It does not download the old HERMAYA finance archive.
+
+**After installer success:** From your owner Telegram account, send `/start` to [@AumyraBot](https://t.me/AumyraBot), then `/note hello` and `/notes`. Report any error output **with token values hidden**; never send or screenshot the token/secret.
+
 ## Release gates
 1. In Cloudflare, inspect Workers and D1. Reuse the **existing Aumyra** resource if present; never touch ROAMDOTS or another project's database. Otherwise create a D1 named aumyra using `npx wrangler d1 create aumyra`.
 2. Edit `wrangler.toml` locally: replace `REPLACE_WITH_AUMYRA_D1_ID` with the *dedicated* database ID; never publish sensitive customer data here.
