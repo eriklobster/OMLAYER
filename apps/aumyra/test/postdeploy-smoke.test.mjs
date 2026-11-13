@@ -63,7 +63,7 @@ test("malformed Worker URL, token or owner ID never reaches network",async()=>{
   const a=responder();
   await assert.rejects(smoke({workerUrl:"http://example.com/",token,ownerId,transport:a.transport}),/bare HTTPS/);
   await assert.rejects(smoke({workerUrl:base+"path",token,ownerId,transport:a.transport}),/bare HTTPS/);
-  await assert.rejects(smoke({workerUrl:base,token:"bad",ownerId,transport:a.transport}),/bot token/);
+  await assert.rejects(smoke({workerUrl:base,token:"bad",ownerId,transport:a.transport}),/BotFather token/);
   await assert.rejects(smoke({workerUrl:base,token,ownerId:"invalid",transport:a.transport}),/Telegram owner ID/);
   assert.equal(a.calls.length,0);
 });
