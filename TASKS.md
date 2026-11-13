@@ -20,8 +20,9 @@
 - [x] Create `staging` from PR #8 for an isolated latest-homepage QA candidate.
 - [x] Pin immediate 2026-W46 production and staging restore branches.
 - [x] Add GitHub Actions weekly source tag/Release workflow and staging smoke/deploy gate on infrastructure branch.
-- [ ] Merge infrastructure-only PR into `main` without merging draft website changes; observe Actions passing.
-- [ ] Bring infrastructure workflow onto `staging` and confirm stage smoke CI.
+- [x] Merge infrastructure-only PR #12 into `main` without draft website changes; observe Actions deployment checks.
+- [x] Merge PR #13 into `staging` and verify smoke CI [PASS](https://github.com/eriklobster/OMLAYER/actions/runs/43380756005).
 - [ ] Configure separate staging Pages project, GitHub variable/secrets and `test.omlayer.com` binding; verify real HTTPS rendered page.
-- [ ] Exercise `workflow_dispatch` to generate 2 immutable tagged source Releases and verify ZIP/tar.gz.
+- [x] Bootstrap weekly workflow via PR #14; [2026-W46 run PASS](https://github.com/eriklobster/OMLAYER/actions/runs/43380943364), with [production](https://github.com/eriklobster/OMLAYER/releases/tag/website/production/2026-W46) and [staging](https://github.com/eriklobster/OMLAYER/releases/tag/website/staging/2026-W46) source Releases.
+- [ ] Complete [staging Cloudflare Pages binding issue #15](https://github.com/eriklobster/OMLAYER/issues/15) and visually verify test.omlayer.com.
 - [ ] Review PR #8 on iPhone; keep PR #3 reliability and P0 bot migration issues separate.
