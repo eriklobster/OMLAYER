@@ -3,7 +3,7 @@
 const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
 const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -12,9 +12,10 @@ function amountText(cents, currency) { return (Number(cents)/100).toFixed(2) + "
 function normalizeCommand(text) { return (text.trim().split(/\s+/)[0] || "").split("@")[0].toLowerCase(); }
 function available(env) { return !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_WEBHOOK_SECRET && env.TELEGRAM_OWNER_ID && env.DB); }
 
-export async function aiAnswer(text, env, transport = fetch) {
+export async function aiAnswer(text, env, transport = fetch, history = []) {
   const messages = [
     {role:"system",content:"You are Aumyra, a concise, practical personal AI assistant. Do not invent bank balances, transactions, dates, completed actions or tool access. This chat message does not include the user's private data. Ask before irreversible operations. You cannot execute actions from this chat. Reply in the user's language."},
+    ...history.filter(row => (row.role === "user" || row.role === "assistant") && typeof row.content === "string").slice(-12),
     {role:"user",content:text.slice(0,3000)}
   ];
   if (env.AI) {
@@ -43,6 +44,18 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   if (command === "/chat") return reply(env.AI || env.OPENAI_API_KEY
     ? "Chat is ready. Type any question; /menu returns to your controls."
     : "Chat button is ready, but AI is not configured. Finance and notes work without AI. Configure a provider to get replies to questions.", BUTTONS);
+  if (command === "/forget") {
+    if (updateId != null) {
+      const last = await env.DB.prepare("SELECT MAX(id) AS id FROM aumyra_ai_turns").first();
+      await env.DB.prepare("INSERT OR IGNORE INTO aumyra_chat_resets(update_id,last_turn_id,created_at) VALUES(?,?,?)")
+        .bind(updateId,last?.id ?? 0,new Date().toISOString()).run();
+      const reset = await env.DB.prepare("SELECT last_turn_id FROM aumyra_chat_resets WHERE update_id=?").bind(updateId).first();
+      await env.DB.prepare("DELETE FROM aumyra_ai_turns WHERE id<=?").bind(reset?.last_turn_id ?? 0).run();
+    } else {
+      await env.DB.prepare("DELETE FROM aumyra_ai_turns").run();
+    }
+    return reply("AI conversation cleared. Finance and notes were not changed.",BUTTONS);
+  }
   if (command === "/help") return reply(HELP);
   if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.AI || env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
   if (command === "/banks") {
@@ -107,7 +120,26 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   if (command.startsWith("/") && command !== "/ask") return reply("Unknown command. Use /help.");
   const question = command === "/ask" ? text.replace(/^\/ask(?:@\w+)?\s*/i,"").trim() : text;
   if (!question) return reply("Ask a question after /ask.");
-  try { return reply(await aiAnswer(question,env,transport)); }
+  try {
+    if (!env.AI && !env.OPENAI_API_KEY) return reply(await aiAnswer(question,env,transport));
+    let history=[];
+    if (updateId != null) {
+      // Read the completed turn first: webhook retries must not call the AI twice.
+      const previous = await env.DB.prepare("SELECT reply FROM aumyra_ai_turns WHERE update_id=?").bind(updateId).first();
+      if (previous?.reply) return reply(previous.reply);
+      const turns = await env.DB.prepare("SELECT prompt,reply FROM aumyra_ai_turns ORDER BY id DESC LIMIT 6").all();
+      history=(turns.results || []).reverse().flatMap(turn=>[
+        {role:"user",content:String(turn.prompt).slice(0,1500)},
+        {role:"assistant",content:String(turn.reply).slice(0,1500)}
+      ]);
+    }
+    const answer=await aiAnswer(question,env,transport,history);
+    if (updateId != null) {
+      await env.DB.prepare("INSERT OR IGNORE INTO aumyra_ai_turns(update_id,prompt,reply,created_at) VALUES(?,?,?,?)")
+        .bind(updateId,question.slice(0,1500),answer.slice(0,1500),new Date().toISOString()).run();
+    }
+    return reply(answer);
+  }
   catch { return reply("AI chat is unavailable right now. Finance and notes commands still work."); }
 }
 
@@ -120,7 +152,9 @@ export async function handleRequest(request,env,transport = fetch) {
         // Bound secrets alone are not proof that migrations have run.
         const table = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
           .bind("aumyra_undo_ops").first();
-        ok = table?.name === "aumyra_undo_ops";
+        const history = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+          .bind("aumyra_ai_turns").first();
+        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns";
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
