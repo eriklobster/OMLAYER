@@ -179,17 +179,15 @@ export async function handleRequest(request,env,transport = fetch) {
     let ok = available(env);
     if (ok) {
       try {
-        // Bound secrets alone are not proof that migrations have run.
-        const table = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
-          .bind("aumyra_undo_ops").first();
-        const history = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
-          .bind("aumyra_ai_turns").first();
-        const resets = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
-          .bind("aumyra_chat_resets").first();
-        const composer = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
-          .bind("aumyra_compose_modes").first();
-        ok = table?.name === "aumyra_undo_ops" && history?.name === "aumyra_ai_turns"
-          && resets?.name === "aumyra_chat_resets" && composer?.name === "aumyra_compose_modes";
+        // Live readiness requires every table used by Telegram, not just a D1 binding.
+        for (const name of [
+          "aumyra_processed_updates","aumyra_entries","aumyra_notes",
+          "aumyra_undo_ops","aumyra_ai_turns","aumyra_chat_resets","aumyra_compose_modes"
+        ]) {
+          const table=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+            .bind(name).first();
+          if (table?.name!==name) {ok=false;break;}
+        }
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
