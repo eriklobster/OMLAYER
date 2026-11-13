@@ -1,12 +1,6 @@
 name: Aumyra MVP tests
 
 on:
-  push:
-    branches:
-      - feat/aumyra-assistant-mvp
-    paths:
-      - 'apps/aumyra/**'
-      - '.github/workflows/aumyra-ci.yml'
   pull_request:
     paths:
       - 'apps/aumyra/**'
@@ -15,6 +9,11 @@ on:
 
 permissions:
   contents: read
+
+# Only the newest candidate is relevant; avoid duplicate push + PR runs.
+concurrency:
+  group: aumyra-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
