@@ -14,3 +14,17 @@
 
 ## Existing site reliability (separate scope)
 - [ ] Continue PR #3 visual QA and Reduced Motion/keyboard verification before its own merge.
+
+## Website staging and discoverability — 2026-11-13
+- [x] Separate staging design PR #8; production unchanged pending owner approval.
+- [x] Stage shared accessible theme toggle across four pages with blue/green/cyan dark style and monochrome light logo.
+- [x] Stage browser QA for mobile sizes and theme persistence; review actual GitHub Actions results before merge.
+- [ ] P0 finish PR #3 no-JS visibility, Chillum keyboard and reduced-motion QA before release.
+- [ ] P0 send/receive real email test for hello@omlayer.com and confirm Telegram/WhatsApp destinations.
+- [ ] P1 Google/DuckDuckGo favicon: add stable crawlable 96px PNG/ICO, verify request in preview then request recrawl. The SVG-only head is insufficient for Google's current supported favicon formats.
+- [ ] P1 update sitemap for ROAMDOTS case and verify crawler access, OAI-SearchBot at edge.
+- [ ] P1 recover actual approved ROAMDOTS bot avatar artwork; no invented replacement.
+- [x] Stage weekly source backup action and restore notes in independent PR/branch.
+- [ ] Verify first archive and restore checksum; schedule activates only after approval/merge.
+- [ ] Arrange an independent offsite copy if full disaster recovery is required.
+- [ ] Enable recurring staging agent only after automation capacity is freed (current five-active-task quota reached).
