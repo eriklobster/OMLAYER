@@ -28,6 +28,14 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - GET /health requires actual D1 schema migrated, not just bound credentials.
 - Last independently confirmed CI: run 43418093513 at SHA `12417330fcc48fb179a9c08380abac4095eaab94` succeeded; newer CI after health changes must be verified.
 
+## Windows one-command release preparation (2026-11-13)
+- Added `scripts/bootstrap.ps1` (review source before running) and the single PowerShell launcher in `README.md`.
+- Installer performs Node behavior tests, Cloudflare account confirmation, verifies getMe as @AumyraBot **before** remote mutation, finds/creates only dedicated D1 `aumyra`, prompts before reusing existing DB, forward-migrates it, deploys `aumyra` Worker, writes secrets from masked private terminal input, requires live HTTP readiness, then configures Telegram webhook + commands without dropping pending updates.
+- It optionally enables Cloudflare Workers AI **only with explicit billing acknowledgement**; no AI enabled by default.
+- Source commit chain starts `c450692`, CI syntax validation added `8f5573a`, README launcher `429679f`. CI/live launch need separate proof. **No bot deployed from ChatGPT**.
+- Required on owner Windows computer: Node.js LTS+npm, PowerShell, Cloudflare login, existing @AumyraBot BotFather token, own numeric Telegram ID. Keep token and screenshots of secrets private. Both connected RDC machines were offline at last inspection.
+- Owner should run exactly the command shown in `README.md` rather than manually repeating 10 settings steps. Report only sanitized errors. Production release still blocked until actual /start and finance/notes E2E tests.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
