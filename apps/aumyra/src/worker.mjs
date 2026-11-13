@@ -109,7 +109,15 @@ export async function respondToText(message, env, transport = fetch, updateId = 
 export async function handleRequest(request,env,transport = fetch) {
   const url = new URL(request.url);
   if (request.method === "GET" && url.pathname === "/health") {
-    const ok = available(env);
+    let ok = available(env);
+    if (ok) {
+      try {
+        // Bound secrets alone are not proof that migrations have run.
+        const table = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+          .bind("aumyra_undo_ops").first();
+        ok = table?.name === "aumyra_undo_ops";
+      } catch { ok = false; }
+    }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
   }
   if (request.method !== "POST" || url.pathname !== "/telegram/webhook") return new Response("Not found",{status:404});
