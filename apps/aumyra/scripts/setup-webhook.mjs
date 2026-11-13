@@ -17,7 +17,10 @@ async function call(path,data) {
   const response=await fetch(api+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(data)});
   const result=await response.json();
   if(!response.ok || !result.ok) throw new Error(path+" failed: "+(result.description||response.status));
+  return result.result;
 }
+const me=await call("getMe",{});
+if(String(me.username||"").toLowerCase()!=="aumyrabot") throw new Error("Token belongs to a different bot; refusing to change its webhook");
 await call("setWebhook",{url:endpoint.toString(),secret_token:secret,allowed_updates:["message"],drop_pending_updates:false});
 await call("setMyCommands",{commands:[
   {command:"start",description:"Open Aumyra"},
@@ -29,4 +32,6 @@ await call("setMyCommands",{commands:[
   {command:"status",description:"Assistant status"}
 ]});
 await call("setChatMenuButton",{menu_button:{type:"commands"}});
-console.log("Webhook registered and Telegram menu configured: "+endpoint.origin+endpoint.pathname);
+const actual=await call("getWebhookInfo",{});
+if(actual.url!==endpoint.toString()) throw new Error("Webhook registration URL mismatch");
+console.log("Aumyra webhook and menu verified: "+endpoint.origin+endpoint.pathname);
