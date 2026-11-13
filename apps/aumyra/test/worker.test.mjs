@@ -94,11 +94,11 @@ test("Telegram failed send retries cached response without double expense",async
   const d=fakeDB(),e=env(d);
   let calls=0;
   const transport=async()=>{calls++;return calls===1?new Response("error",{status:500}):Response.json({ok:true})};
-  assert.equal((await handleRequest(webhook("/expense 6.37 USDT food lunch",15),e,transport)).status,503);
+  assert.equal((await handleRequest(webhook("/expense 12.50 USDT food lunch",15),e,transport)).status,503);
   assert.equal(d.entries.length,1);
-  assert.equal((await handleRequest(webhook("/expense 6.37 USDT food lunch",15),e,transport)).status,200);
+  assert.equal((await handleRequest(webhook("/expense 12.50 USDT food lunch",15),e,transport)).status,200);
   assert.equal(d.entries.length,1);
-  assert.equal(d.entries[0].amount_cents,637);
+  assert.equal(d.entries[0].amount_cents,1250);
   assert.equal(calls,2);
 });
 test("finance summary, history and undo maintain audit history",async()=>{
