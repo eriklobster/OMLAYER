@@ -49,7 +49,14 @@ jobs:
             $errors | Format-List | Out-String | Write-Error
             exit 1
           }
-          Write-Host "PowerShell bootstrap syntax valid."
+          $source = Get-Content -LiteralPath $scriptPath -Raw
+          if (-not $source.Contains("wrangler d1 export aumyra --remote") -or -not $source.Contains("Refusing to migrate existing data.")) {
+            throw "Bootstrap must preserve a private D1 export before existing DB migrations."
+          }
+          if (-not $source.Contains('TELEGRAM_WEBHOOK_SECRET') -or -not $source.Contains("postdeploy-smoke.mjs")) {
+            throw "Bootstrap is missing Telegram secret delivery or live smoke verification."
+          }
+          Write-Host "PowerShell syntax + existing-data backup and release gates valid."
       - name: SQLite schema smoke
         shell: bash
         run: |
