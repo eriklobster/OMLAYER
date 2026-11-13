@@ -1,9 +1,10 @@
+import {AUMYRA_WIDGET_HTML,WIDGET_VIEWS,utf8Preview} from "./widget.mjs";
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
 const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
-const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
+const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -37,7 +38,7 @@ export async function aiAnswer(text, env, transport = fetch, history = []) {
 
 export async function respondToText(message, env, transport = fetch, updateId = null) {
   let text = String(message || "").trim().slice(0,4000);
-  const shortcuts = {Menu:"/menu",Chat:"/chat",Expense:"/expense",Income:"/income",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
+  const shortcuts = {Menu:"/menu",Chat:"/chat",App:"/app",Expense:"/expense",Income:"/income",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
   // Telegram reply keyboard sends ordinary text; only exact labels are commands.
   let command = normalizeCommand(shortcuts[text] || text);
   const ownerId = String(env.TELEGRAM_OWNER_ID || "");
@@ -69,6 +70,7 @@ export async function respondToText(message, env, transport = fetch, updateId = 
     await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id<?").bind(ownerId,updateId).run();
   }
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
+  if (command === "/app") return {...reply("AUMYRA native dashboard. If widgets are unsupported, use /menu.",BUTTONS),kind:"widget"};
   if (command === "/chat") return reply(env.AI || env.OPENAI_API_KEY
     ? "Chat is ready. Type any question; /menu returns to your controls."
     : "Chat button is ready, but AI is not configured. Finance and notes work without AI. Configure a provider to get replies to questions.", BUTTONS);
@@ -189,7 +191,7 @@ export async function handleRequest(request,env,transport = fetch) {
           if (table?.name!==name) {ok=false;break;}
         }
         // The delivery-lease column is added by migration 0005.
-        if (ok) await env.DB.prepare("SELECT delivery_claimed_at FROM aumyra_processed_updates LIMIT 1").all();
+        if (ok) await env.DB.prepare("SELECT delivery_claimed_at,reply_kind FROM aumyra_processed_updates LIMIT 1").all();
       } catch { ok = false; }
     }
     return Response.json({service:"aumyra",ready:ok}, {status:ok?200:503});
@@ -201,9 +203,38 @@ export async function handleRequest(request,env,transport = fetch) {
   if (body.length > 32768) return new Response("Too large",{status:413});
   let update;
   try { update = JSON.parse(body); } catch { return new Response("Bad JSON",{status:400}); }
+  const widgetQuery=update?.widget_query;
+  if (widgetQuery) {
+    const valid=Number.isSafeInteger(update?.update_id)
+      && typeof widgetQuery.id==="string" && widgetQuery.id.length>0
+      && widgetQuery.from && String(widgetQuery.from.id)===String(env.TELEGRAM_OWNER_ID)
+      && widgetQuery.chat?.type==="private"
+      && String(widgetQuery.chat.id)===String(env.TELEGRAM_OWNER_ID)
+      && typeof widgetQuery.data==="string" && WIDGET_VIEWS.includes(widgetQuery.data);
+    if (!valid) return new Response("ok");
+    let value;
+    try {
+      const mappings={summary:"/summary",history:"/history",notes:"/notes",goals:"/banks",help:"/help"};
+      value=mappings[widgetQuery.data]
+        ? (await respondToText(mappings[widgetQuery.data],env,transport,null)).text
+        : widgetQuery.data==="chat"
+          ? "Type a message in the bot chat to talk with AUMYRA. /forget clears AI memory."
+          : "To add an "+widgetQuery.data+", tap "+(widgetQuery.data==="expense"?"Expense":"Income")+" in the Telegram keyboard, then send: 12.50 USDT food coffee.";
+    } catch {
+      value="This view is temporarily unavailable. Use /menu.";
+    }
+    try {
+      const response=await transport("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/answerWidgetQuery",{
+        method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({widget_query_id:widgetQuery.id,data:utf8Preview(value)})
+      });
+      if (!response.ok || !(await response.json()).ok) return new Response("Retry later",{status:503});
+      return new Response("ok");
+    } catch {return new Response("Retry later",{status:503});}
+  }
   const msg = update?.message;
   if (!msg || msg.chat?.type !== "private" || String(msg.chat?.id) !== String(env.TELEGRAM_OWNER_ID) || String(msg.from?.id) !== String(env.TELEGRAM_OWNER_ID) || !Number.isSafeInteger(update.update_id)) return new Response("ok");
-  let saved = await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).first();
+  let saved = await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,reply_kind,delivered_at FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).first();
   if (saved?.delivered_at) return new Response("ok");
   let ownsReply = false;
   let claimTime = null;
@@ -232,13 +263,13 @@ export async function handleRequest(request,env,transport = fetch) {
   let answer;
   try {
     if (saved?.reply_text) {
-      answer = {text:saved.reply_text,reply_markup:saved.reply_markup_json ? JSON.parse(saved.reply_markup_json) : null};
+      answer = {text:saved.reply_text,reply_markup:saved.reply_markup_json ? JSON.parse(saved.reply_markup_json) : null,kind:saved.reply_kind||"text"};
     } else if (ownsReply) {
       answer = typeof msg.text==="string"
         ? await respondToText(msg.text,env,transport,update.update_id)
         : reply("AUMYRA currently accepts text messages only. Send a text question, or tap Chat, Expense, Income, Notes or Menu. Voice and image input are not enabled yet.",BUTTONS);
-      const stored=await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=? WHERE update_id=? AND created_at=? AND reply_text IS NULL")
-        .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,update.update_id,claimTime).run();
+      const stored=await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=?,reply_kind=? WHERE update_id=? AND created_at=? AND reply_text IS NULL")
+        .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,answer.kind||"text",update.update_id,claimTime).run();
       if (stored?.meta?.changes!==1) return new Response("Reply lease expired",{status:503});
     } else {
       return new Response("In progress",{status:503});
@@ -265,9 +296,17 @@ export async function handleRequest(request,env,transport = fetch) {
 
   let definitelyRejected=false;
   try {
-    const response = await transport("https://api.telegram.org/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
+    const isWidget=answer.kind==="widget";
+    const method=isWidget?"sendWidget":"sendMessage";
+    const outgoing=isWidget
+      ? {chat_id:msg.chat.id,html:AUMYRA_WIDGET_HTML,allow_queries:true,
+        caption:"AUMYRA dashboard · /menu for classic controls",
+        ...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})}
+      : {chat_id:msg.chat.id,text:answer.text,
+        ...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})};
+    const response = await transport("https://api.telegram.org/bot" + env.TELEGRAM_BOT_TOKEN + "/" + method, {
       method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})})
+      body:JSON.stringify(outgoing)
     });
     if (!response.ok) { definitelyRejected=true; throw new Error("Telegram status " + response.status); }
     const result = await response.json();
