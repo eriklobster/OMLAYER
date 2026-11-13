@@ -64,5 +64,28 @@ jobs:
           db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
           db.execute("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
           assert db.execute("SELECT COUNT(*) FROM aumyra_entries").fetchone()[0]==1
-          print("SQL schema + unique update_id smoke OK")
+          # Verify that only one concurrent webhook retry can claim the same D1 row.
+          db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at) VALUES (?,?)",(77,"2020-01-01T00:00:00Z"))
+          claimed=db.execute("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                             ("2026-11-14T00:00:00Z",77,"2020-01-01T00:00:00Z"))
+          assert claimed.rowcount==1
+          stale=db.execute("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                           ("2026-11-14T00:00:01Z",77,"2020-01-01T00:00:00Z"))
+          assert stale.rowcount==0
+          committed=db.execute("UPDATE aumyra_processed_updates SET reply_text=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                               ("saved",77,"2026-11-14T00:00:00Z"))
+          assert committed.rowcount==1
+          duplicate=db.execute("UPDATE aumyra_processed_updates SET reply_text=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                               ("duplicate",77,"2026-11-14T00:00:00Z"))
+          assert duplicate.rowcount==0
+          assert db.execute("SELECT reply_text FROM aumyra_processed_updates WHERE update_id=77").fetchone()[0]=="saved"
+          # Guided finance-input modes reject out-of-order Telegram updates.
+          composer="INSERT INTO aumyra_compose_modes(owner_id,kind,update_id,started_at) VALUES(?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET kind=excluded.kind,update_id=excluded.update_id,started_at=excluded.started_at WHERE excluded.update_id>=aumyra_compose_modes.update_id"
+          db.execute(composer,("test-owner","expense",11,"2026-11-14T00:00:00Z"))
+          db.execute(composer,("test-owner","income",10,"2026-11-14T00:00:01Z"))
+          assert db.execute("SELECT kind,update_id FROM aumyra_compose_modes").fetchone()==("expense",11)
+          # /undo uses soft-void; original ledger entries remain present.
+          db.execute("UPDATE aumyra_entries SET voided_at=? WHERE update_id=? AND voided_at IS NULL",("2026-11-14T00:00:00Z",10))
+          assert db.execute("SELECT COUNT(*),COUNT(voided_at) FROM aumyra_entries").fetchone()==(1,1)
+          print("SQL schema, replay lease, composer ordering and soft-void smoke OK")
           PY
