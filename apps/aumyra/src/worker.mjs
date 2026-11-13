@@ -1,7 +1,7 @@
 import {AUMYRA_WIDGET_HTML,WIDGET_VIEWS,utf8Preview} from "./widget.mjs";
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
-const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
+const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nApp — interactive dashboard in this chat\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
 const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
 const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
