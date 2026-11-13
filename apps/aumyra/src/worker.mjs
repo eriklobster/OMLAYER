@@ -27,7 +27,7 @@ export async function aiAnswer(text, env, transport = fetch) {
   return data?.choices?.[0]?.message?.content?.trim() || "No assistant response was returned.";
 }
 
-export async function respondToText(message, env, transport = fetch) {
+export async function respondToText(message, env, transport = fetch, updateId = null) {
   const text = String(message || "").trim().slice(0,4000);
   const command = normalizeCommand(text);
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
@@ -40,8 +40,8 @@ export async function respondToText(message, env, transport = fetch) {
     const [,kind,amount,currency,category,note=""] = match;
     const cents = Math.round(Number(amount)*100);
     if (!Number.isSafeInteger(cents) || cents <= 0 || cents > 1e11) return reply("Enter a positive amount smaller than 1 billion.");
-    await env.DB.prepare("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at) VALUES(?,?,?,?,?,?)")
-      .bind(kind.toLowerCase(),cents,currency.toUpperCase(),category.toLowerCase(),note,new Date().toISOString()).run();
+    await env.DB.prepare("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES(?,?,?,?,?,?,?)")
+      .bind(kind.toLowerCase(),cents,currency.toUpperCase(),category.toLowerCase(),note,new Date().toISOString(),updateId).run();
     return reply("Saved " + kind.toLowerCase() + ": " + amountText(cents,currency.toUpperCase()) + " · " + category.toLowerCase() + (note ? "\n" + note : "") + "\nOnly new Aumyra entries are counted.");
   }
   if (command === "/summary") {
@@ -65,7 +65,7 @@ export async function respondToText(message, env, transport = fetch) {
     const note = text.replace(/^\/note(?:@\w+)?\s*/i,"").trim();
     if (!note || note === "/note") return reply("Format: /note buy coffee beans");
     if (note.length > 2000) return reply("Keep notes below 2,000 characters.");
-    await env.DB.prepare("INSERT INTO aumyra_notes(body,created_at) VALUES(?,?)").bind(note,new Date().toISOString()).run();
+    await env.DB.prepare("INSERT OR IGNORE INTO aumyra_notes(body,created_at,update_id) VALUES(?,?,?)").bind(note,new Date().toISOString(),updateId).run();
     return reply("Note saved.");
   }
   if (command === "/notes") {
@@ -95,10 +95,25 @@ export async function handleRequest(request,env,transport = fetch) {
   try { update = JSON.parse(body); } catch { return new Response("Bad JSON",{status:400}); }
   const msg = update?.message;
   if (!msg || msg.chat?.type !== "private" || String(msg.from?.id) !== String(env.TELEGRAM_OWNER_ID) || !Number.isSafeInteger(update.update_id)) return new Response("ok");
-  const insert = await env.DB.prepare("INSERT OR IGNORE INTO aumyra_processed_updates(update_id,created_at) VALUES(?,?)").bind(update.update_id,new Date().toISOString()).run();
-  if (insert.meta?.changes === 0) return new Response("ok");
+  let saved = await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).first();
+  if (saved?.delivered_at) return new Response("ok");
+  if (saved && !saved.reply_text && Date.now()-Date.parse(saved.created_at)<10000) return new Response("In progress",{status:503});
+  if (!saved) await env.DB.prepare("INSERT OR IGNORE INTO aumyra_processed_updates(update_id,created_at) VALUES(?,?)").bind(update.update_id,new Date().toISOString()).run();
+  let answer;
   try {
-    const answer = await respondToText(msg.text || "/help",env,transport);
+    if (saved?.reply_text) {
+      answer = {text:saved.reply_text,reply_markup:saved.reply_markup_json ? JSON.parse(saved.reply_markup_json) : null};
+    } else {
+      answer = await respondToText(msg.text || "/help",env,transport,update.update_id);
+      await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=? WHERE update_id=?")
+        .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,update.update_id).run();
+    }
+  } catch {
+    // A failed database operation or assistant call can be safely retried.
+    await env.DB.prepare("DELETE FROM aumyra_processed_updates WHERE update_id=? AND reply_text IS NULL").bind(update.update_id).run();
+    return new Response("Retry later",{status:503});
+  }
+  try {
     const response = await transport("https://api.telegram.org/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
       method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({chat_id:msg.chat.id,text:answer.text,...(answer.reply_markup?{reply_markup:answer.reply_markup}:{})})
@@ -106,10 +121,10 @@ export async function handleRequest(request,env,transport = fetch) {
     if (!response.ok) throw new Error("Telegram status " + response.status);
     const result = await response.json();
     if (!result.ok) throw new Error("Telegram send failed");
+    await env.DB.prepare("UPDATE aumyra_processed_updates SET delivered_at=? WHERE update_id=?").bind(new Date().toISOString(),update.update_id).run();
     return new Response("ok");
   } catch {
-    // A Telegram retry may safely process the update again if delivery failed.
-    await env.DB.prepare("DELETE FROM aumyra_processed_updates WHERE update_id=?").bind(update.update_id).run();
+    // Keep the cached answer: retry delivery without repeating financial writes.
     return new Response("Retry later",{status:503});
   }
 }
