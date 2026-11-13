@@ -22,7 +22,7 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 ## Latest implementation state
 - Source and tests isolated under `apps/aumyra/`; workflows under `.github/workflows/aumyra-*.yml`.
 - Worker: /health, /telegram/webhook, owner/secret validation, /start /menu /help /status /banks /income /expense /summary /history /undo /note /notes, AI questions.
-- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`, `0003_ai_history.sql`, `0004_compose_modes.sql`.
+- SQLite/D1 migrations: `0001_init.sql`, `0002_undo_journal.sql`, `0003_ai_history.sql`, `0004_compose_modes.sql`, `0005_delivery_lease.sql`.
 - Telegram setup script checks bot username via getMe **before** setWebhook, then validates getWebhookInfo.
 - AI: current verified model defaults `gpt-4o-mini` via OpenAI if configured; Cloudflare AI optional `@cf/google/gemma-4-26b-a4b-it`.
 - GET /health requires actual D1 schema migrated, not just bound credentials.
@@ -58,6 +58,12 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - **Text media:** owner sending voice/photo gets clear text-only instructions; no unapproved media AI processing.
 - **Release boundary remains:** neither Cloudflare Worker nor Telegram /start has been observed live. Both RDC machines offline at last check. Only owner can authorize proper Cloudflare account + BotFather token via trusted local installer. Do not deploy other bots or merge draft PR to main as substitute.
 
+## Final reply-delivery reliability step
+- Added `0005_delivery_lease.sql`, a non-destructive `delivery_claimed_at` column in `aumyra_processed_updates`. Each sendMessage attempt must atomically obtain a 60-second delivery lease.
+- Concurrent retries of a cached answer no longer send Telegram replies simultaneously. Definite Telegram 4xx/5xx rejection releases the lease for retry; ambiguous network failure holds the lease until expiry to avoid rapid duplicates. Telegram still has no exactly-once send guarantee if a response is lost after being accepted.
+- GET /health validates the new lease column before declaring ready. Node concurrency and network-failure tests and SQLite migration smoke added. CI #163 green at `3d16391e` before documentation commits.
+- Only owner-authorized Cloudflare deployment and real Telegram /start remain outstanding. No live bot activity claimed.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
@@ -67,7 +73,7 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
 ## Live release acceptance
 1. Confirm actual Cloudflare worker + dedicated D1 exist, no conflict with other products.
-2. Apply all four additive migrations (0001–0004) and configure Worker secrets securely.
+2. Apply all five additive migrations (0001–0005) and configure Worker secrets securely.
 3. Deploy, GET /health = 200 with `ready:true`, verify HTTPS, correct path and no redirection errors.
 4. Set and inspect Telegram webhook using the verified existing @AumyraBot token, keep pending messages.
 5. From owner's Telegram: /start menu, /expense test -> /summary -> /undo, /note -> /notes; unauthorized account must get no private response.
