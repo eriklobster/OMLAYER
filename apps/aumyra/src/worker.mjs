@@ -36,10 +36,38 @@ export async function aiAnswer(text, env, transport = fetch, history = []) {
 }
 
 export async function respondToText(message, env, transport = fetch, updateId = null) {
-  const text = String(message || "").trim().slice(0,4000);
+  let text = String(message || "").trim().slice(0,4000);
   const shortcuts = {Menu:"/menu",Chat:"/chat",Expense:"/expense",Income:"/income",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
-  // Telegram reply keyboard sends plain text; translate only exact labels, not a user question.
-  const command = normalizeCommand(shortcuts[text] || text);
+  // Telegram reply keyboard sends ordinary text; only exact labels are commands.
+  let command = normalizeCommand(shortcuts[text] || text);
+  const ownerId = String(env.TELEGRAM_OWNER_ID || "");
+  const hasUpdateId = Number.isSafeInteger(updateId);
+  if (command === "/cancel" || text === "Cancel") {
+    if (hasUpdateId) await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id<?").bind(ownerId,updateId).run();
+    return reply("Input cancelled. Your records were not changed.",BUTTONS);
+  }
+  const pendingKind = (command === "/expense" || command === "/income" || command === "/note")
+    && (text === command || shortcuts[text] === command) ? command.slice(1) : null;
+  if (pendingKind) {
+    if (hasUpdateId) await env.DB.prepare("INSERT INTO aumyra_compose_modes(owner_id,kind,update_id,started_at) VALUES(?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET kind=excluded.kind,update_id=excluded.update_id,started_at=excluded.started_at WHERE excluded.update_id>=aumyra_compose_modes.update_id")
+      .bind(ownerId,pendingKind,updateId,new Date().toISOString()).run();
+    if (pendingKind === "note") return reply("Send the note text now. /cancel to exit.",BUTTONS);
+    return reply("Send " + pendingKind + " as: 12.50 USDT food lunch\nCurrencies: USD, USDT, THB. /cancel to exit.",BUTTONS);
+  }
+  let composing = null;
+  if (hasUpdateId && text && !text.startsWith("/") && !shortcuts[text]) {
+    const pending=await env.DB.prepare("SELECT kind,update_id,started_at FROM aumyra_compose_modes WHERE owner_id=?").bind(ownerId).first();
+    const age=pending ? Date.now()-Date.parse(pending.started_at) : Infinity;
+    if (pending && updateId>pending.update_id && Number.isFinite(age) && age>=0 && age<15*60*1000) {
+      composing=pending;
+      text="/" + pending.kind + " " + text;
+      command=normalizeCommand(text);
+    }
+  }
+  if (hasUpdateId && !composing && (shortcuts[text] || text.startsWith("/"))) {
+    // Older Telegram retries must never cancel a newer prompt.
+    await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id<?").bind(ownerId,updateId).run();
+  }
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
   if (command === "/chat") return reply(env.AI || env.OPENAI_API_KEY
     ? "Chat is ready. Type any question; /menu returns to your controls."
@@ -68,12 +96,13 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   }
   if (command === "/income" || command === "/expense") {
     const match = MONEY.exec(text);
-    if (!match) return reply("Format: /expense 12.50 USDT food lunch\nOr: /income 20 USD teaching lesson");
+    if (!match) return reply(composing ? "Invalid amount. Send: 12.50 USDT food lunch, or /cancel." : "Format: /expense 12.50 USDT food lunch\nOr: /income 20 USD teaching lesson");
     const [,kind,amount,currency,category,note=""] = match;
     const cents = Math.round(Number(amount)*100);
     if (!Number.isSafeInteger(cents) || cents <= 0 || cents > 1e11) return reply("Enter a positive amount smaller than 1 billion.");
     await env.DB.prepare("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES(?,?,?,?,?,?,?)")
       .bind(kind.toLowerCase(),cents,currency.toUpperCase(),category.toLowerCase(),note,new Date().toISOString(),updateId).run();
+    if (composing && hasUpdateId) await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id=?").bind(ownerId,composing.update_id).run();
     return reply("Saved " + kind.toLowerCase() + ": " + amountText(cents,currency.toUpperCase()) + " · " + category.toLowerCase() + (note ? "\n" + note : "") + "\nOnly new Aumyra entries are counted.");
   }
   if (command === "/summary") {
@@ -110,6 +139,7 @@ export async function respondToText(message, env, transport = fetch, updateId = 
     if (!note || note === "/note") return reply("Format: /note buy coffee beans");
     if (note.length > 2000) return reply("Keep notes below 2,000 characters.");
     await env.DB.prepare("INSERT OR IGNORE INTO aumyra_notes(body,created_at,update_id) VALUES(?,?,?)").bind(note,new Date().toISOString(),updateId).run();
+    if (composing && hasUpdateId) await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id=?").bind(ownerId,composing.update_id).run();
     return reply("Note saved.");
   }
   if (command === "/notes") {
