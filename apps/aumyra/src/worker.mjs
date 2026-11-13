@@ -1,9 +1,9 @@
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
-const MENU = "Aumyra is ready.\n\nAssistant: send a message, or /ask your question.\nFinance: /expense 12.50 USDT food lunch\n         /income 20 USD teaching lesson\n         /summary, /history, /undo, /banks\nNotes: /note buy coffee beans, /notes\nOther: /help, /status";
-const BUTTONS = {keyboard:[[{text:"/expense"},{text:"/income"}],[{text:"/summary"},{text:"/history"}],[{text:"/note"},{text:"/notes"}],[{text:"/banks"},{text:"/help"}]],resize_keyboard:true,is_persistent:true};
+const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
+const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -36,8 +36,13 @@ export async function aiAnswer(text, env, transport = fetch) {
 
 export async function respondToText(message, env, transport = fetch, updateId = null) {
   const text = String(message || "").trim().slice(0,4000);
-  const command = normalizeCommand(text);
+  const shortcuts = {Menu:"/menu",Chat:"/chat",Expense:"/expense",Income:"/income",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
+  // Telegram reply keyboard sends plain text; translate only exact labels, not a user question.
+  const command = normalizeCommand(shortcuts[text] || text);
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
+  if (command === "/chat") return reply(env.AI || env.OPENAI_API_KEY
+    ? "Chat is ready. Type any question; /menu returns to your controls."
+    : "Chat button is ready, but AI is not configured. Finance and notes work without AI. Configure a provider to get replies to questions.", BUTTONS);
   if (command === "/help") return reply(HELP);
   if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.AI || env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
   if (command === "/banks") {
