@@ -232,7 +232,9 @@ export async function handleRequest(request,env,transport = fetch) {
     if (saved?.reply_text) {
       answer = {text:saved.reply_text,reply_markup:saved.reply_markup_json ? JSON.parse(saved.reply_markup_json) : null};
     } else if (ownsReply) {
-      answer = await respondToText(msg.text || "/help",env,transport,update.update_id);
+      answer = typeof msg.text==="string"
+        ? await respondToText(msg.text,env,transport,update.update_id)
+        : reply("AUMYRA currently accepts text messages only. Send a text question, or tap Chat, Expense, Income, Notes or Menu. Voice and image input are not enabled yet.",BUTTONS);
       const stored=await env.DB.prepare("UPDATE aumyra_processed_updates SET reply_text=?,reply_markup_json=? WHERE update_id=? AND created_at=? AND reply_text IS NULL")
         .bind(answer.text,answer.reply_markup ? JSON.stringify(answer.reply_markup) : null,update.update_id,claimTime).run();
       if (stored?.meta?.changes!==1) return new Response("Reply lease expired",{status:503});
