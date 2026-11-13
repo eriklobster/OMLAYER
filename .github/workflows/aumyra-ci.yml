@@ -64,6 +64,18 @@ jobs:
           db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
           db.execute("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
           assert db.execute("SELECT COUNT(*) FROM aumyra_entries").fetchone()[0]==1
+          cols=[row[1] for row in db.execute("PRAGMA table_info(aumyra_processed_updates)")]
+          assert "delivery_claimed_at" in cols
+          db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at,reply_text) VALUES (88,'2026-11-14T00:00:00Z','cached')")
+          first=db.execute("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)",
+                           ("2026-11-14T00:00:01Z",88,"2026-11-13T23:59:01Z"))
+          assert first.rowcount==1
+          second=db.execute("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)",
+                            ("2026-11-14T00:00:02Z",88,"2026-11-13T23:59:02Z"))
+          assert second.rowcount==0
+          delivered=db.execute("UPDATE aumyra_processed_updates SET delivered_at=?,delivery_claimed_at=NULL WHERE update_id=? AND delivery_claimed_at=?",
+                               ("2026-11-14T00:00:03Z",88,"2026-11-14T00:00:01Z"))
+          assert delivered.rowcount==1
           # Verify that only one concurrent webhook retry can claim the same D1 row.
           db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at) VALUES (?,?)",(77,"2020-01-01T00:00:00Z"))
           claimed=db.execute("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
