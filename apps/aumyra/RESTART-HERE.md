@@ -15,13 +15,15 @@
 ## Completed and proven
 - A code-only personal Telegram assistant built for Cloudflare Workers/D1.
 - Guard: exact private chat and owner's numeric Telegram user/chat ID plus Telegram webhook secret header.
-- /start /menu /help /status /banks (private targets) /expense /income /summary /history /undo /note /notes; optional AI text.
+- Private 4-row keyboard: Chat/Menu, Expense/Income, Summary/History, Notes/Goals; owner-only commands /start /menu /chat /help /status /banks /expense /income /summary /history /undo /note /notes /cancel /forget. Optional AI uses last six turns from D1.
 - D1 forward-only SQL migrations:
   - `migrations/0001_init.sql`: owner finance, notes, processed updates;
-  - `migrations/0002_undo_journal.sql`: idempotent /undo target journal.
+  - `migrations/0002_undo_journal.sql`: idempotent /undo target journal;
+  - `migrations/0003_ai_history.sql`: conversation turns and /forget replay journal;
+  - `migrations/0004_compose_modes.sql`: one-tap expense/income/note input mode and 15-minute timeout.
 - Replay-safe transaction writes; Telegram reply caching; current AI fallback model `gpt-4o-mini` (or opt-in Cloudflare Workers AI `@cf/google/gemma-4-26b-a4b-it`).
-- Telegram webhook script validates BotFather token's getMe.username == `aumyrabot` before updating webhooks and verifies actual getWebhookInfo afterwards.
-- GitHub Actions `Aumyra MVP tests` run #38 on commit `12417330fcc48fb179a9c08380abac4095eaab94`: **success**, including Node tests and both SQL migrations. Read latest CI again because later commits supersede this checkpoint.
+- Telegram webhook script validates BotFather token's getMe.username == `aumyrabot` **before** updating webhooks, then verifies getWebhookInfo, getMyCommands, getChatMenuButton. Mocked negative-token/unsafe-URL tests pass.
+- Latest verified CI before handoff edits: GitHub Actions #121 at `4ee7c88f`: **success**, Node bot + webhook setup tests, all four SQL migrations, PowerShell parser and Wrangler dry-run. Read latest CI again because later commits supersede this checkpoint.
 
 ## What is *not* done
 - No verified Aumyra production Worker URL. Do not assume `aumyra.omlayer.com` exists.
@@ -43,10 +45,9 @@
 
 ## Owner intervention
 Ask for **one action at a time**, primarily phone-friendly:
-1. Open Cloudflare dashboard → D1 and confirm whether `aumyra` database exists.
-2. If not, create dedicated D1. If yes, identify database safely without sharing credentials.
-3. Configure Worker secrets using authenticated dashboard (do not give values to assistant).
-4. Deploy and test.
+1. On a trusted Windows laptop with Node.js LTS, run the **one-line PowerShell command in `apps/aumyra/README.md`**. It verifies correct Cloudflare account and BotFather token, finds/creates dedicated D1, applies all migrations, deploys, prompts for Worker secrets privately, verifies /health, and registers Telegram webhook/menu. Alternatively reconnect an authorized Remote Desktop Commander laptop for assisted deployment.
+2. After the installer reports success, from owner Telegram send `/start`, tap Expense then enter a synthetic amount, inspect Summary and `/undo`; use `/note` and `/notes`; test Chat after explicitly enabling AI and `/forget` to clear history.
+Do not ask for Cloudflare manual D1 creation separately if the one-line bootstrap can do it.
 
 ## Useful command to start a fresh ChatGPT chat
 > Continue AUMYRA MVP from GitHub issue eriklobster/OMLAYER#22 and PR #20. Read apps/aumyra/RESTART-HERE.md, PROJECT-HQ.md, TASKS.md and latest CI, then perform highest-priority unfinished implementation, test and commit. No other bot/domain changes, no secrets, no fabricated live status. Report DONE | COMMIT/PR | TESTS | BLOCKER | NEXT ACTION.
