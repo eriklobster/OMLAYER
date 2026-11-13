@@ -392,3 +392,18 @@ test("health refuses to report ready when any primary D1 table is missing",async
     assert.deepEqual(await r.json(),{service:"aumyra",ready:false});
   }
 });
+
+test("owner receives a clear text-only response for voice and photos, never AI or finance writes",async()=>{
+  const e=env();let sent=null;
+  const request=new Request("https://example.test/telegram/webhook",{
+    method:"POST",headers:{"X-Telegram-Bot-Api-Secret-Token":"test-secret"},
+    body:JSON.stringify({update_id:2500,message:{
+      chat:{id:123,type:"private"},from:{id:123},photo:[{file_id:"not-a-real-file"}]
+    }})
+  });
+  const transport=async(_url,opts)=>{sent=JSON.parse(opts.body);return Response.json({ok:true})};
+  assert.equal((await handleRequest(request,e,transport)).status,200);
+  assert.match(sent.text,/text messages only/);
+  assert.equal(sent.reply_markup.keyboard[0][0].text,"Chat");
+  assert.equal(e.DB.entries.length,0);
+});
