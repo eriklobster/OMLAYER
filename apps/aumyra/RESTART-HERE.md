@@ -20,10 +20,18 @@
   - `migrations/0001_init.sql`: owner finance, notes, processed updates;
   - `migrations/0002_undo_journal.sql`: idempotent /undo target journal;
   - `migrations/0003_ai_history.sql`: conversation turns and /forget replay journal;
-  - `migrations/0004_compose_modes.sql`: one-tap expense/income/note input mode and 15-minute timeout.
+  - `migrations/0004_compose_modes.sql`: one-tap expense/income/note input mode and 15-minute timeout;
+  - `migrations/0005_delivery_lease.sql`: safe Telegram reply-delivery lease for concurrent retries.
 - Replay-safe transaction writes; Telegram reply caching; current AI fallback model `gpt-4o-mini` (or opt-in Cloudflare Workers AI `@cf/google/gemma-4-26b-a4b-it`).
 - Telegram webhook script validates BotFather token's getMe.username == `aumyrabot` **before** updating webhooks, then verifies getWebhookInfo, getMyCommands, getChatMenuButton. Mocked negative-token/unsafe-URL tests pass.
 - Latest verified CI before handoff edits: GitHub Actions #121 at `4ee7c88f`: **success**, Node bot + webhook setup tests, all four SQL migrations, PowerShell parser and Wrangler dry-run. Read latest CI again because later commits supersede this checkpoint.
+
+## Latest release-hardening checkpoint
+- Atomic webhook processing claim prevents parallel Telegram deliveries from writing duplicate expenses or invoking AI twice; conditional 60-second lease supports crashed-request recovery.
+- Separate Telegram reply-delivery lease blocks simultaneous duplicate sendMessage attempts. Network acknowledgement loss may still cause later retry; no guarantee of exactly-once external delivery.
+- Health verifies all required D1 tables and the new delivery lease column; production setup automatically runs a non-destructive smoke test of HTTPS health, webhook identity, command menu and best-effort owner welcome.
+- **CI #163 passed** at `3d16391e` after delivery-lease code fix; confirm newest CI after documentation commits before release.
+- Cloudflare Worker and Telegram bot have **not** been verified live. No assumption about worker hostname, secret existence, owner Telegram ID or historical finance import.
 
 ## What is *not* done
 - No verified Aumyra production Worker URL. Do not assume `aumyra.omlayer.com` exists.
