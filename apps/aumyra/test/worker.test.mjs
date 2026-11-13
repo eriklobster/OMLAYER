@@ -38,7 +38,7 @@ function fakeDB() {
       async run(){
         if(sql.startsWith("INSERT OR IGNORE INTO aumyra_processed_updates")) {
           if(updates.has(args[0]))return {meta:{changes:0}};
-          updates.set(args[0],{created_at:args[1],reply_text:null,reply_markup_json:null,delivered_at:null});return {meta:{changes:1}};
+          updates.set(args[0],{created_at:args[1],reply_text:null,reply_markup_json:null,delivered_at:null,delivery_claimed_at:null});return {meta:{changes:1}};
         }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET created_at")) {
           const u=updates.get(args[1]);
@@ -52,8 +52,23 @@ function fakeDB() {
           if(allowed)Object.assign(u,{reply_text:args[0],reply_markup_json:args[1]});
           return {meta:{changes:allowed ? 1 : 0}};
         }
+        if(sql.startsWith("UPDATE aumyra_processed_updates SET delivery_claimed_at=NULL")) {
+          const u=updates.get(args[0]);
+          const matches=u && u.delivery_claimed_at===args[1] && !u.delivered_at;
+          if(matches)u.delivery_claimed_at=null;
+          return {meta:{changes:matches ? 1 : 0}};
+        }
+        if(sql.startsWith("UPDATE aumyra_processed_updates SET delivery_claimed_at")) {
+          const u=updates.get(args[1]);
+          const matches=u && !u.delivered_at && (!u.delivery_claimed_at || u.delivery_claimed_at<args[2]);
+          if(matches)u.delivery_claimed_at=args[0];
+          return {meta:{changes:matches ? 1 : 0}};
+        }
         if(sql.startsWith("UPDATE aumyra_processed_updates SET delivered_at")) {
-          updates.get(args[1]).delivered_at=args[0];return {meta:{changes:1}};
+          const u=updates.get(args[1]);
+          const matches=u && u.delivery_claimed_at===args[2];
+          if(matches)Object.assign(u,{delivered_at:args[0],delivery_claimed_at:null});
+          return {meta:{changes:matches ? 1 : 0}};
         }
         if(sql.startsWith("DELETE FROM aumyra_processed_updates")) {
           const u=updates.get(args[0]);
@@ -406,4 +421,56 @@ test("owner receives a clear text-only response for voice and photos, never AI o
   assert.match(sent.text,/text messages only/);
   assert.equal(sent.reply_markup.keyboard[0][0].text,"Chat");
   assert.equal(e.DB.entries.length,0);
+});
+
+test("two concurrent retries of cached Telegram reply send once",async()=>{
+  const e=env();
+  // Cached answer exists from an earlier attempt that got a definite 500.
+  e.DB.updates.set(3000,{
+    created_at:new Date().toISOString(),
+    reply_text:"Cached response",reply_markup_json:null,
+    delivered_at:null,delivery_claimed_at:null
+  });
+  let release;
+  const gate=new Promise(resolve=>{release=resolve});
+  let sends=0;
+  const transport=async()=>{sends++;await gate;return Response.json({ok:true})};
+  const first=handleRequest(webhook("/start",3000),e,transport);
+  const second=handleRequest(webhook("/start",3000),e,transport);
+  const loser=await second;
+  assert.equal(loser.status,503);
+  release();
+  assert.equal((await first).status,200);
+  assert.equal(sends,1);
+  assert.ok(e.DB.updates.get(3000).delivered_at);
+  assert.equal((await handleRequest(webhook("/start",3000),e,transport)).status,200);
+  assert.equal(sends,1);
+});
+test("definite Telegram send failure releases delivery lease for immediate retry",async()=>{
+  const e=env();let sends=0;
+  const transport=async()=>{
+    sends++;
+    return sends===1?new Response("unavailable",{status:500}):Response.json({ok:true});
+  };
+  assert.equal((await handleRequest(webhook("/note buy milk",3100),e,transport)).status,503);
+  assert.equal(e.DB.notes.length,1);
+  assert.equal(e.DB.updates.get(3100).delivery_claimed_at,null);
+  assert.equal((await handleRequest(webhook("/note buy milk",3100),e,transport)).status,200);
+  assert.equal(sends,2);
+  assert.equal(e.DB.notes.length,1);
+});
+test("uncertain network failure retains lease until expiry, then retries cached answer",async()=>{
+  const e=env();let attempts=0;
+  const transport=async()=>{
+    attempts++;
+    if(attempts===1) throw new Error("timeout after possible send");
+    return Response.json({ok:true});
+  };
+  assert.equal((await handleRequest(webhook("/start",3200),e,transport)).status,503);
+  assert.ok(e.DB.updates.get(3200).delivery_claimed_at);
+  assert.equal((await handleRequest(webhook("/start",3200),e,transport)).status,503);
+  assert.equal(attempts,1);
+  e.DB.updates.get(3200).delivery_claimed_at="2020-01-01T00:00:00.000Z";
+  assert.equal((await handleRequest(webhook("/start",3200),e,transport)).status,200);
+  assert.equal(attempts,2);
 });
