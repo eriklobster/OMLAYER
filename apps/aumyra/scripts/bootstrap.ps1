@@ -41,8 +41,9 @@ Check-Step "npm install"
 & npm.cmd test
 Check-Step "Aumyra behavior tests"
 Write-Host "Cloudflare authentication (browser may open)..."
-& npx.cmd --no-install wrangler whoami
-if ($LASTEXITCODE -ne 0) {
+$identity = (& npx.cmd --no-install wrangler whoami | Out-String)
+Write-Host $identity
+if ($LASTEXITCODE -ne 0 -or $identity -match "not authenticated|not logged in") {
   & npx.cmd --no-install wrangler login
   Check-Step "Cloudflare login"
   & npx.cmd --no-install wrangler whoami
