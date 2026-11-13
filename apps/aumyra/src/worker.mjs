@@ -274,7 +274,8 @@ export async function handleRequest(request,env,transport = fetch) {
     if (!result.ok) { definitelyRejected=true; throw new Error("Telegram send failed"); }
     await env.DB.prepare("UPDATE aumyra_processed_updates SET delivered_at=?,delivery_claimed_at=NULL WHERE update_id=? AND delivery_claimed_at=?")
       .bind(new Date().toISOString(),update.update_id,deliveryLease).run();
-    return new Response("ok");
+    // Response body is only for authenticated deployment probes; Telegram uses HTTP status.
+    return new Response("delivered");
   } catch {
     if (definitelyRejected) {
       // A definite Telegram rejection can be retried immediately; an uncertain
