@@ -509,7 +509,7 @@ test("owner-only widget queries return read-only D1 views via answerWidgetQuery"
   const widgetRequest=(data,id=3400,owner=123,chat=123)=>new Request("https://example.test/telegram/webhook",{
     method:"POST",headers:{"X-Telegram-Bot-Api-Secret-Token":"test-secret"},
     body:JSON.stringify({update_id:id,widget_query:{
-      id:"widget-request-"+id,from:{id:owner},chat:{id:chat,type:"private"},message_id:100,data
+      id:"widget-request-"+id,from:{id:owner},chat:{id:chat,type:"private"},message_id:100,type:{type:"data"},data
     }})
   });
   assert.equal((await handleRequest(widgetRequest("summary"),e,transport)).status,200);
@@ -531,4 +531,23 @@ test("owner-only widget queries return read-only D1 views via answerWidgetQuery"
   assert.equal(calls.length,8);
   assert.equal((await handleRequest(widgetRequest("notes",3603),e,transport)).status,200);
   assert.equal(calls.length,9);
+});
+
+test("native widget refuses signed and payment-type actions despite allowlisted labels",async()=>{
+  const e=env();let sends=0;
+  const transport=async()=>{sends++;return Response.json({ok:true})};
+  for(const t of [
+    {type:"sign_data",wallet:{address:"bogus"},sign_data:"{}"},
+    {type:"sent_transaction",wallet:{address:"bogus"},msg_hash:"bad"},
+    {type:"data",wallet_card:{address:"bogus"}}
+  ]){
+    const req=new Request("https://example.test/telegram/webhook",{
+      method:"POST",headers:{"X-Telegram-Bot-Api-Secret-Token":"test-secret"},
+      body:JSON.stringify({update_id:6000,widget_query:{id:"test",from:{id:123},
+        chat:{type:"private",id:123},message_id:1,type:t,data:"summary"}})
+    });
+    assert.equal((await handleRequest(req,e,transport)).status,200);
+  }
+  assert.equal(sends,0);
+  assert.equal(e.DB.entries.length,0);
 });
