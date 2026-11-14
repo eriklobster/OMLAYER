@@ -102,6 +102,8 @@ const server = createServer((req,res) => {
     for(const route of routes){
       try {
         await keyboard.goto(origin+route,{waitUntil:"domcontentloaded"});
+        const hiddenSkip=await keyboard.locator(".skip-link").boundingBox();
+        assert.ok(hiddenSkip && hiddenSkip.y+hiddenSkip.height<=2,"skip link should be offscreen before keyboard focus");
         await keyboard.keyboard.press("Tab");
         const focused=await keyboard.evaluate(()=>({text:document.activeElement?.textContent?.trim(),outline:getComputedStyle(document.activeElement).outlineStyle}));
         assert.equal(focused.text,"Skip to content");
