@@ -142,7 +142,7 @@
     .footer-inner span:nth-child(2) { color:#9ca3a5; letter-spacing:.22em; }
     .footer-inner span:last-child { justify-self:end; }
 
-    .reveal { opacity:0; transform:translateY(26px); transition:opacity .8s var(--ease),transform .8s var(--ease); }
+    .reveal { opacity:1; transform:none; transition:opacity .8s var(--ease),transform .8s var(--ease); }
     .reveal.is-visible { opacity:1; transform:none; }
     @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.identity-field::before,.identity-field::after,.identity-field img{animation:none} }
     @media (max-width:980px) {
@@ -183,7 +183,18 @@
       .footer-inner { grid-template-columns:1fr auto; }
       .footer-inner span:first-child { display:none; }
     }
-  </style>
+  /* P0 progressive enhancement: content is readable without JavaScript. */
+@keyframes oml-content-enter { from { opacity:0; transform:translateY(22px) } to { opacity:1; transform:none } }
+.reveal.is-visible,.reveal.on { animation:oml-content-enter .7s var(--ease) both }
+.stagger.is-visible > * { animation:oml-content-enter .65s var(--ease) both }
+.process-fallback { list-style:none; padding:0; margin:36px 0 0; display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px;counter-reset:method }
+.process-fallback li { counter-increment:method;border:1px solid var(--line);padding:23px 24px;background:var(--glass,rgba(255,255,255,.02)); }
+.process-fallback li::before{content:counter(method,decimal-leading-zero);font:400 .65rem/1 "DM Mono",monospace;color:var(--signal);display:block;margin-bottom:14px}
+.process-fallback strong { font:500 1.3rem/1.2 Manrope,Arial,sans-serif;letter-spacing:-.02em }
+.process-fallback p { margin:12px 0 0;color:var(--muted);line-height:1.65 }
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation:none!important;transition:none!important}.reveal,.stagger>*{opacity:1!important;transform:none!important}}
+
+</style>
 <link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
@@ -297,7 +308,7 @@
         <h2 id="next-title">Have operations living in chat? <span>Let’s turn them into a system.</span></h2>
         <p>Tell us what people repeat, where information gets lost and what needs to connect. We’ll respond with clear questions and a practical next step.</p>
         <div class="actions">
-          <a class="button primary" href="mailto:hello@omlayer.com">hello@omlayer.com</a>
+          <!--email_off--><a class="button primary" href="mailto:hello@omlayer.com">hello@omlayer.com</a><!--/email_off-->
           <a class="button" href="https://t.me/omlayer" target="_blank" rel="noopener noreferrer">Telegram</a>
           <a class="button" href="https://wa.me/omlayer" target="_blank" rel="noopener noreferrer">WhatsApp</a>
         </div>

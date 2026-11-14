@@ -67,6 +67,52 @@ const server = createServer((req,res) => {
       findings.push({route:"/",width,mode:"dark",overflow:await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth))});
       await context.close();
     }
+    // P0: prove all public content and contact links remain usable without scripts.
+    for (const width of [320,390,1366]) {
+      const nojs=await browser.newContext({viewport:{width,height:850},javaScriptEnabled:false});
+      const page=await nojs.newPage();
+      for(const route of routes) {
+        try {
+          const res=await page.goto(origin+route,{waitUntil:"domcontentloaded"});
+          assert.equal(res.status(),200);
+          const state=await page.evaluate(() => ({
+            hidden:[...document.querySelectorAll(".reveal,.stagger > *")].filter(el=>getComputedStyle(el).opacity==="0").length,
+            overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+            email:document.querySelector('a[href="mailto:hello@omlayer.com"]')?.textContent||"",
+            count:document.body.innerText.length
+          }));
+          assert.equal(state.hidden,0);
+          assert.ok(state.overflow<=2,"horizontal overflow "+state.overflow+"px");
+          assert.ok(state.email.includes("hello@omlayer.com"));
+          assert.ok(state.count>100);
+          if(route==="/"){
+            assert.equal(await page.locator(".process-fallback li").count(),7);
+            assert.equal(await page.locator(".process-orbit").isVisible(),false);
+          }
+          const name=route==="/"?"home":route.split("/")[2];
+          await page.screenshot({path:resolve(out,name+"-"+width+"-nojs.png"),fullPage:true});
+          findings.push({route,width,mode:"no-js",hidden:state.hidden,overflow:state.overflow});
+        } catch(e){failures.push({route,width,mode:"no-js",error:e.message})}
+      }
+      await nojs.close();
+    }
+    // P0: keyboard and Reduced Motion on representative mobile size.
+    const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:"reduce"});
+    const keyboard=await reduced.newPage();
+    for(const route of routes){
+      try {
+        await keyboard.goto(origin+route,{waitUntil:"domcontentloaded"});
+        const hiddenSkip=await keyboard.locator(".skip-link").boundingBox();
+        assert.ok(hiddenSkip && hiddenSkip.y+hiddenSkip.height<=2,"skip link should be offscreen before keyboard focus");
+        await keyboard.keyboard.press("Tab");
+        const focused=await keyboard.evaluate(()=>({text:document.activeElement?.textContent?.trim(),outline:getComputedStyle(document.activeElement).outlineStyle}));
+        assert.equal(focused.text,"Skip to content");
+        assert.equal(focused.outline,"solid");
+        assert.equal(await keyboard.evaluate(()=>getComputedStyle(document.querySelector(".reveal")).opacity),"1");
+        findings.push({route,width:390,mode:"reduced-motion-keyboard",skip:true});
+      }catch(e){failures.push({route,width:390,mode:"reduced-motion-keyboard",error:e.message})}
+    }
+    await reduced.close();
   } finally {await browser.close();await new Promise(done=>server.close(done));}
   console.log(JSON.stringify({findings,failures},null,2));
   if (failures.length) process.exitCode=1;
