@@ -13,7 +13,7 @@ test("native Telegram 10.4 dashboard is a small self-contained safe HTML widget"
   assert.match(AUMYRA_WIDGET_HTML,/--tg-theme-text-color/);
   assert.doesNotMatch(AUMYRA_WIDGET_HTML,/<input\b|<textarea\b|<iframe\b|<form\b|<script\s+src|@import|XMLHttpRequest|WebSocket|fetch\s*\(/i);
   assert.doesNotMatch(AUMYRA_WIDGET_HTML, /wallet\.|sendTransaction\(|payment|Stars|invoice/i);
-  assert.deepEqual(WIDGET_VIEWS,["summary","history","notes","goals","expense","income","chat","help"]);
+  assert.deepEqual(WIDGET_VIEWS,["today","summary","history","notes","goals","status","expense","income","chat","help"]);
   for(const action of WIDGET_VIEWS)assert.ok(AUMYRA_WIDGET_HTML.includes('data-view="'+action+'"'));
 });
 test("widget query result truncates by UTF-8 bytes without splitting codepoints",()=>{
@@ -25,9 +25,9 @@ test("widget query result truncates by UTF-8 bytes without splitting codepoints"
   assert.equal(utf8Preview("hello"),"hello");
 });
 
-test("widget auto-loads private owner summary without polling and preserves Unicode",()=>{
+test("widget auto-loads private owner daily overview without polling and preserves Unicode",()=>{
   assert.match(AUMYRA_WIDGET_HTML,/app\.chatType==='private'/);
-  assert.match(AUMYRA_WIDGET_HTML,/ask\('summary'\)/);
+  assert.match(AUMYRA_WIDGET_HTML,/ask\('today'\)/);
   assert.doesNotMatch(AUMYRA_WIDGET_HTML,/setInterval|wallet|sendTransaction|fetch\s*\(/i);
   for(const size of [7,11,41,980]){
     const text="🐘สวัสดี 😀".repeat(200);

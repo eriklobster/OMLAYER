@@ -12,6 +12,7 @@ export const COMMANDS = [
   {command:"cancel",description:"Exit a finance or note prompt"},
   {command:"expense",description:"Record an expense"},
   {command:"income",description:"Record income"},
+  {command:"today",description:"Today in Thailand: income and expenses"},
   {command:"summary",description:"Current month finances"},
   {command:"history",description:"Recent transactions"},
   {command:"undo",description:"Void last transaction"},
