@@ -1,0 +1,55 @@
+name: Aumyra manual Cloudflare deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_aumyra_only:
+        description: "I verified this is the dedicated Aumyra D1 and Worker"
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: inputs.confirm_aumyra_only == true
+    runs-on: ubuntu-latest
+    environment: aumyra-production
+    defaults:
+      run:
+        working-directory: apps/aumyra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and test
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+      - name: Bind dedicated D1 without printing database ID
+        env:
+          AUMYRA_D1_ID: ${{ secrets.AUMYRA_D1_DATABASE_ID }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+          value = os.getenv("AUMYRA_D1_ID","")
+          if not re.fullmatch(r"[0-9a-fA-F-]{36}",value):
+              raise SystemExit("Dedicated D1 ID missing or malformed")
+          config = Path("wrangler.toml")
+          data = config.read_text()
+          if "REPLACE_WITH_AUMYRA_D1_ID" not in data:
+              raise SystemExit("D1 placeholder missing")
+          config.write_text(data.replace("REPLACE_WITH_AUMYRA_D1_ID",value))
+          print("Aumyra D1 binding configured (ID redacted)")
+          PY
+      - name: Apply additive migration and deploy dedicated Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx wrangler d1 migrations apply aumyra --remote
+          npx wrangler deploy

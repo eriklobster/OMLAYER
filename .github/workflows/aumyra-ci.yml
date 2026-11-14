@@ -1,0 +1,127 @@
+name: Aumyra MVP tests
+
+on:
+  pull_request:
+    paths:
+      - 'apps/aumyra/**'
+      - '.github/workflows/aumyra-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Only the newest candidate is relevant; avoid duplicate push + PR runs.
+concurrency:
+  group: aumyra-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node 22 behavior tests
+        run: node --test apps/aumyra/test/*.test.mjs
+      - name: Cloudflare Worker bundle dry run (no remote deployment)
+        working-directory: apps/aumyra
+        shell: bash
+        run: |
+          npm install --no-audit --no-fund
+          python3 - <<'PY'
+          from pathlib import Path
+          cfg=Path("wrangler.toml")
+          source=cfg.read_text()
+          assert "REPLACE_WITH_AUMYRA_D1_ID" in source
+          cfg.write_text(source.replace("REPLACE_WITH_AUMYRA_D1_ID","00000000-0000-0000-0000-000000000000"))
+          PY
+          npx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/aumyra-bundle"
+      - name: Aumyra PowerShell bootstrap syntax validation (no remote changes)
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          $scriptPath = "apps/aumyra/scripts/bootstrap.ps1"
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $scriptPath), [ref]$tokens, [ref]$errors)
+          if ($errors.Count -gt 0) {
+            $errors | Format-List | Out-String | Write-Error
+            exit 1
+          }
+          $source = Get-Content -LiteralPath $scriptPath -Raw
+          if (-not $source.Contains("wrangler d1 export aumyra --remote") -or -not $source.Contains("Refusing to migrate existing data.")) {
+            throw "Bootstrap must preserve a private D1 export before existing DB migrations."
+          }
+          if (-not $source.Contains('TELEGRAM_WEBHOOK_SECRET') -or -not $source.Contains("postdeploy-smoke.mjs")) {
+            throw "Bootstrap is missing Telegram secret delivery or live smoke verification."
+          }
+          Write-Host "PowerShell syntax + existing-data backup and release gates valid."
+      - name: SQLite schema smoke
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import sqlite3, pathlib
+          db=sqlite3.connect(":memory:")
+          for migration in sorted(pathlib.Path("apps/aumyra/migrations").glob("*.sql")):
+              db.executescript(migration.read_text())
+          for table in ("aumyra_entries","aumyra_notes","aumyra_processed_updates","aumyra_undo_ops","aumyra_ai_turns","aumyra_chat_resets","aumyra_compose_modes"):
+              assert db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone()
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
+          db.execute("INSERT OR IGNORE INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES ('expense',1250,'USDT','food','coffee','2026-11-13T07:00:00Z',10)")
+          assert db.execute("SELECT COUNT(*) FROM aumyra_entries").fetchone()[0]==1
+          cols=[row[1] for row in db.execute("PRAGMA table_info(aumyra_processed_updates)")]
+          assert "delivery_claimed_at" in cols
+          assert "reply_kind" in cols
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone() is None
+          db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at,reply_text) VALUES (88,'2026-11-14T00:00:00Z','cached')")
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone()[0]=="text"
+          assert db.execute("UPDATE aumyra_processed_updates SET reply_kind='widget' WHERE update_id=88").rowcount==1
+          assert db.execute("SELECT reply_kind FROM aumyra_processed_updates WHERE update_id=88").fetchone()[0]=="widget"
+          try:
+              db.execute("UPDATE aumyra_processed_updates SET reply_kind='invalid' WHERE update_id=88")
+              raise AssertionError("D1 permitted invalid widget reply kind")
+          except sqlite3.IntegrityError:
+              pass
+          first=db.execute("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)",
+                           ("2026-11-14T00:00:01Z",88,"2026-11-13T23:59:01Z"))
+          assert first.rowcount==1
+          second=db.execute("UPDATE aumyra_processed_updates SET delivery_claimed_at=? WHERE update_id=? AND delivered_at IS NULL AND (delivery_claimed_at IS NULL OR delivery_claimed_at<?)",
+                            ("2026-11-14T00:00:02Z",88,"2026-11-13T23:59:02Z"))
+          assert second.rowcount==0
+          delivered=db.execute("UPDATE aumyra_processed_updates SET delivered_at=?,delivery_claimed_at=NULL WHERE update_id=? AND delivery_claimed_at=?",
+                               ("2026-11-14T00:00:03Z",88,"2026-11-14T00:00:01Z"))
+          assert delivered.rowcount==1
+          # Verify that only one concurrent webhook retry can claim the same D1 row.
+          db.execute("INSERT INTO aumyra_processed_updates(update_id,created_at) VALUES (?,?)",(77,"2020-01-01T00:00:00Z"))
+          claimed=db.execute("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                             ("2026-11-14T00:00:00Z",77,"2020-01-01T00:00:00Z"))
+          assert claimed.rowcount==1
+          stale=db.execute("UPDATE aumyra_processed_updates SET created_at=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                           ("2026-11-14T00:00:01Z",77,"2020-01-01T00:00:00Z"))
+          assert stale.rowcount==0
+          committed=db.execute("UPDATE aumyra_processed_updates SET reply_text=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                               ("saved",77,"2026-11-14T00:00:00Z"))
+          assert committed.rowcount==1
+          duplicate=db.execute("UPDATE aumyra_processed_updates SET reply_text=? WHERE update_id=? AND created_at=? AND reply_text IS NULL",
+                               ("duplicate",77,"2026-11-14T00:00:00Z"))
+          assert duplicate.rowcount==0
+          assert db.execute("SELECT reply_text FROM aumyra_processed_updates WHERE update_id=77").fetchone()[0]=="saved"
+          # Guided finance-input modes reject out-of-order Telegram updates.
+          composer="INSERT INTO aumyra_compose_modes(owner_id,kind,update_id,started_at) VALUES(?,?,?,?) ON CONFLICT(owner_id) DO UPDATE SET kind=excluded.kind,update_id=excluded.update_id,started_at=excluded.started_at WHERE excluded.update_id>=aumyra_compose_modes.update_id"
+          db.execute(composer,("test-owner","expense",11,"2026-11-14T00:00:00Z"))
+          db.execute(composer,("test-owner","income",10,"2026-11-14T00:00:01Z"))
+          assert db.execute("SELECT kind,update_id FROM aumyra_compose_modes").fetchone()==("expense",11)
+          # /undo uses soft-void; original ledger entries remain present.
+          db.execute("UPDATE aumyra_entries SET voided_at=? WHERE update_id=? AND voided_at IS NULL",("2026-11-14T00:00:00Z",10))
+          assert db.execute("SELECT COUNT(*),COUNT(voided_at) FROM aumyra_entries").fetchone()==(1,1)
+          # UTC+07:00 reporting: 18:10Z is tomorrow in Thailand, 12:00Z is not.
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES (?,?,?,?,?,?,?)",
+                     ("expense",4200,"THB","food","local-day","2026-11-13T18:10:00.000Z",12))
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES (?,?,?,?,?,?,?)",
+                     ("expense",1000,"THB","food","prior-day","2026-11-13T12:00:00.000Z",13))
+          rows=db.execute("SELECT kind,currency,SUM(amount_cents),COUNT(*) FROM aumyra_entries WHERE voided_at IS NULL AND substr(datetime(created_at,'+7 hours'),1,10)=? GROUP BY kind,currency",
+                          ("2026-11-14",)).fetchall()
+          assert rows==[("expense","THB",4200,1)]
+          print("SQL schema, replay lease, composer ordering and soft-void smoke OK")
+          PY
