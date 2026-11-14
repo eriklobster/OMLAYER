@@ -210,7 +210,15 @@ export async function handleRequest(request,env,transport = fetch) {
       && widgetQuery.from && String(widgetQuery.from.id)===String(env.TELEGRAM_OWNER_ID)
       && widgetQuery.chat?.type==="private"
       && String(widgetQuery.chat.id)===String(env.TELEGRAM_OWNER_ID)
-      && typeof widgetQuery.data==="string" && WIDGET_VIEWS.includes(widgetQuery.data);
+      && !widgetQuery.inline_message_id
+      && Number.isSafeInteger(widgetQuery.message_id)
+      // The widget never uses a wallet. Ignore sign_data/sent_transaction,
+      // even when their untrusted "data" matches a permitted dashboard view.
+      && widgetQuery.type?.type==="data"
+      && !widgetQuery.type.wallet_card
+      && typeof widgetQuery.data==="string"
+      && new TextEncoder().encode(widgetQuery.data).length<=64
+      && WIDGET_VIEWS.includes(widgetQuery.data);
     if (!valid) return new Response("ok");
     let value;
     try {
