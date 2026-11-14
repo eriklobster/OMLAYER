@@ -40,3 +40,13 @@
 - Weekly GitHub backup: [2026-W46 Actions SUCCESS](https://github.com/eriklobster/OMLAYER/actions/runs/43380943364). GitHub source Releases tagged `website/production/2026-W46` and `website/staging/2026-W46` are present; scheduled Monday runs remain enabled on default `main`.
 - Live `https://test.omlayer.com` is not verified. Tracking [issue #15](https://github.com/eriklobster/OMLAYER/issues/15) for owner-side staging Pages project, credentials and hostname binding.
 - Next worker: verify public HTTPS stage and mobile visual QA after GitHub staging deployment becomes active. Never publish draft PR #8 or PR #3 to production without owner review. Separate P0 Telegram/webhook incident remains higher priority.
+
+## Owner release decision and P0 staging checkpoint — 2026-11-14
+- **Production frozen:** User requires all visual and reliability changes on `staging` until explicit confirmation in the OMLAYER chat. Do not automatically merge to `main`.
+- Shared dark/light theme, blue/cyan/mint logo, contact CTA cleanup, 96px search PNG and sitemap update were integrated with PR #8 to `staging` only.
+- P0 no-JS reliability, accessible portfolio skip links, Cloudflare email markup and test coverage integrated via [PR #23](https://github.com/eriklobster/OMLAYER/pull/23) at `5055f5392a47df4ea3d7e1620e1166d4f04ea010` to **staging only**. Original stale PR #3 left unchanged as evidence, not a merge candidate.
+- Evidence: Playwright Chromium QA on revised P0 [SUCCESS](https://github.com/eriklobster/OMLAYER/actions/runs/43550669716), smoke [SUCCESS](https://github.com/eriklobster/OMLAYER/actions/runs/43550669786). iPhone Safari, email receipt and messenger recipient tests remain owner-side.
+- Existing main-based weekly website snapshot workflow is already active (PRs #12/#14/#16). Duplicate backup PR #19 closed without merge. Recovery does not include Cloudflare databases/DNS/secrets.
+- Dedicated staging `test.omlayer.com` not deployed: GH preview job skipped because `OMLAYER_STAGING_PAGES_PROJECT` is unset; see issue #15. Cloudflare Pages PR previews are separate from the named staging project.
+- OMLAYER website backlog: [issue #21](https://github.com/eriklobster/OMLAYER/issues/21). Next: real iPhone acceptance, Cloudflare staging binding, verified business inbox, and scope-limited OKC evidence.
+- Scheduled three-hour autonomous OMLAYER task creation blocked by 5 active automation slots. Do not replace unrelated ROAMDOTS, RDC or Tower tasks without owner choice.
