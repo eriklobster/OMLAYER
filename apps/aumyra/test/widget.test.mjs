@@ -24,3 +24,16 @@ test("widget query result truncates by UTF-8 bytes without splitting codepoints"
   assert.ok(!result.includes("\uFFFD"));
   assert.equal(utf8Preview("hello"),"hello");
 });
+
+test("widget auto-loads private owner summary without polling and preserves Unicode",()=>{
+  assert.match(AUMYRA_WIDGET_HTML,/app\.chatType==='private'/);
+  assert.match(AUMYRA_WIDGET_HTML,/ask\('summary'\)/);
+  assert.doesNotMatch(AUMYRA_WIDGET_HTML,/setInterval|wallet|sendTransaction|fetch\s*\(/i);
+  for(const size of [7,11,41,980]){
+    const text="🐘สวัสดี 😀".repeat(200);
+    const out=utf8Preview(text,size);
+    assert.ok(Buffer.byteLength(out,"utf8")<=size);
+    assert.ok(!out.includes("\uFFFD"));
+    assert.ok(out.endsWith("…"));
+  }
+});
