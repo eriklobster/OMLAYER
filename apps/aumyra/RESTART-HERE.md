@@ -47,6 +47,13 @@
 - **CI #196 passed** at `fbbe4433`; newer docs may generate runs. Real Telegram /app on iPhone **not verified**, and Worker remains unprovisioned. Dell is OFFLINE as last reported. Work via GitHub while offline.
 - On live deployment, owner must tap App on iPhone, verify widget rendering and taps, and validate classic Menu fallback. Do not claim the Telegram rollout applies beyond private chats.
 
+## Latest daily-finance and widget milestone (2026-11-14)
+- **Today** button and `/today` report new non-voided D1 income/expense by USD/USDT/THB, using Thailand calendar dates (UTC+7). This is **not** historic bank balances or freely spendable funds; older HERMAYA archive remains absent.
+- Widget opens with a one-time private Today request, provides ten controls, respects 32KB HTML/4KB compressed limit, and truncates multibyte Thai/emoji text safely.
+- Typed `widget_query.type.type='data'` is required, and signed/transaction/wallet-card queries are rejected. No payment or wallet behavior enabled.
+- `apps/aumyra/test/today.test.mjs` covers daily date and truthful empty state; SQLite smoke covers midnight conversion and excludes voided entries. **CI #208 passed** on code commit `0db882bb`; newer handoff changes may follow.
+- Dell OFFLINE last query, no Cloudflare deployment or live iPhone /start /app. Do not merge PR #20 until real owner acceptance.
+
 ## What is *not* done
 - No verified Aumyra production Worker URL. Do not assume `aumyra.omlayer.com` exists.
 - No verified dedicated Aumyra D1 ID, Worker binding or production migrations.
