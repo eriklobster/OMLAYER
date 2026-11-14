@@ -26,3 +26,18 @@
 - [x] Bootstrap weekly workflow via PR #14; [2026-W46 run PASS](https://github.com/eriklobster/OMLAYER/actions/runs/43380943364), with [production](https://github.com/eriklobster/OMLAYER/releases/tag/website/production/2026-W46) and [staging](https://github.com/eriklobster/OMLAYER/releases/tag/website/staging/2026-W46) source Releases.
 - [ ] Complete [staging Cloudflare Pages binding issue #15](https://github.com/eriklobster/OMLAYER/issues/15) and visually verify test.omlayer.com.
 - [ ] Review PR #8 on iPhone; keep PR #3 reliability and P0 bot migration issues separate.
+
+## P0 staging reliability integrated — 2026-11-14
+- [x] Merged PR #23 to **staging only** at `5055f5392a47df4ea3d7e1620e1166d4f04ea010`, porting the useful October PR #3 fixes without overwriting November theme/portfolio.
+- [x] Make all four pages readable with JavaScript disabled; preserve normal reveal enhancements.
+- [x] Add seven method descriptions for no-JS clients; preserve the existing animated process for normal visitors.
+- [x] Fix Chillum skip navigation, guarded IntersectionObserver, keyboard focus; repair ROAMDOTS skip link hidden-until-focus.
+- [x] Preserve WhatsApp/Telegram/mailto URLs; wrap public business email in Cloudflare email_off comments to reduce JS dependency.
+- [x] Chromium QA passed no-JS, theme persistence, overflow and Reduced Motion/keyboard across 320/390/768/1366; see https://github.com/eriklobster/OMLAYER/actions/runs/43550669716.
+- [ ] Real iPhone Safari acceptance and WhatsApp/Telegram intended-recipient test, plus external email receipt/reply test. None yet proven.
+- [ ] Verify actual Cloudflare-transformed HTML after release; browser tests only ran against local static source.
+- [ ] Confirm independent motion control option or bounded-duration motion (owner decision; no prominent Play/Pause).
+- [ ] Establish dedicated `test.omlayer.com` staging Pages project (issue #15). Current repo staging smoke passes but standalone deployment step remains skipped.
+- [ ] Merge staged website changes into `main` only after explicit owner approval and production release gates.
+- [ ] Continue P1 OKC evidence and founder/offers via separate approved staging PRs; do not invent client proof.
+- [ ] Three-hour ChatGPT staging automation cannot be activated until an active-task slot is freed (five-task quota); do not silently replace other projects.
