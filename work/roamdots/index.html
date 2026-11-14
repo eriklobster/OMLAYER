@@ -45,6 +45,10 @@ body{background:radial-gradient(60% 48% at 82% 12%,rgba(70,112,196,.15),transpar
 .process-fallback p { margin:12px 0 0;color:var(--muted);line-height:1.65 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation:none!important;transition:none!important}.reveal,.stagger>*{opacity:1!important;transform:none!important}}
 
+
+/* Hide skip navigation until keyboard focus; keep focus highly visible. */
+.skip-link{position:fixed;left:16px;top:12px;z-index:100;padding:11px 16px;color:var(--ink);background:var(--paper);transform:translateY(-160%);transition:transform .2s ease}
+.skip-link:focus,.skip-link:focus-visible{transform:translateY(0);outline:2px solid var(--signal);outline-offset:3px}
 </style>
 <link rel="stylesheet" href="/site-theme.css">
 </head>
