@@ -29,6 +29,10 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Add `0006_widget_reply_kind.sql` for replay-safe sendWidget vs sendMessage delivery. Keep private finance and notes untouched.
 - [x] Register `/app` and `widget_query` in webhook allowed_updates, test BotFather integration, widget HTML raw+zlib limits, disabled wallet/payment paths, unauthorized query rejection, no ledger mutations, and native sendWidget retry dedupe.
 - [x] Extend signed production smoke with synthetic `/app`, reporting `widgetProbe` separately from core Telegram readiness. CI #196 success at `fbbe4433` before handoff changes.
+- [x] Security harden Bot API 10.4 widget queries: reject signed/TON transaction types and wallet-card query events, require original private message context, strict 64-byte command allowance, preserve read-only finance access.
+- [x] Auto-load Thailand-local Today view once when an AUMYRA private widget appears (no polling); correct UTF-8 boundary truncation for Thai/emoji; expose Today and Status in 10-button native dashboard.
+- [x] Implement /today as a Thailand UTC+07:00 daily ledger report grouped by currency and entry type; exclude voided transactions, archived history and invented spendable bank balances. Add Today Telegram keyboard button, BotFather command and real SQLite timezone rollover smoke test.
+- [ ] Verify newest GitHub CI after /today + widget changes; CI #207 caught a stale widget ready() assertion which was corrected afterward. Never treat earlier failures as production evidence.
 - [ ] **LIVE WIDGET ACCEPTANCE:** from the real owner Telegram app tap App, verify widget renders, Summary loads, keyboard fallback works, owner-only access holds; do not assume rollout to all clients or use wallet/payments.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0006 before remote migration.
