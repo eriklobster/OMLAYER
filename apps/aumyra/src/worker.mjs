@@ -1,14 +1,15 @@
 import {AUMYRA_WIDGET_HTML,WIDGET_VIEWS,utf8Preview} from "./widget.mjs";
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
-const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nApp — interactive dashboard in this chat\nExpense / Income — record money\nSummary / History — review your ledger\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
-const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
+const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nApp — interactive dashboard in this chat\nExpense / Income — record money\nToday / Summary / History — review recorded finances\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
+const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Today"},{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/today · /summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
 function monthThailand(now = new Date()) { return new Date(now.getTime() + 7 * 3600000).toISOString().slice(0,7); }
+function dayThailand(now = new Date()) { return new Date(now.getTime() + 7 * 3600000).toISOString().slice(0,10); }
 function amountText(cents, currency) { return (Number(cents)/100).toFixed(2) + " " + currency; }
 function normalizeCommand(text) { return (text.trim().split(/\s+/)[0] || "").split("@")[0].toLowerCase(); }
 function available(env) { return !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_WEBHOOK_SECRET && env.TELEGRAM_OWNER_ID && env.DB); }
@@ -38,7 +39,7 @@ export async function aiAnswer(text, env, transport = fetch, history = []) {
 
 export async function respondToText(message, env, transport = fetch, updateId = null) {
   let text = String(message || "").trim().slice(0,4000);
-  const shortcuts = {Menu:"/menu",Chat:"/chat",App:"/app",Expense:"/expense",Income:"/income",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
+  const shortcuts = {Menu:"/menu",Chat:"/chat",App:"/app",Expense:"/expense",Income:"/income",Today:"/today",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
   // Telegram reply keyboard sends ordinary text; only exact labels are commands.
   let command = normalizeCommand(shortcuts[text] || text);
   const ownerId = String(env.TELEGRAM_OWNER_ID || "");
@@ -106,6 +107,12 @@ export async function respondToText(message, env, transport = fetch, updateId = 
       .bind(kind.toLowerCase(),cents,currency.toUpperCase(),category.toLowerCase(),note,new Date().toISOString(),updateId).run();
     if (composing && hasUpdateId) await env.DB.prepare("DELETE FROM aumyra_compose_modes WHERE owner_id=? AND update_id=?").bind(ownerId,composing.update_id).run();
     return reply("Saved " + kind.toLowerCase() + ": " + amountText(cents,currency.toUpperCase()) + " · " + category.toLowerCase() + (note ? "\n" + note : "") + "\nOnly new Aumyra entries are counted.");
+  }
+  if (command === "/today") {
+    const day=dayThailand();
+    const data=await env.DB.prepare("SELECT kind,currency,SUM(amount_cents) AS cents,COUNT(*) AS n FROM aumyra_entries WHERE voided_at IS NULL AND substr(datetime(created_at,'+7 hours'),1,10)=? GROUP BY kind,currency ORDER BY currency,kind").bind(day).all();
+    const lines=(data.results||[]).map(r=>r.kind+": "+amountText(r.cents,r.currency)+" ("+r.n+")");
+    return reply("Today · "+day+" (Thailand, UTC+7)\n"+(lines.length?lines.join("\n"):"No entries recorded today.")+"\nUSD, USDT and THB stay separate. Historical archive and available-to-spend bank balances are not included.");
   }
   if (command === "/summary") {
     const month = monthThailand();
@@ -222,7 +229,7 @@ export async function handleRequest(request,env,transport = fetch) {
     if (!valid) return new Response("ok");
     let value;
     try {
-      const mappings={summary:"/summary",history:"/history",notes:"/notes",goals:"/banks",help:"/help"};
+      const mappings={today:"/today",summary:"/summary",history:"/history",notes:"/notes",goals:"/banks",status:"/status",help:"/help"};
       value=mappings[widgetQuery.data]
         ? (await respondToText(mappings[widgetQuery.data],env,transport,null)).text
         : widgetQuery.data==="chat"
