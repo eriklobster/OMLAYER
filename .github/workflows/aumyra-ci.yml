@@ -115,5 +115,13 @@ jobs:
           # /undo uses soft-void; original ledger entries remain present.
           db.execute("UPDATE aumyra_entries SET voided_at=? WHERE update_id=? AND voided_at IS NULL",("2026-11-14T00:00:00Z",10))
           assert db.execute("SELECT COUNT(*),COUNT(voided_at) FROM aumyra_entries").fetchone()==(1,1)
+          # UTC+07:00 reporting: 18:10Z is tomorrow in Thailand, 12:00Z is not.
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES (?,?,?,?,?,?,?)",
+                     ("expense",4200,"THB","food","local-day","2026-11-13T18:10:00.000Z",12))
+          db.execute("INSERT INTO aumyra_entries(kind,amount_cents,currency,category,note,created_at,update_id) VALUES (?,?,?,?,?,?,?)",
+                     ("expense",1000,"THB","food","prior-day","2026-11-13T12:00:00.000Z",13))
+          rows=db.execute("SELECT kind,currency,SUM(amount_cents),COUNT(*) FROM aumyra_entries WHERE voided_at IS NULL AND substr(datetime(created_at,'+7 hours'),1,10)=? GROUP BY kind,currency",
+                          ("2026-11-14",)).fetchall()
+          assert rows==[("expense","THB",4200,1)]
           print("SQL schema, replay lease, composer ordering and soft-void smoke OK")
           PY
