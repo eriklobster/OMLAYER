@@ -84,6 +84,13 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 - Smoke now tests signed synthetic /app after /start when owner's bot chat can receive messages; native widget failure is separately reported instead of taking core assistant offline. Real iPhone App render and interactions **remain unverified** until Cloudflare launch. Payments remain OFF.
 - Owner's latest instruction: **Dell connected = use authorized Dell; Dell offline = work in GitHub only.** Last device query shows Dell OFFLINE; no remote access granted by mere instruction. Keep moving in GitHub and do not repeat laptop questions without need.
 
+## November 14, 2026 — daily ledger and native widget reliability
+- Added `/today` and persistent **Today** keyboard action to show only new non-voided expenses/income by separate THB/USDT/USD units, using `datetime(created_at,'+7 hours')` in D1. This is an activity ledger, **not** confirmed wallet/bank balances or a free-spend allowance; HERMAYA historic archive remains unavailable.
+- Native widget expanded to Today, Summary, History, Notes, Goals, Status, New Expense, New Income, Chat, Help. In owner-private chats it makes **one** background request for today's record when first displayed, not a polling loop. UTF-8 truncation now respects Unicode code-point boundaries for Thai and emoji.
+- Widget backend now rejects `sign_data`, `sent_transaction`, and `type=data` with wallet_card, requires original owner-private message context, and allowlisted actions under 64 UTF-8 bytes. No wallet payments enabled. /today command registered in BotFather setup.
+- Tests: typed native widget requests, wallet-event rejection, Thailand day grouping, no invented spendable balances, real SQLite rollover and native widget size. GitHub #207 failed only on a now-corrected assertion expecting `TelegramWidget.ready()` instead of the supported `app.ready()`; **latest head requires fresh CI confirmation**.
+- Current release remains a draft PR: no connected Cloudflare credentials, real /start or /app on owner iPhone. Dell OFFLINE at last query; stay on GitHub until it becomes available. Do not merge unrelated OMLAYER site work.
+
 ## Release blockers / status honesty
 - **Not live verified.** No authenticated Cloudflare account binding in this session. No verified deployed Aumyra Worker or D1.
 - Missing verified deployment values: dedicated D1 ID, existing Telegram token, webhook secret, numeric owner Telegram ID, actual Worker HTTPS host, optional AI access.
