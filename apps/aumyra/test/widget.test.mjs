@@ -9,7 +9,7 @@ test("native Telegram 10.4 dashboard is a small self-contained safe HTML widget"
   assert.ok(bytes>100 && bytes<=32768,"uncompressed HTML bytes="+bytes);
   assert.ok(compressed<=4096,"zlib compressed widget bytes="+compressed);
   assert.match(AUMYRA_WIDGET_HTML,/TelegramWidget\.request\(key\)/);
-  assert.match(AUMYRA_WIDGET_HTML,/TelegramWidget\.ready\(\)/);
+  assert.match(AUMYRA_WIDGET_HTML,/app\.ready\(\)/);
   assert.match(AUMYRA_WIDGET_HTML,/--tg-theme-text-color/);
   assert.doesNotMatch(AUMYRA_WIDGET_HTML,/<input\b|<textarea\b|<iframe\b|<form\b|<script\s+src|@import|XMLHttpRequest|WebSocket|fetch\s*\(/i);
   assert.doesNotMatch(AUMYRA_WIDGET_HTML, /wallet\.|sendTransaction\(|payment|Stars|invoice/i);
