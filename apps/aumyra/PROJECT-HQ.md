@@ -109,3 +109,12 @@ Previously named HERMAYA / OMYRA; canonical released name is AUMYRA.
 
 ## Handoff protocol
 Every agent commits changes and updates `TASKS.md`, this HQ, and issue #22 with verified results and remaining blocker. Keep one actionable owner phone step at a time; report DONE | COMMIT/PR | TESTS | BLOCKER | NEXT ACTION.
+
+## 2026-11-15 — three workchat queues and Seashell ownership
+- **Primary development / code:** [AUMYRA development TASKS](TASKS.md), [PR #20](https://github.com/eriklobster/OMLAYER/pull/20).
+- **ChatGPT Work multi-step queue:** [Issue #25](https://github.com/eriklobster/OMLAYER/issues/25).
+- **Simple Chat decisions and experience queue:** [Issue #26](https://github.com/eriklobster/OMLAYER/issues/26).
+- **Exact claim/heartbeat/takeover and screen-safety protocol:** [COORDINATION.md](COORDINATION.md). Unclaimed eligible tasks can be claimed by Seashell immediately when an authorized active session can act; stalled claimed tasks are reclaimable after 45 minutes without update, **only after inspecting existing progress** and posting an explicit takeover notice. 20-minute meaningful-update expectation. No two concurrent owners of one task; no automatically resuming canceled tasks.
+- **Machine alias:** Seashell = previously Jock/CHR/Dell, RDC device WIN-PPCU1QCU2GN. On 2026-11-15, the device listing showed **Online**; this does not prove command execution or an autonomous running agent. No visible operations on its screen until owner expressly requests. OXYMINATOR remains separate.
+- **Not installed:** No unattended Seashell agent, job-polling scheduler or guaranteed automatic takeover on device boot; GitHub queue protocol supports coordinated work by connected active sessions but does not continuously execute on its own.
+- **Release status unchanged:** Worker/D1/webhook, actual owner /start, and /app rendering remain unverified. The new GitHub commits document task orchestration only, not deployment.
