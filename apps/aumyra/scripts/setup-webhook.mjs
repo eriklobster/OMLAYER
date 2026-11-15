@@ -4,7 +4,7 @@ import {pathToFileURL} from "node:url";
 
 export const COMMANDS = [
   {command:"start",description:"Open Aumyra"},
-  {command:"menu",description:"Show Chat and finance buttons"},
+  {command:"menu",description:"Show Ask, Today and finance buttons"},
   {command:"chat",description:"Open assistant chat"},
   {command:"app",description:"Open native dashboard widget"},
   {command:"ask",description:"Ask the AI assistant"},

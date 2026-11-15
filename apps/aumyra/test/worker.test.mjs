@@ -151,8 +151,8 @@ test("Telegram /start replies with menu and deduplicates delivered update",async
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.match(body.text,/AUMYRA · personal command center/);
   assert.equal(body.reply_markup.keyboard.length,4);
-  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["Chat","Menu","App"]);
-  assert.deepEqual(body.reply_markup.keyboard[1].map(x=>x.text),["Expense","Income"]);
+  assert.deepEqual(body.reply_markup.keyboard[0].map(x=>x.text),["Ask","Menu","App"]);
+  assert.deepEqual(body.reply_markup.keyboard[1].map(x=>x.text),["Today","Expense","Income"]);
   assert.equal((await handleRequest(webhook("/start",11),e,transport)).status,200);
   assert.equal(calls,1);
 });
@@ -259,7 +259,7 @@ test("iPhone keyboard buttons route to actual bot functions, not stray AI reques
   assert.match((await respondToText("Menu",e)).text,/personal command center/);
   const chatDisabled=await respondToText("Chat",e);
   assert.match(chatDisabled.text,/AI is not configured/);
-  assert.equal(chatDisabled.reply_markup.keyboard[0][0].text,"Chat");
+  assert.equal(chatDisabled.reply_markup.keyboard[0][0].text,"Ask");
   assert.match((await respondToText("Expense",e)).text,/Send expense as:/);
   assert.match((await respondToText("Income",e)).text,/Send income as:/);
   assert.match((await respondToText("Summary",e)).text,/No new entries/);
@@ -267,7 +267,7 @@ test("iPhone keyboard buttons route to actual bot functions, not stray AI reques
   assert.match((await respondToText("Notes",e)).text,/No notes saved/);
   assert.match((await respondToText("Goals",e)).text,/not configured yet/);
   e.OPENAI_API_KEY="fake";
-  assert.match((await respondToText("Chat",e)).text,/Chat is ready/);
+  assert.match((await respondToText("Ask",e)).text,/Ask is ready/);
   const response=await respondToText("Explain my day",e,async()=>Response.json({choices:[{message:{content:"AI works"}}]}));
   assert.equal(response.text,"AI works");
 });
@@ -279,7 +279,7 @@ test("Telegram keyboard selection is owner-only and retry-safe",async()=>{
   assert.equal(sent.length,0);
   assert.equal((await handleRequest(webhook("Menu",902),e,deliver)).status,200);
   assert.equal(sent.length,1);
-  assert.equal(sent[0].body.reply_markup.keyboard[0][0].text,"Chat");
+  assert.equal(sent[0].body.reply_markup.keyboard[0][0].text,"Ask");
   assert.equal((await handleRequest(webhook("Menu",902),e,deliver)).status,200);
   assert.equal(sent.length,1);
 });
@@ -420,7 +420,7 @@ test("owner receives a clear text-only response for voice and photos, never AI o
   const transport=async(_url,opts)=>{sent=JSON.parse(opts.body);return Response.json({ok:true})};
   assert.equal((await handleRequest(request,e,transport)).status,200);
   assert.match(sent.text,/text messages only/);
-  assert.equal(sent.reply_markup.keyboard[0][0].text,"Chat");
+  assert.equal(sent.reply_markup.keyboard[0][0].text,"Ask");
   assert.equal(e.DB.entries.length,0);
 });
 
@@ -550,4 +550,28 @@ test("native widget refuses signed and payment-type actions despite allowlisted 
   }
   assert.equal(sends,0);
   assert.equal(e.DB.entries.length,0);
+});
+
+
+test("Ask button and bare /ask open question mode; /ask with a question invokes AI",async()=>{
+  const e=env();
+  assert.match((await respondToText("Ask",e)).text,/AI is not configured/);
+  assert.match((await respondToText("/ask",e)).text,/AI is not configured/);
+  assert.match((await respondToText("Chat",e)).text,/AI is not configured/); // legacy label
+  e.OPENAI_API_KEY="test";
+  assert.match((await respondToText("Ask",e)).text,/Ask is ready/);
+  assert.match((await respondToText("/ask",e)).text,/Ask is ready/);
+  const result=await respondToText("/ask Can you help?",e,async(_url,options)=>{
+    assert.equal(JSON.parse(options.body).messages.at(-1).content,"Can you help?");
+    return Response.json({choices:[{message:{content:"Certainly."}}]});
+  });
+  assert.equal(result.text,"Certainly.");
+});
+
+test("compact four-row menu prioritizes Ask and Today without dropping controls",async()=>{
+  const r=await respondToText("/menu",env());
+  const rows=r.reply_markup.keyboard.map(row=>row.map(button=>button.text));
+  assert.deepEqual(rows,[["Ask","Menu","App"],["Today","Expense","Income"],["Summary","History","Notes"],["Goals"]]);
+  assert.equal(new Set(rows.flat()).size,rows.flat().length);
+  assert.match(r.text,/AI replies require an enabled provider/);
 });
