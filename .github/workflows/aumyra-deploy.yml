@@ -99,7 +99,7 @@ jobs:
           JS
           node scripts/release-lock.mjs verify
           node scripts/setup-webhook.mjs "$AUMYRA_WORKER_URL/telegram/webhook"
-          node scripts/postdeploy-smoke.mjs "$AUMYRA_WORKER_URL"
+          node scripts/postdeploy-smoke.mjs "$AUMYRA_WORKER_URL" --require-delivery
       - name: Release resource lock after successful synchronous operations
         run: node scripts/release-lock.mjs finish
       - name: Remove temporary plaintext backup from runner

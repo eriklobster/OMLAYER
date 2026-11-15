@@ -12,10 +12,10 @@ async function refresh(){
   el('sync-status').textContent=s.pending+' public event(s) queued. '+(s.githubConfigured?'GitHub credentials configured; internet may be unavailable.':'GitHub connection is not configured.');
   el('sync').disabled=!s.githubConfigured||!s.pending;
 }
-el('login-form').onsubmit=async e=>{e.preventDefault();try{const r=await api('/api/login',{token:el('token').value});el('token').value='';csrf=r.csrf;await refresh();notice('Unlocked.');}catch(error){el('token').value='';notice(error.message);}};
+el('login-form').onsubmit=async e=>{e.preventDefault();try{const r=await api('/api/login',{token:el('token').value});el('token').value='';csrf=r.csrf;sessionStorage.removeItem('aum-locked');await refresh();notice('Unlocked.');}catch(error){el('token').value='';notice(error.message);}};
 el('note-form').onsubmit=async e=>{e.preventDefault();try{await api('/api/notes',{text:el('note').value});el('note').value='';await refresh();notice('Private note saved locally.');}catch(error){notice(error.message);}};
 el('publish').onchange=()=>{el('public-fields').hidden=!el('publish').checked;el('public-summary').required=el('publish').checked;};
 el('task-form').onsubmit=async e=>{e.preventDefault();try{const publishPublic=el('publish').checked;await api('/api/tasks',{text:el('task').value,publishPublic,...(publishPublic?{publicSummary:el('public-summary').value}:{})});e.target.reset();el('public-fields').hidden=true;el('public-summary').required=false;await refresh();notice('Task saved locally.');}catch(error){notice(error.message);}};
 el('sync').onclick=async()=>{el('sync').disabled=true;try{await api('/api/sync',{});await refresh();notice('Public event synchronized.');}catch(error){notice(error.message);el('sync').disabled=false;}};
-el('logout').onclick=async()=>{try{await api('/api/logout',{});}finally{csrf='';el('workspace').hidden=true;el('login').hidden=false;el('notes').replaceChildren();el('tasks').replaceChildren();notice('Locked.');}};
-refresh().catch(()=>{});
+el('logout').onclick=async()=>{sessionStorage.setItem('aum-locked','1');let ended=false;try{await api('/api/logout',{});ended=true;}catch{}finally{csrf='';el('workspace').hidden=true;el('login').hidden=false;el('notes').replaceChildren();el('tasks').replaceChildren();el('note').value='';el('task').value='';el('public-summary').value='';notice(ended?'Locked.':'Screen locked. Reconnect to end the server session.');}};
+if(sessionStorage.getItem('aum-locked')!=='1')refresh().catch(()=>{});

@@ -89,6 +89,11 @@ export async function smoke({workerUrl, token, ownerId, webhookSecret=null, tran
   };
 }
 
+export function requireCoreDelivery(result) {
+  if (result?.ready!==true || result.ownerNotification!=="delivered" || result.webhookProbe!=="accepted") {
+    throw new Error("Core release gate requires an actual Telegram-accepted owner reply and signed /start delivery; readiness alone is insufficient.");
+  }
+}
 if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
   try {
     const result=await smoke({
@@ -97,6 +102,7 @@ if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
       ownerId:process.env.TELEGRAM_OWNER_ID,
       webhookSecret:process.env.TELEGRAM_WEBHOOK_SECRET || null
     });
+    if (process.argv.includes("--require-delivery")) requireCoreDelivery(result);
     console.log("Aumyra smoke:",JSON.stringify(result));
     if (result.ownerNotification!=="delivered") {
       console.log("Telegram cannot yet send to owner. Open @AumyraBot on your phone and send /start.");
