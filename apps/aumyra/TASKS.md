@@ -94,3 +94,10 @@ Owner: `Work-20261115-autonomous`. Branch: `work/aumyra-coordination-20261115` (
 - [ ] Install unattended runner only after silent execution, stop and recovery are verified. NOT RUNNING; ready single-shot coordinator is not an agent daemon.
 - [x] Implement optional local notes/tasks, owner session, explicit public metadata outbox, idempotent reconnect/backoff and stop; six regression tests pass. Separate branch `work/aumyra-lan-20261115`.
 - [ ] Install and verify LAN fallback on real Seashell/iPhone with trusted HTTPS and private off-device data backup. NOT RUNNING; no silent Windows launch has been verified.
+
+## End-of-session evidence
+- [x] PR28 coordination/release safety integrated into PR20 feature branch; real state ledger persisted and stale-write HTTP409 verified.
+- [x] PR29 local continuity + strict core Telegram delivery gate: code `1b172d9`, CI223 PASS, 78 local tests. Implemented source only; no Seashell installation claim.
+- [x] Maker mirror #83 updated after reading #76/#78/#81/#82. Production NO-GO preserved.
+- [ ] Owner Cloudflare authentication and five actual production acceptance groups remain unpassed (resource identity, HTTPS, Telegram webhook, real replies/D1 persistence, native iPhone widget).
+Final feature-head commit and task closure are recorded in canonical issue #22 and the coordination state branch; do not execute terminal tasks again.
