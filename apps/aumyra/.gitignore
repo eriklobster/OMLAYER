@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+*.sql.backup
+*.encrypted
+*.sqlite*
+coordination-event*.json
+local-data/
+backups/

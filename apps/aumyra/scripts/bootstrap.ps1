@@ -1,9 +1,17 @@
 # AUMYRA Windows PowerShell first-run installer. Run from apps/aumyra.
 # Never commit this generated wrangler.toml: it is patched locally only.
+param([switch]$NonInteractive)
+if ($NonInteractive -or $env:AUMYRA_BACKGROUND -eq "1") {
+  throw "This installer is interactive and can open a browser. Refusing unattended execution; Seashell screen must remain untouched."
+}
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 function Check-Step([string]$step) {
   if ($LASTEXITCODE -ne 0) { throw "$step failed (exit $LASTEXITCODE)." }
+}
+function Require-ReleaseLease {
+  & node.exe ./scripts/coordination.mjs assert-release
+  Check-Step "Exclusive GitHub Aumyra release lease"
 }
 function D1-List {
   $raw = (& npx.cmd --no-install wrangler d1 list --json | Out-String)
@@ -14,6 +22,7 @@ function D1-List {
   return @($raw.Substring($first, $last - $first + 1) | ConvertFrom-Json)
 }
 function Put-Secret([string]$name, [string]$value) {
+  Require-ReleaseLease
   if ([string]::IsNullOrWhiteSpace($value)) { throw "Empty secret: $name" }
   $value | & npx.cmd --no-install wrangler secret put $name
   Check-Step "Setting $name"
@@ -31,9 +40,14 @@ if (-not (Get-Command node.exe -ErrorAction SilentlyContinue)) {
   throw "Node.js LTS is required. Install from https://nodejs.org/en/download/ then reopen PowerShell."
 }
 if (-not (Get-Command npm.cmd -ErrorAction SilentlyContinue)) { throw "npm is missing. Repair Node.js installation." }
+$nodeMajor = [int](& node.exe -p "process.versions.node.split('.')[0]")
+if ($nodeMajor -lt 22) { throw "Node.js 22 LTS or later is required for private SQLite backup verification." }
 if (-not (Test-Path "./wrangler.toml") -or -not (Test-Path "./scripts/setup-webhook.mjs")) {
   throw "Run this file from the apps/aumyra directory of PR #20."
 }
+# The active operator must claim a release task before invoking this interactive installer.
+# Tokens live in the process environment, never in arguments or committed source.
+Require-ReleaseLease
 # Wrangler may validate the D1 binding even for list/create commands.
 # Use a syntactically valid zero UUID until the real Aumyra D1 is identified.
 $cfgPath = Join-Path (Get-Location) "wrangler.toml"
@@ -78,6 +92,7 @@ try {
   $matches = @($databases | Where-Object { $_.name -eq "aumyra" })
   if ($matches.Count -gt 1) { throw "Ambiguous duplicate Aumyra D1 names. Resolve manually." }
   if ($matches.Count -eq 0) {
+    Require-ReleaseLease
     Write-Host "No Aumyra D1 exists. Creating dedicated aumyra database..."
     & npx.cmd --no-install wrangler d1 create aumyra
     Check-Step "Create dedicated Aumyra D1"
@@ -112,13 +127,18 @@ try {
     if (-not (Test-Path -LiteralPath $backupFile -PathType Leaf) -or (Get-Item -LiteralPath $backupFile).Length -le 0) {
       throw "Local backup is missing or empty. Refusing to migrate existing data."
     }
+    $env:AUMYRA_PRIVATE_BACKUP_PATH = $backupFile
+    & node.exe --input-type=module -e "import {readFileSync} from 'node:fs'; import {validateBackup} from './scripts/private-backup.mjs'; try { validateBackup(readFileSync(process.env.AUMYRA_PRIVATE_BACKUP_PATH)); console.log('Private SQLite restore verified.'); } catch { console.error('Private backup restore failed. Refusing to migrate existing data.'); process.exitCode=1; }"
+    Check-Step "Private Aumyra backup restore verification"
     Write-Host "Backup preserved at $backupFile (keep private; do NOT upload to chat or public GitHub)."
   }
   Write-Host "Applying forward-only Aumyra migrations. Cloudflare records a migration backup after applying."
   & npx.cmd --no-install wrangler d1 migrations list aumyra --remote
   Check-Step "D1 migration list"
+  Require-ReleaseLease
   & npx.cmd --no-install wrangler d1 migrations apply aumyra --remote
   Check-Step "D1 migration apply"
+  Require-ReleaseLease
   $deployResult = (& npx.cmd --no-install wrangler deploy | Out-String)
   Check-Step "Dedicated Aumyra Worker deployment"
   Write-Host $deployResult
@@ -140,6 +160,7 @@ try {
   $env:TELEGRAM_BOT_TOKEN = $token
   $env:TELEGRAM_WEBHOOK_SECRET = $hookSecret
   $env:TELEGRAM_OWNER_ID = $owner
+  Require-ReleaseLease
   & node.exe ./scripts/setup-webhook.mjs "$workerUrl/telegram/webhook"
   Check-Step "Telegram webhook and menu configuration"
   & node.exe ./scripts/postdeploy-smoke.mjs "$workerUrl"
@@ -152,6 +173,7 @@ try {
   Remove-Item Env:TELEGRAM_BOT_TOKEN -ErrorAction SilentlyContinue
   Remove-Item Env:TELEGRAM_WEBHOOK_SECRET -ErrorAction SilentlyContinue
   Remove-Item Env:TELEGRAM_OWNER_ID -ErrorAction SilentlyContinue
+  Remove-Item Env:AUMYRA_PRIVATE_BACKUP_PATH -ErrorAction SilentlyContinue
   $token = $null
   $hookSecret = $null
 }

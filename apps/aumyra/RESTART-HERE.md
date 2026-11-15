@@ -1,5 +1,16 @@
 # AUMYRA — RESTART HERE (ChatGPT rebirth handoff)
 
+## Current checkpoint — 2026-11-15 Work session
+- Recovery baseline: PR #20 `541f57c6`; CI #213 passed. New scoped implementation: `work/aumyra-coordination-20261115`, based on that head; integrate into #20 only after its CI passes.
+- 71 local Node tests pass, including actual SQLite Worker queries, the six unchanged migrations, atomic coordinator races, takeover/cancel/resource locking, backup encryption/restore and remote-identity preflight. Cloudflare bundle dry-run and new branch CI are recorded in issue #22 when verified.
+- Fixed a real webhook insert-race defect: cached native `/app` replies now reload `reply_kind` and remain widgets.
+- Executable coordinator: `scripts/coordination.mjs`. Durable state belongs ONLY to branch `aumyra-coordination-state`, path `apps/aumyra/coordination-state.json`. One JSON CAS serializes all owners and release locks. Issue comments are readable mirrors; the state file is authoritative for ownership after initialization.
+- Manual deployment now requires exact bot/account/D1 identity, exclusive resource lease, an actual local SQLite restore of the exported SQL, authenticated encryption and persisted encrypted backup artifact BEFORE migrations, then HTTPS readiness/webhook smoke. Failed jobs retain the lock for inspected recovery.
+- Windows bootstrap is INTERACTIVE, requires a preclaimed release lease, and refuses `-NonInteractive` / `AUMYRA_BACKGROUND=1`. Never invoke it on Seashell under the no-screen-interruption rule.
+- Seashell was OFFLINE on both observations; no remote commands or UI were attempted. No unattended runner installed: **AUTONOMOUS EXECUTION NOT RUNNING**.
+- Cloudflare browser private sign-in timed out; a fresh page still showed login. No Worker, D1, secrets or Telegram webhook was changed. Production verification remains **0 passed live gates**; optional paid AI and payments remain OFF.
+- Maker #76 OPEN, #78 draft/NO-GO at `803cb8fc`; security, migration/backup, exact candidate and real owner iPhone acceptance remain required. Mirror: chillum-casa#83. No Maker changes.
+
 **Canonical GitHub HQ:** https://github.com/eriklobster/OMLAYER/issues/22  
 **Implementation draft PR:** https://github.com/eriklobster/OMLAYER/pull/20  
 **Branch:** `feat/aumyra-assistant-mvp` (NOT `main`)  
