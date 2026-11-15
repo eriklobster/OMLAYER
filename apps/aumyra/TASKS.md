@@ -89,7 +89,8 @@ Owner: `Work-20261115-autonomous`. Branch: `work/aumyra-coordination-20261115` (
 - [x] Implement atomic GitHub claims, three lanes, meaningful heartbeats, 45-minute inspected takeover, immutable stop/cancel, idempotent public events and shared production lock.
 - [x] Fix cached `/app` media type on lost-insert race; test against actual SQLite rather than only SQL mocks.
 - [x] Add restore-verified encrypted pre-migration backup and fail-closed release identity/locking; keep six SQL migrations unchanged.
-- [ ] Persist and verify real GitHub coordinator state and CLI handoff; record commit/CI in #22.
+- [x] Persisted GitHub coordinator ledger and read it back; real stale SHA write refused HTTP 409. PR28 merged into feature branch at `2fba80db`; CI220 PASS at `564da8e6`.
 - [ ] Finish authenticated Cloudflare production release, real Telegram replies, D1 persistence and iPhone widget acceptance. BLOCKED: private sign-in not completed.
 - [ ] Install unattended runner only after silent execution, stop and recovery are verified. NOT RUNNING; ready single-shot coordinator is not an agent daemon.
-- [ ] Optional LAN notes/tasks/outbox: implement separately after release preparation; no production dependency.
+- [x] Implement optional local notes/tasks, owner session, explicit public metadata outbox, idempotent reconnect/backoff and stop; six regression tests pass. Separate branch `work/aumyra-lan-20261115`.
+- [ ] Install and verify LAN fallback on real Seashell/iPhone with trusted HTTPS and private off-device data backup. NOT RUNNING; no silent Windows launch has been verified.

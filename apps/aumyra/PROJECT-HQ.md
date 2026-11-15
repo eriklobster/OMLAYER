@@ -1,5 +1,12 @@
 # AUMYRA — PROJECT-HQ
 
+## Latest source implementation — 2026-11-15
+- Coordination/release safety merged via #28 into PR #20 feature branch at `2fba80db`. CI #220 PASS at `564da8e6`: Node 22, Worker bundle, PowerShell parser, SQLite migrations.
+- Canonical GitHub ledger created/read back; actual stale SHA update rejected with HTTP 409. Coordination task DONE; optional LAN task claimed separately on `work/aumyra-lan-20261115`.
+- Optional `scripts/local-server.mjs` and `local/` UI implement owner login, private SQLite notes/tasks, explicit separate public summary outbox, idempotent sync/backoff and stop. Six additional tests cover HTTP auth/CSRF/host/origin, private-data isolation, lost-ack/restart recovery and actual process start/SIGTERM stop. 77 local tests pass in total.
+- LAN defaults to loopback. Non-loopback requires trusted HTTPS. No installation on Seashell, no trusted iPhone certificate, no real phone test, no unattended executor; all remain NOT RUNNING/UNVERIFIED.
+- Priority next: owner Cloudflare login in the cloud session, dedicated Aumyra resource inspection and guarded release. Do not run interactive bootstrap on Seashell, publish private data or enable paid AI/payments. Maker #76/#78 remain NO-GO.
+
 ## Current checkpoint — 2026-11-15 Work session
 - Recovery baseline: PR #20 `541f57c6`; CI #213 passed. New scoped implementation: `work/aumyra-coordination-20261115`, based on that head; integrate into #20 only after its CI passes.
 - 71 local Node tests pass, including actual SQLite Worker queries, the six unchanged migrations, atomic coordinator races, takeover/cancel/resource locking, backup encryption/restore and remote-identity preflight. Cloudflare bundle dry-run and new branch CI are recorded in issue #22 when verified.
