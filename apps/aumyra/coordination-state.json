@@ -1,20 +1,20 @@
 {
   "schema": 1,
-  "revision": 7,
+  "revision": 9,
   "tasks": {
     "DEV-GITHUB-COORDINATION": {
       "id": "DEV-GITHUB-COORDINATION",
       "lane": "Development",
       "queue": 20,
-      "status": "IN PROGRESS",
+      "status": "DONE",
       "owner": "Work-20261115-autonomous",
       "branch": "work/aumyra-coordination-20261115",
       "resource": null,
-      "version": 3,
-      "updatedAt": "2026-11-15T10:57:05.007Z",
-      "heartbeatAt": "2026-11-15T10:57:05.007Z",
-      "leaseUntil": "2026-11-15T11:42:05.007Z",
-      "summary": "71 tests and Worker dry-run pass; PR28 saved; initializing durable state and waiting for exact CI"
+      "version": 4,
+      "updatedAt": "2026-11-15T10:58:58.033Z",
+      "heartbeatAt": "2026-11-15T10:58:58.033Z",
+      "leaseUntil": null,
+      "summary": "PR28 merged into PR20 feature branch at 2fba80db; CI220 all steps PASS; live GitHub ledger read back"
     },
     "DEV-PRODUCTION-RELEASE": {
       "id": "DEV-PRODUCTION-RELEASE",
@@ -62,15 +62,15 @@
       "id": "DEV-LAN-FALLBACK",
       "lane": "Development",
       "queue": 20,
-      "status": "TODO",
-      "owner": null,
-      "branch": null,
+      "status": "CLAIMED",
+      "owner": "Work-20261115-autonomous",
+      "branch": "work/aumyra-lan-20261115",
       "resource": null,
-      "version": 1,
-      "updatedAt": "2026-11-15T10:57:05.007Z",
-      "heartbeatAt": null,
-      "leaseUntil": null,
-      "summary": "Build optional authenticated local notes, task queue and durable public-metadata outbox; no Telegram offline claim"
+      "version": 2,
+      "updatedAt": "2026-11-15T10:58:58.034Z",
+      "heartbeatAt": "2026-11-15T10:58:58.034Z",
+      "leaseUntil": "2026-11-15T11:43:58.034Z",
+      "summary": "Claim optional authenticated local notes/tasks and public-only durable outbox; production remains blocked by authentication"
     }
   },
   "locks": {},
@@ -137,6 +137,24 @@
       "actor": "Work-20261115-autonomous",
       "at": "2026-11-15T10:57:05.007Z",
       "summary": "Build optional authenticated local notes, task queue and durable public-metadata outbox; no Telegram offline claim"
+    },
+    "work-20261115-coord-done": {
+      "digest": "3481af07dff062bc64843ae997cca919b11ee1fffd361f57ae87d466f4bab939",
+      "revision": 8,
+      "action": "transition",
+      "taskId": "DEV-GITHUB-COORDINATION",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:58:58.033Z",
+      "summary": "PR28 merged into PR20 feature branch at 2fba80db; CI220 all steps PASS; live GitHub ledger read back"
+    },
+    "work-20261115-lan-claim": {
+      "digest": "7ab896a21753ef1a8c65dd076f2e1e304ecd6f7b8cb7d9ae218bd510fd949533",
+      "revision": 9,
+      "action": "claim",
+      "taskId": "DEV-LAN-FALLBACK",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:58:58.034Z",
+      "summary": "Claim optional authenticated local notes/tasks and public-only durable outbox; production remains blocked by authentication"
     }
   }
 }
