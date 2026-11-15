@@ -1,10 +1,11 @@
 import {AUMYRA_WIDGET_HTML,WIDGET_VIEWS,utf8Preview} from "./widget.mjs";
+import {parseAmountCents,previewAllocation} from "./allocation.mjs";
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
 const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nApp — interactive dashboard in this chat\nExpense / Income — record money\nToday / Summary / History — review recorded finances\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
 const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Today"},{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/today · /summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n/allocate 80.83 USDT previews configured bank percentages; it never moves money.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/today · /summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -89,6 +90,21 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   }
   if (command === "/help") return reply(HELP);
   if (command === "/status") return reply("Aumyra core: online\nFinance database: connected\nAI chat: " + (env.AI || env.OPENAI_API_KEY ? "configured" : "not configured") + "\nImported finance archive: not yet attached");
+  if (command === "/allocate") {
+    const match = /^\/allocate(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USD|USDT|THB)$/i.exec(text);
+    if (!match) return reply("Format: /allocate 80.83 USDT\nCurrencies: USD, USDT, THB.");
+    if (!env.BANK_ALLOCATION_JSON) return reply("Bank allocation percentages are not configured. Set BANK_ALLOCATION_JSON privately on the Aumyra Worker; no balances are assumed.");
+    try {
+      const cents = parseAmountCents(match[1]);
+      const currency = match[2].toUpperCase();
+      const rows = previewAllocation(cents, env.BANK_ALLOCATION_JSON);
+      return reply("Allocation preview — " + amountText(cents,currency) + "\n" +
+        rows.map(r => r.name + ": " + amountText(r.cents,currency) + " (" + r.percentage + "%)").join("\n") +
+        "\nNo transfers or ledger changes. Not actual bank balances.");
+    } catch {
+      return reply("Allocation configuration or amount is invalid. Percentages must be numbers totaling 100%, with at most two decimal places.");
+    }
+  }
   if (command === "/banks") {
     if (!env.BANK_PLAN_JSON) return reply("Savings targets are not configured yet. Store owner targets privately using the BANK_PLAN_JSON Worker secret. /summary shows only recorded transactions.");
     let plan;
