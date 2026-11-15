@@ -1,0 +1,14 @@
+{
+  "name": "aumyra-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply aumyra --remote"
+  },
+  "devDependencies": {
+    "wrangler": "4.53.0"
+  }
+}

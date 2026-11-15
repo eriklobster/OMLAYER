@@ -1,0 +1,109 @@
+name: Aumyra manual Cloudflare deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_aumyra_only:
+        description: "I verified the dedicated Aumyra account, existing D1 and private backup key"
+        required: true
+        type: boolean
+
+permissions:
+  contents: write # Atomic coordination ledger only; no source pushes by this workflow.
+
+concurrency:
+  group: aumyra-production-release
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: inputs.confirm_aumyra_only == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: aumyra-production
+    defaults:
+      run:
+        working-directory: apps/aumyra
+        shell: bash
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      AUMYRA_D1_DATABASE_ID: ${{ secrets.AUMYRA_D1_DATABASE_ID }}
+      AUMYRA_WORKER_URL: ${{ vars.AUMYRA_WORKER_URL }}
+      AUMYRA_BACKUP_KEY: ${{ secrets.AUMYRA_BACKUP_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+      TELEGRAM_OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install, test and verify remote identities without mutation
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          node scripts/release-preflight.mjs
+      - name: Claim exclusive GitHub resource lock
+        run: node scripts/release-lock.mjs acquire
+      - name: Bind dedicated D1 without printing identifier
+        run: |
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const file='wrangler.toml', text=fs.readFileSync(file,'utf8');
+          if(!text.includes('REPLACE_WITH_AUMYRA_D1_ID')) throw new Error('Clean D1 placeholder required');
+          fs.writeFileSync(file,text.replace('REPLACE_WITH_AUMYRA_D1_ID',process.env.AUMYRA_D1_DATABASE_ID));
+          JS
+      - name: Export, restore-verify and encrypt private backup before migrations
+        run: |
+          umask 077
+          node scripts/release-lock.mjs verify
+          npx --no-install wrangler d1 export aumyra --remote --output "$RUNNER_TEMP/aumyra-backup.sql" --skip-confirmation
+          node scripts/private-backup.mjs encrypt "$RUNNER_TEMP/aumyra-backup.sql" "$RUNNER_TEMP/aumyra-backup.encrypted"
+      - name: Persist only encrypted backup before remote changes
+        id: backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: aumyra-private-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/aumyra-backup.encrypted
+          if-no-files-found: error
+          retention-days: 30
+      - name: Apply reviewed additive migrations and deploy dedicated Worker
+        env:
+          BACKUP_ARTIFACT_ID: ${{ steps.backup.outputs.artifact-id }}
+        run: |
+          test -n "$BACKUP_ARTIFACT_ID"
+          node scripts/release-lock.mjs verify
+          npx --no-install wrangler d1 migrations apply aumyra --remote
+          node scripts/release-lock.mjs verify
+          npx --no-install wrangler deploy
+      - name: Configure existing Telegram credentials privately
+        run: |
+          node scripts/release-lock.mjs verify
+          node --input-type=module - <<'JS' | npx --no-install wrangler secret bulk
+          console.log(JSON.stringify(Object.fromEntries(['TELEGRAM_BOT_TOKEN','TELEGRAM_WEBHOOK_SECRET','TELEGRAM_OWNER_ID'].map(k=>[k,process.env[k]]))));
+          JS
+      - name: Require real HTTPS readiness before webhook registration
+        run: |
+          node --input-type=module - <<'JS'
+          let ready=false;
+          for(let i=0;i<5;i++){
+            try{const r=await fetch(process.env.AUMYRA_WORKER_URL+'/health',{signal:AbortSignal.timeout(10000)});const h=await r.json();ready=r.status===200 && h.service==='aumyra' && h.ready===true;}catch{}
+            if(ready)break;
+            await new Promise(resolve=>setTimeout(resolve,2000));
+          }
+          if(!ready)throw new Error('Aumyra HTTPS/schema readiness failed; webhook unchanged');
+          JS
+          node scripts/release-lock.mjs verify
+          node scripts/setup-webhook.mjs "$AUMYRA_WORKER_URL/telegram/webhook"
+          node scripts/postdeploy-smoke.mjs "$AUMYRA_WORKER_URL"
+      - name: Release resource lock after successful synchronous operations
+        run: node scripts/release-lock.mjs finish
+      - name: Remove temporary plaintext backup from runner
+        if: always()
+        run: rm -f -- "$RUNNER_TEMP/aumyra-backup.sql"
+      # Failure/cancellation retains the lock. Inspect branch, processes and actual
+      # Cloudflare/Telegram state before explicit takeover/release. Never force-unlock.
