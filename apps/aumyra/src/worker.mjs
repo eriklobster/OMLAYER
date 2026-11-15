@@ -2,10 +2,10 @@ import {AUMYRA_WIDGET_HTML,WIDGET_VIEWS,utf8Preview} from "./widget.mjs";
 import {parseAmountCents,previewAllocation} from "./allocation.mjs";
 // AUMYRA: owner-only Telegram assistant on Cloudflare Workers.
 // No credentials, user history, or imported finance data belong in source control.
-const MENU = "AUMYRA · personal command center\n\nChat — talk to your assistant\nApp — interactive dashboard in this chat\nExpense / Income — record money\nToday / Summary / History — review recorded finances\nNotes — save and read notes\nGoals — private savings targets\n\nType a message for AI, or choose a button below. /help for examples.";
-const BUTTONS = {keyboard:[[{text:"Chat"},{text:"Menu"},{text:"App"}],[{text:"Expense"},{text:"Income"}],[{text:"Today"},{text:"Summary"},{text:"History"}],[{text:"Notes"},{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
+const MENU = "AUMYRA · personal command center\n\nAsk — ask your assistant anything\nToday — recorded income and spending\nApp — interactive dashboard in this chat\nExpense / Income — record money\nSummary / History — review recorded finances\nNotes / Goals — save notes and see savings targets\n\nTap Ask and send a question. AI replies require an enabled provider. /help for examples.";
+const BUTTONS = {keyboard:[[{text:"Ask"},{text:"Menu"},{text:"App"}],[{text:"Today"},{text:"Expense"},{text:"Income"}],[{text:"Summary"},{text:"History"},{text:"Notes"}],[{text:"Goals"}]],resize_keyboard:true,is_persistent:true};
 const MONEY = /^\/(income|expense)(?:@\w+)?\s+(\d+(?:\.\d{1,2})?)\s+(USDT|USD|THB)\s+([a-z][a-z0-9_-]{0,30})(?:\s+(.{1,250}))?$/i;
-const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n/allocate 80.83 USDT previews configured bank percentages; it never moves money.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/today · /summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
+const HELP = MENU + "\n\n/app opens a native Telegram message dashboard.\n\nTap Ask to ask a question, or /ask your question. Tap Expense or Income, then send an amount like 12.50 USDT food coffee (no slash needed). /cancel exits a prompt. /note opens a note composer.\n/forget clears AI chat only.\n/allocate 80.83 USDT previews configured bank percentages; it never moves money.\n\nExamples:\n/expense 12.50 USDT food lunch\n/income 20 USD teaching lesson\n/note buy coffee beans\n/today · /summary · /history · /undo · /banks\nMoney requires a currency and category. /undo voids the last new entry (audit retained). Existing imported history is not included until separately migrated.";
 const MAX_TEXT = 3900;
 
 function reply(text, markup) { return {text: String(text || "").slice(0, MAX_TEXT), ...(markup ? {reply_markup:markup} : {})}; }
@@ -40,7 +40,7 @@ export async function aiAnswer(text, env, transport = fetch, history = []) {
 
 export async function respondToText(message, env, transport = fetch, updateId = null) {
   let text = String(message || "").trim().slice(0,4000);
-  const shortcuts = {Menu:"/menu",Chat:"/chat",App:"/app",Expense:"/expense",Income:"/income",Today:"/today",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
+  const shortcuts = {Menu:"/menu",Ask:"/chat",Chat:"/chat",App:"/app",Expense:"/expense",Income:"/income",Today:"/today",Summary:"/summary",History:"/history",Notes:"/notes",Goals:"/banks"};
   // Telegram reply keyboard sends ordinary text; only exact labels are commands.
   let command = normalizeCommand(shortcuts[text] || text);
   const ownerId = String(env.TELEGRAM_OWNER_ID || "");
@@ -73,9 +73,9 @@ export async function respondToText(message, env, transport = fetch, updateId = 
   }
   if (command === "/start" || command === "/menu") return reply(MENU,BUTTONS);
   if (command === "/app") return {...reply("AUMYRA native dashboard. If widgets are unsupported, use /menu.",BUTTONS),kind:"widget"};
-  if (command === "/chat") return reply(env.AI || env.OPENAI_API_KEY
-    ? "Chat is ready. Type any question; /menu returns to your controls."
-    : "Chat button is ready, but AI is not configured. Finance and notes work without AI. Configure a provider to get replies to questions.", BUTTONS);
+  if (command === "/chat" || (command === "/ask" && !text.replace(/^\/ask(?:@\w+)?\s*/i,"").trim())) return reply(env.AI || env.OPENAI_API_KEY
+    ? "Ask is ready. Send a question; /menu returns to your controls."
+    : "Ask is available, but AI is not configured. Finance and notes work without AI. Configure a provider to get replies to questions.", BUTTONS);
   if (command === "/forget") {
     if (updateId != null) {
       const last = await env.DB.prepare("SELECT MAX(id) AS id FROM aumyra_ai_turns").first();
