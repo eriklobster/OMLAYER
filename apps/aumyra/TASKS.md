@@ -51,3 +51,35 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 
 ## Agent rules
 Work on `feat/aumyra-assistant-mvp` (PR #20) or a scoped branch with explicit handoff. No unapproved bot token changes, DNS changes, deletes, resets, or unrelated merges. At end of every sprint, update issue #22 and HQ with actual commit, passing CI, blocker, and next single owner action.
+
+## Three coordinated queues — 2026-11-15
+**Canonical coordination:** [AUMYRA HQ #22](https://github.com/eriklobster/OMLAYER/issues/22). This file = **Development / implementation** lane. [ChatGPT Work queue #25](https://github.com/eriklobster/OMLAYER/issues/25) = connected services, multi-step work and acceptance support. [Simple Chat queue #26](https://github.com/eriklobster/OMLAYER/issues/26) = decisions, copy, planning and observations. Never duplicate ownership; hand off with a link.
+
+### P0 — Development lane: highest priority first
+- [ ] Verify newest head CI, current branch SHA, deploy workflow gating, and six D1 migration compatibility; report verified details, not prior historical CI as current.
+- [ ] Safely determine authorized Cloudflare account and whether dedicated Aumyra Worker/D1 already exist; inspect before any creation. A device being online does not establish Cloudflare login.
+- [ ] Review installer for unattended/non-disruptive use on Seashell (formerly Jock/CHR/Dell). **Never open CMD, PowerShell, browser, prompt, or notification on its visible screen** without a new owner request. Avoid secrets in logs.
+- [ ] On explicit authenticated Cloudflare access, create/reuse only dedicated Aumyra resources, export old D1 before migration, verify migration 0001–0006, deploy Worker, /health, webhook identity, signed /start and /app smoke.
+- [ ] Verify **real owner Telegram** /start→Expense→Today→Summary→Undo and Note→Notes, native App rendering, non-owner access rejection, duplicate suppression, AI only after approved provider/budget; record device test in HQ.
+- [ ] Complete production release gate only after real HTTPS, D1, Telegram, and iPhone acceptance. Do not silently merge PR #20 or alter unrelated apps.
+
+### P1 — Development feature backlog (planned, not shipped)
+- [ ] Implement secure private configurable bank allocations (living, dedicated rent sink, donations, immediate, project savings) with effective dates and noninvented balances.
+- [ ] Add per-bank goals, transfers and budget-vs-actual/overrun views; keep currencies separate and distinguish cashback from new earned income.
+- [ ] Add transaction correction, category filters, recurring expenses, CSV export and optional import with preview/deduplication/rollback.
+- [ ] Add configurable purchase cooling-off and multi-seller comparison reminders; no automatic spending.
+- [ ] Add private project/tasks dashboard with one owner, status, priority, next action, linked PR/tests, blocker and percentage denominator.
+- [ ] Implement safe read-only integrations with GitHub and approved Google Drive content; do not scrape private data or store tokens in repository.
+- [ ] Add opt-in reminders/digests only with a verified scheduler, stop/cancel tracking and explicit destination.
+- [ ] Design privacy-preserving assistant memory and chat history controls (review, correction, export, deletion) before persistent expansion.
+- [ ] Provide resilient Telegram keyboard/widget fallbacks and accessible mobile-first layout; test real iPhone compatibility before marking.
+- [ ] Evaluate opt-in photo/receipt parsing and voice transcription, with cost/accuracy/privacy limits and explicit owner approval before activation.
+- [ ] Add private diagnostics, alarms, retry/replay audit and backup/restore rehearsal for real deployment.
+- [ ] Plan authentication-scoped action connectors for approved tasks; require explicit confirmation for external communication or irreversible changes.
+
+### P2 — not authorized / not release blockers
+- [ ] Consider Telegram native widget payments, Stars, sharing, referrals or wallet functions **only** after security review and explicit owner decision; all OFF by default.
+- [ ] Consider richer companion persona, multimodal AI and calendar routines only after core private bot is live and measured.
+
+### Cross-chat status protocol
+For each task, track `OWNER | STATUS (TODO / IN PROGRESS / BLOCKED / DONE / STOPPED / CANCELED) | EVIDENCE (commit, test, link) | NEXT ACTION`. Only one lane owns a task. Failed/interrupted calls are not DONE; record blocker and retry/resume point. Update HQ #22 and the relevant queue after a substantive batch; don't replace another lane's status. Three chats cannot directly message one another; GitHub is the shared asynchronous log. Seashell device alias is canonical, but connectivity/active execution must be verified separately. Work only in this session when invoked; online status is not an always-running job.
