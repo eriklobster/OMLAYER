@@ -5,6 +5,7 @@ on:
     paths:
       - 'apps/aumyra/**'
       - '.github/workflows/aumyra-ci.yml'
+      - '.github/workflows/aumyra-deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -50,8 +51,11 @@ jobs:
             exit 1
           }
           $source = Get-Content -LiteralPath $scriptPath -Raw
-          if (-not $source.Contains("wrangler d1 export aumyra --remote") -or -not $source.Contains("Refusing to migrate existing data.")) {
+          if (-not $source.Contains("wrangler d1 export aumyra --remote") -or -not $source.Contains("Refusing to migrate existing data.") -or -not $source.Contains("validateBackup")) {
             throw "Bootstrap must preserve a private D1 export before existing DB migrations."
+          }
+          if (-not $source.Contains("Require-ReleaseLease") -or -not $source.Contains("Refusing unattended execution")) {
+            throw "Bootstrap must enforce the shared release lock and refuse background use."
           }
           if (-not $source.Contains('TELEGRAM_WEBHOOK_SECRET') -or -not $source.Contains("postdeploy-smoke.mjs")) {
             throw "Bootstrap is missing Telegram secret delivery or live smoke verification."

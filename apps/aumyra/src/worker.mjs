@@ -260,7 +260,7 @@ export async function handleRequest(request,env,transport = fetch) {
     const inserted=await env.DB.prepare("INSERT OR IGNORE INTO aumyra_processed_updates(update_id,created_at) VALUES(?,?)")
       .bind(update.update_id,claimTime).run();
     ownsReply = inserted?.meta?.changes === 1;
-    if (!ownsReply) saved=await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,delivered_at FROM aumyra_processed_updates WHERE update_id=?")
+    if (!ownsReply) saved=await env.DB.prepare("SELECT created_at,reply_text,reply_markup_json,reply_kind,delivered_at FROM aumyra_processed_updates WHERE update_id=?")
       .bind(update.update_id).first();
   }
   if (saved?.delivered_at) return new Response("ok");

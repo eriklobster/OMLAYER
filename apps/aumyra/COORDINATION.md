@@ -39,3 +39,25 @@ Use an actual timestamp and evidence, not example values, in real task comments.
 
 ## Release truth
 AUMYRA's Worker/D1/Telegram webhook and native widget rendering have **not** been verified in production. Priority remains correct Cloudflare access, safe release and real owner Telegram acceptance.
+## Executable coordination (2026-11-15)
+Canonical state: [aumyra-coordination-state branch](https://github.com/eriklobster/OMLAYER/blob/aumyra-coordination-state/apps/aumyra/coordination-state.json). Never merge its changing state into source branches. `scripts/coordination.mjs` changes this ONE file using the GitHub Contents API's current blob SHA. A conflict reloads state and revalidates the operation; only one claimant wins. Read GitHub server time for lease decisions. Stable event IDs survive retries after unknown network outcomes.
+
+Requires Node 22+ and a narrowly scoped GitHub Contents-write token supplied only as process environment `GITHUB_TOKEN` or `GH_TOKEN`. No credential argument, source file or log. Existing connected GitHub tools can perform the equivalent SHA-guarded update after applying the same reducer. No daemon, arbitrary-command execution or scheduled monitoring is included.
+
+```sh
+node scripts/coordination.mjs status
+node scripts/coordination.mjs apply coordination-event.json
+```
+Public event example (use a fresh stable event ID; preserve it on retries):
+```json
+{"eventId":"work-public-example-0001","action":"add","taskId":"WORK-PUBLIC-EXAMPLE","actor":"Work-session-unique","lane":"Work","summary":"Verify dedicated Aumyra HTTPS readiness"}
+```
+Then `claim` with a separate `branch` (`work/...`, `seashell/...`, `dev/...`). Use `heartbeat` only with new concrete evidence; `transition` records IN PROGRESS / BLOCKED / DONE / STOPPED / CANCELED. Terminal tasks cannot restart; create a new explicitly authorized task referencing the prior ID. The 20-minute progress policy remains; claims expire for takeover eligibility at 45 minutes, not automatic reassignment.
+
+A `takeover` also requires `expectedVersion` and `inspection` with all of: `preservedBranch` (old branch), `observedCommit` (40-character SHA), `branchesReviewed`, `commitsReviewed`, `processesReviewed`, `resourcesReviewed`, `noActiveExecution` (all true), and a concise public `evidence` statement. If Seashell is unreachable, its execution cannot be presumed stopped: do not assert `noActiveExecution` for a task it might still be running. The ledger stores an explicit TAKEOVER notice and old branch.
+
+All deployment/migration/secret/webhook tasks must be created with `resource:"aumyra-release"`. One shared lock covers these related operations. STOPPED/BLOCKED/DONE/CANCELED do not silently release it. An explicit `release` requires the same exact-version inspection after operations stop. Workflow concurrency adds another guard. Before each cloud mutation, installers/workflows run `assert-release`; expired or wrong-owner leases fail closed. An existing integration branch is allowed for a release of that reviewed code, never for parallel code editing.
+
+For interactive Windows bootstrap, supply `AUMYRA_RELEASE_TASK` and `AUMYRA_RELEASE_OWNER` from the existing claim plus the private GitHub token in the process environment. Renew meaningfully if 20 minutes elapse. Release the resource only after examining actual outcome. Do not run the interactive bootstrap on Seashell. The manual Actions workflow acquires/releases its own run-specific task; a failed or canceled job retains its lock for human/active-agent inspection.
+
+Public metadata only: summaries, branch/commit references and sanitized evidence. Never submit finance, notes, account identifiers or secret values. The field allowlist and token-pattern guard are secondary protections, not automatic privacy classification. Bounds: 500 tasks / 800 KB state, four CAS retries, 15-second network deadline. If capacity is reached, stop and plan a history-preserving archive; do not discard event IDs and replay old outboxes.

@@ -32,7 +32,7 @@ Updated 2026-11-14. Restart: [permanent issue #22](https://github.com/eriklobste
 - [x] Security harden Bot API 10.4 widget queries: reject signed/TON transaction types and wallet-card query events, require original private message context, strict 64-byte command allowance, preserve read-only finance access.
 - [x] Auto-load Thailand-local Today view once when an AUMYRA private widget appears (no polling); correct UTF-8 boundary truncation for Thai/emoji; expose Today and Status in 10-button native dashboard.
 - [x] Implement /today as a Thailand UTC+07:00 daily ledger report grouped by currency and entry type; exclude voided transactions, archived history and invented spendable bank balances. Add Today Telegram keyboard button, BotFather command and real SQLite timezone rollover smoke test.
-- [ ] Verify newest GitHub CI after /today + widget changes; CI #207 caught a stale widget ready() assertion which was corrected afterward. Never treat earlier failures as production evidence.
+- [x] Recovered exact PR #20 head `541f57c6`: CI #213 SUCCESS; original 51 tests passed locally before changes. New scoped branch tests are listed below.
 - [ ] **LIVE WIDGET ACCEPTANCE:** from the real owner Telegram app tap App, verify widget renders, Summary loads, keyboard fallback works, owner-only access holds; do not assume rollout to all clients or use wallet/payments.
 - [ ] **P0 OWNER ACCESS:** Run the single Windows PowerShell bootstrap from README on correct authenticated Cloudflare account (or bring an authorized RDC laptop online). Script automatically finds or creates dedicated `aumyra` D1; no token may be sent to GitHub or chat.
 - [ ] Identify dedicated D1 ID and configure Worker binding securely; inspect 0001–0006 before remote migration.
@@ -58,7 +58,7 @@ Work on `feat/aumyra-assistant-mvp` (PR #20) or a scoped branch with explicit ha
 ### P0 — Development lane: highest priority first
 - [ ] Verify newest head CI, current branch SHA, deploy workflow gating, and six D1 migration compatibility; report verified details, not prior historical CI as current.
 - [ ] Safely determine authorized Cloudflare account and whether dedicated Aumyra Worker/D1 already exist; inspect before any creation. A device being online does not establish Cloudflare login.
-- [ ] Review installer for unattended/non-disruptive use on Seashell (formerly Jock/CHR/Dell). **Never open CMD, PowerShell, browser, prompt, or notification on its visible screen** without a new owner request. Avoid secrets in logs.
+- [x] Audited Windows installer: interactive browser/prompts, NOT safe on Seashell. Added explicit background refusal and mandatory release lease. No remote execution attempted.
 - [ ] On explicit authenticated Cloudflare access, create/reuse only dedicated Aumyra resources, export old D1 before migration, verify migration 0001–0006, deploy Worker, /health, webhook identity, signed /start and /app smoke.
 - [ ] Verify **real owner Telegram** /start→Expense→Today→Summary→Undo and Note→Notes, native App rendering, non-owner access rejection, duplicate suppression, AI only after approved provider/budget; record device test in HQ.
 - [ ] Complete production release gate only after real HTTPS, D1, Telegram, and iPhone acceptance. Do not silently merge PR #20 or alter unrelated apps.
@@ -83,3 +83,13 @@ Work on `feat/aumyra-assistant-mvp` (PR #20) or a scoped branch with explicit ha
 
 ### Cross-chat status protocol
 For each task, track `OWNER | STATUS (TODO / IN PROGRESS / BLOCKED / DONE / STOPPED / CANCELED) | EVIDENCE (commit, test, link) | NEXT ACTION`. Only one lane owns a task. Failed/interrupted calls are not DONE; record blocker and retry/resume point. Update HQ #22 and the relevant queue after a substantive batch; don't replace another lane's status. Three chats cannot directly message one another; GitHub is the shared asynchronous log. Seashell device alias is canonical, but connectivity/active execution must be verified separately. Work only in this session when invoked; online status is not an always-running job.
+
+## Active Work implementation batch — 2026-11-15
+Owner: `Work-20261115-autonomous`. Branch: `work/aumyra-coordination-20261115` (handoff into #20).
+- [x] Implement atomic GitHub claims, three lanes, meaningful heartbeats, 45-minute inspected takeover, immutable stop/cancel, idempotent public events and shared production lock.
+- [x] Fix cached `/app` media type on lost-insert race; test against actual SQLite rather than only SQL mocks.
+- [x] Add restore-verified encrypted pre-migration backup and fail-closed release identity/locking; keep six SQL migrations unchanged.
+- [ ] Persist and verify real GitHub coordinator state and CLI handoff; record commit/CI in #22.
+- [ ] Finish authenticated Cloudflare production release, real Telegram replies, D1 persistence and iPhone widget acceptance. BLOCKED: private sign-in not completed.
+- [ ] Install unattended runner only after silent execution, stop and recovery are verified. NOT RUNNING; ready single-shot coordinator is not an agent daemon.
+- [ ] Optional LAN notes/tasks/outbox: implement separately after release preparation; no production dependency.
