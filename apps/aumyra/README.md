@@ -58,3 +58,13 @@ After approval and merge to the default branch (where GitHub exposes manual work
 
 ## Boundaries
 This repository is public, so move the assistant to a dedicated private repository when practical. Only code and schema belong here. CI success is not proof of live Telegram operation.
+
+
+### Optional /allocate preview (not a transfer or bank balance)
+The owner may privately configure \`BANK_ALLOCATION_JSON\` as a Cloudflare Worker secret. Example **shape only** (not an assumed owner policy):
+
+\`\`\`json
+{"Living":70,"Rent":20,"Donations":10}
+\`\`\`
+
+The percentages must be numbers summing to exactly 100, with at most two decimal places. Bank labels are owner-defined; rent remains a separate sinking-fund *category* in this preview, not spendable cash. Use \`/allocate 80.83 USDT\` (or USD/THB) to preview a cent-exact split. Ties use configured bank order. No balances, deposits, savings, automatic funding, payments, ledger writes or transfers occur. The existing \`BANK_PLAN_JSON\` **targets** configuration is independent and unchanged. Do not put actual private bank data or secrets in GitHub.
