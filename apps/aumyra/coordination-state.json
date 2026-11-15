@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "revision": 7,
+  "tasks": {
+    "DEV-GITHUB-COORDINATION": {
+      "id": "DEV-GITHUB-COORDINATION",
+      "lane": "Development",
+      "queue": 20,
+      "status": "IN PROGRESS",
+      "owner": "Work-20261115-autonomous",
+      "branch": "work/aumyra-coordination-20261115",
+      "resource": null,
+      "version": 3,
+      "updatedAt": "2026-11-15T10:57:05.007Z",
+      "heartbeatAt": "2026-11-15T10:57:05.007Z",
+      "leaseUntil": "2026-11-15T11:42:05.007Z",
+      "summary": "71 tests and Worker dry-run pass; PR28 saved; initializing durable state and waiting for exact CI"
+    },
+    "DEV-PRODUCTION-RELEASE": {
+      "id": "DEV-PRODUCTION-RELEASE",
+      "lane": "Development",
+      "queue": 20,
+      "status": "TODO",
+      "owner": null,
+      "branch": null,
+      "resource": "aumyra-release",
+      "version": 1,
+      "updatedAt": "2026-11-15T10:57:05.007Z",
+      "heartbeatAt": null,
+      "leaseUntil": null,
+      "summary": "Await private Cloudflare authorization; inspect dedicated resources, then guarded deployment and actual Telegram verification"
+    },
+    "WORK-LIVE-ACCEPTANCE": {
+      "id": "WORK-LIVE-ACCEPTANCE",
+      "lane": "Work",
+      "queue": 25,
+      "status": "TODO",
+      "owner": null,
+      "branch": null,
+      "resource": null,
+      "version": 1,
+      "updatedAt": "2026-11-15T10:57:05.007Z",
+      "heartbeatAt": null,
+      "leaseUntil": null,
+      "summary": "After deployment verify real Telegram start, app, today, ledger persistence, notes, authorization and duplicate safety"
+    },
+    "CHAT-OWNER-ACCEPTANCE": {
+      "id": "CHAT-OWNER-ACCEPTANCE",
+      "lane": "Simple Chat",
+      "queue": 26,
+      "status": "TODO",
+      "owner": null,
+      "branch": null,
+      "resource": null,
+      "version": 1,
+      "updatedAt": "2026-11-15T10:57:05.007Z",
+      "heartbeatAt": null,
+      "leaseUntil": null,
+      "summary": "Collect actual owner iPhone App rendering and finance flow observations after deployment"
+    },
+    "DEV-LAN-FALLBACK": {
+      "id": "DEV-LAN-FALLBACK",
+      "lane": "Development",
+      "queue": 20,
+      "status": "TODO",
+      "owner": null,
+      "branch": null,
+      "resource": null,
+      "version": 1,
+      "updatedAt": "2026-11-15T10:57:05.007Z",
+      "heartbeatAt": null,
+      "leaseUntil": null,
+      "summary": "Build optional authenticated local notes, task queue and durable public-metadata outbox; no Telegram offline claim"
+    }
+  },
+  "locks": {},
+  "events": {
+    "work-20261115-coord-add": {
+      "digest": "d4bcba019daf4f476d5bbed2f54df99dfd95ed61ae9ec0edd0c464da8fcf99f0",
+      "revision": 1,
+      "action": "add",
+      "taskId": "DEV-GITHUB-COORDINATION",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "Implement atomic task ownership and guarded release; original claim is PR20 comment 6893141459"
+    },
+    "work-20261115-coord-claim": {
+      "digest": "567d6bcac395cbb60f7c2683db0b2f3fd702ef8717d828857b0f9eae5359e139",
+      "revision": 2,
+      "action": "claim",
+      "taskId": "DEV-GITHUB-COORDINATION",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "Adopt existing issue claim into canonical ledger; implementation committed in PR28 at 564da8e6"
+    },
+    "work-20261115-coord-progress": {
+      "digest": "a7ca13536993ef81d8330990743eff6c2a52d2037f2a5e462ed4b8db5fb3f8be",
+      "revision": 3,
+      "action": "heartbeat",
+      "taskId": "DEV-GITHUB-COORDINATION",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "71 tests and Worker dry-run pass; PR28 saved; initializing durable state and waiting for exact CI"
+    },
+    "work-20261115-release-add": {
+      "digest": "33c749e6d5523b54e8651af8710dcc96b5244c847038240c5c6ce2a4985cc1dd",
+      "revision": 4,
+      "action": "add",
+      "taskId": "DEV-PRODUCTION-RELEASE",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "Await private Cloudflare authorization; inspect dedicated resources, then guarded deployment and actual Telegram verification"
+    },
+    "work-20261115-acceptance-add": {
+      "digest": "260e933af02e49da4670a0d1b371c51ca98fe10dcc7209a270bc7eb2bb63bc96",
+      "revision": 5,
+      "action": "add",
+      "taskId": "WORK-LIVE-ACCEPTANCE",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "After deployment verify real Telegram start, app, today, ledger persistence, notes, authorization and duplicate safety"
+    },
+    "work-20261115-owner-add": {
+      "digest": "f4469ae577d733d5484595e05e4cfcdd8770f9c651b2338c2745a3025c6b18d0",
+      "revision": 6,
+      "action": "add",
+      "taskId": "CHAT-OWNER-ACCEPTANCE",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "Collect actual owner iPhone App rendering and finance flow observations after deployment"
+    },
+    "work-20261115-lan-add": {
+      "digest": "06d998fbfb73800b457125fe575b7aae213bd7e30c1a30d3fd75ffad7105a690",
+      "revision": 7,
+      "action": "add",
+      "taskId": "DEV-LAN-FALLBACK",
+      "actor": "Work-20261115-autonomous",
+      "at": "2026-11-15T10:57:05.007Z",
+      "summary": "Build optional authenticated local notes, task queue and durable public-metadata outbox; no Telegram offline claim"
+    }
+  }
+}
