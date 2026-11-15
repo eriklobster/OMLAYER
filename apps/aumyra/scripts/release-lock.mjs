@@ -15,7 +15,7 @@ try {
     await assertReleaseLock(store,taskId,actor);
   }else if(mode==='finish'){
     await assertReleaseLock(store,taskId,actor);
-    await send('transition','HTTPS and authenticated Telegram smoke completed; real iPhone acceptance remains separate',{status:'DONE'});
+    await send('transition','HTTPS and Telegram-accepted signed start passed; real iPhone and widget acceptance remain separate',{status:'DONE'});
     const {state}=await store.read();
     await send('release','Synchronous deploy and smoke processes exited; exclusive resource lock released',{
       expectedVersion:state.tasks[taskId].version,inspection:{preservedBranch:ref,observedCommit:sha,branchesReviewed:true,commitsReviewed:true,processesReviewed:true,resourcesReviewed:true,noActiveExecution:true,evidence:'Manual workflow completed migration, deployment and HTTPS/Telegram smoke; no background child tasks started'}});

@@ -1,5 +1,18 @@
 # AUMYRA — PROJECT-HQ
 
+## Final autonomous implementation handoff — 2026-11-15
+- Source checkpoint: `1b172d9995f15493618706c4f23d0034c8df46b3`, PR #29; exact CI #223 **PASS** (run 43707465188). 78 local tests passed. Earlier #28 integrated coordination/release safety at feature merge `2fba80db`; follow issue #22 for the final feature-head SHA. Main stays draft/unreleased.
+- DONE: atomic GitHub task ledger and real HTTP409 stale-write proof; guarded exclusive release, private encrypted/restore-verified backup and strict Telegram delivery gate; native-widget race fix; optional owner-authenticated local notes/tasks and restart-safe public-only outbox with bounded sync and tested stop.
+- NOT VERIFIED: Seashell command execution (OFFLINE), any real Cloudflare resource/authentication/backup/migration/deploy, Telegram webhook/reply/D1 persistence, real iPhone native widget, Windows silent LAN installation/trusted HTTPS/private off-device backup. Autonomous task executor NOT RUNNING. No actual production backup exists from this session.
+- Next session: recover issue #22 → PR #20 current feature head → canonical `aumyra-coordination-state` ledger. Complete private Cloudflare authentication, inspect dedicated resources, then claim `DEV-PRODUCTION-RELEASE` with `resource:aumyra-release` before cloud mutation. Preserve real data; never run interactive bootstrap on Seashell or enable paid AI/payments without approval. After deployment, obtain real owner `/start`, finance/notes persistence and `/app` evidence. Maker #76/#78/#81/#82 retain NO-GO gates.
+
+## Latest source implementation — 2026-11-15
+- Coordination/release safety merged via #28 into PR #20 feature branch at `2fba80db`. CI #220 PASS at `564da8e6`: Node 22, Worker bundle, PowerShell parser, SQLite migrations.
+- Canonical GitHub ledger created/read back; actual stale SHA update rejected with HTTP 409. Coordination task DONE; optional LAN task claimed separately on `work/aumyra-lan-20261115`.
+- Optional `scripts/local-server.mjs` and `local/` UI implement owner login, private SQLite notes/tasks, explicit separate public summary outbox, idempotent sync/backoff and stop. Six additional tests cover HTTP auth/CSRF/host/origin, private-data isolation, lost-ack/restart recovery and actual process start/SIGTERM stop. 78 local tests pass in total, including the strict core-delivery gate.
+- LAN defaults to loopback. Non-loopback requires trusted HTTPS. No installation on Seashell, no trusted iPhone certificate, no real phone test, no unattended executor; all remain NOT RUNNING/UNVERIFIED.
+- Priority next: owner Cloudflare login in the cloud session, dedicated Aumyra resource inspection and guarded release. Do not run interactive bootstrap on Seashell, publish private data or enable paid AI/payments. Maker #76/#78 remain NO-GO.
+
 ## Current checkpoint — 2026-11-15 Work session
 - Recovery baseline: PR #20 `541f57c6`; CI #213 passed. New scoped implementation: `work/aumyra-coordination-20261115`, based on that head; integrate into #20 only after its CI passes.
 - 71 local Node tests pass, including actual SQLite Worker queries, the six unchanged migrations, atomic coordinator races, takeover/cancel/resource locking, backup encryption/restore and remote-identity preflight. Cloudflare bundle dry-run and new branch CI are recorded in issue #22 when verified.
