@@ -60,3 +60,49 @@ html[data-theme="light"] .next{background:transparent}
 }
 @media(max-width:370px){.theme-actions .nav-cta,.theme-actions .cta{font-size:.55rem}.wordmark span{letter-spacing:.08em}}
 @media(prefers-reduced-motion:reduce){.theme-toggle,.theme-icon{transition:none!important}}
+
+
+/* Accessible skip navigation: clipped by default, never painted behind mobile
+   browser chrome. Only a visible keyboard focus exposes the link. */
+.skip-link,
+.skip-link:not(:focus-visible) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0,0,0,0);
+  clip-path: inset(50%);
+  transform: none;
+  transition: none;
+  pointer-events: none;
+}
+.skip-link:focus-visible {
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  width: auto;
+  height: auto;
+  padding: 12px 16px;
+  margin: 0;
+  overflow: visible;
+  white-space: normal;
+  clip: auto;
+  clip-path: none;
+  transform: none;
+  pointer-events: auto;
+  color: var(--ink);
+  background: var(--paper);
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  /* Keep an intentionally focused keyboard shortcut below iPhone in-app
+     browser chrome; it stays invisible during ordinary touch scrolling. */
+  .skip-link:focus-visible { top: max(88px, env(safe-area-inset-top)); }
+}
