@@ -102,12 +102,25 @@ const server = createServer((req,res) => {
     for(const route of routes){
       try {
         await keyboard.goto(origin+route,{waitUntil:"domcontentloaded"});
-        const hiddenSkip=await keyboard.locator(".skip-link").boundingBox();
-        assert.ok(hiddenSkip && hiddenSkip.y+hiddenSkip.height<=2,"skip link should be offscreen before keyboard focus");
+        const skip=keyboard.locator(".skip-link");
+        const hidden=await skip.evaluate(el=>{
+          const c=getComputedStyle(el),r=el.getBoundingClientRect();
+          return {clip:c.clipPath,pointer:c.pointerEvents,width:r.width,height:r.height};
+        });
+        assert.equal(hidden.clip,"inset(50%)","unfocused skip link must be visually clipped");
+        assert.equal(hidden.pointer,"none","unfocused skip link must not intercept taps");
+        assert.ok(hidden.width<=1 && hidden.height<=1,"hidden skip link must not render as a chip");
         await keyboard.keyboard.press("Tab");
-        const focused=await keyboard.evaluate(()=>({text:document.activeElement?.textContent?.trim(),outline:getComputedStyle(document.activeElement).outlineStyle}));
+        const focused=await keyboard.evaluate(()=>{
+          const el=document.activeElement,c=getComputedStyle(el),r=el.getBoundingClientRect();
+          return {text:el?.textContent?.trim(),outline:c.outlineStyle,clip:c.clipPath,
+                  pointer:c.pointerEvents,top:r.top};
+        });
         assert.equal(focused.text,"Skip to content");
         assert.equal(focused.outline,"solid");
+        assert.equal(focused.clip,"none","keyboard focus should reveal the accessible shortcut");
+        assert.equal(focused.pointer,"auto","focused shortcut should be clickable");
+        assert.ok(focused.top>=80,"visible shortcut must clear iPhone in-app browser chrome");
         assert.equal(await keyboard.evaluate(()=>getComputedStyle(document.querySelector(".reveal")).opacity),"1");
         findings.push({route,width:390,mode:"reduced-motion-keyboard",skip:true});
       }catch(e){failures.push({route,width:390,mode:"reduced-motion-keyboard",error:e.message})}
