@@ -73,18 +73,18 @@ def main():
     # Studio portfolio release gate: approved original ROAMDOTS asset and branded links.
     home = (ROOT / "index.html").read_text(encoding="utf-8")
     case = (ROOT / "work/roamdots/index.html").read_text(encoding="utf-8")
-    logo = ROOT / "assets/roamdots-glitch-r.png"
+    logo = ROOT / "assets/roamdots-white-glitch-r.webp"
     branded = "https://roamdots.omlayer.com/"
     legacy = "roamdots.r14tur99.workers.dev"
-    if not logo.is_file() or not logo.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
-        failures.append("ROAMDOTS original glitch-R PNG missing or invalid")
+    if not logo.is_file() or not (logo.read_bytes()[:4] == b"RIFF" and logo.read_bytes()[8:12] == b"WEBP"):
+        failures.append("ROAMDOTS owner-supplied white glitch-R WebP missing or invalid")
     if 'href="' + branded + '"' not in home:
         failures.append("Homepage ROAMDOTS card does not open branded application")
-    if 'src="/assets/roamdots-glitch-r.png"' not in home:
+    if 'src="/assets/roamdots-white-glitch-r.webp"' not in home:
         failures.append("Homepage ROAMDOTS logo not using original PNG")
     if case.count('href="' + branded + '"') != 3:
         failures.append("Case page hero/title, button, and logo must all open branded application")
-    if 'src="../../assets/roamdots-glitch-r.png"' not in case:
+    if 'src="../../assets/roamdots-white-glitch-r.webp"' not in case:
         failures.append("ROAMDOTS case hero still uses illustrative/logo placeholder")
     for label, source in (("homepage",home),("ROAMDOTS case",case)):
         if legacy in source:
