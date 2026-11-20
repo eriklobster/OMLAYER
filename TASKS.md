@@ -41,3 +41,13 @@
 - [ ] Merge staged website changes into `main` only after explicit owner approval and production release gates.
 - [ ] Continue P1 OKC evidence and founder/offers via separate approved staging PRs; do not invent client proof.
 - [ ] Three-hour ChatGPT staging automation cannot be activated until an active-task slot is freed (five-task quota); do not silently replace other projects.
+
+## Mobile navigation preview · 2026-11-20 (staging proposal)
+- [x] Inspect current staging and existing iPhone Skip to content PR #30; preserve its already merged clip/focus solution.
+- [x] Add a native details/summary mobile navigation to the homepage for Capabilities, About, Work, Process and Start a project, with no-JS fallback and dark/light styles.
+- [x] Add progressive enhancement to close the menu on section click, outside tap and Escape.
+- [x] Add browser assertions for 320/390/768 vs desktop, touch target, Escape, anchor navigation and no-JS menu.
+- [ ] Await GitHub Actions browser and smoke results for the exact branch/PR head; do not report PASS from source inspection.
+- [ ] Obtain a new Cloudflare PR preview URL corresponding to this branch (historical 7c5816b5 preview is from PR #30).
+- [ ] Test on iPhone 11 Safari and Telegram WebView at 320–430px, light/dark mode, header CTA, and anchor navigation.
+- [ ] Keep main/www untouched until owner explicitly approves staging promotion; coordinate Pages issue #15.

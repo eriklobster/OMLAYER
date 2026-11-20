@@ -22,5 +22,23 @@
     try { localStorage.setItem(key, next); } catch (_) { /* private mode */ }
     update();
   }));
+
+  // Progressive enhancement: the native menu works without scripts.
+  // Close the panel after section navigation, outside taps, or Escape.
+  const mobileNav = document.querySelector("[data-mobile-nav]");
+  if (mobileNav) {
+    mobileNav.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => { mobileNav.open = false; });
+    });
+    document.addEventListener("pointerdown", event => {
+      if (mobileNav.open && !mobileNav.contains(event.target)) mobileNav.open = false;
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && mobileNav.open) {
+        mobileNav.open = false;
+        mobileNav.querySelector("summary")?.focus();
+      }
+    });
+  }
   update();
 })();
