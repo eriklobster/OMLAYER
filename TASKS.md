@@ -1,5 +1,14 @@
 # OMLAYER — TASKS
 
+## Cloud-only contact link fix · 2026-11-21
+
+- The production source had `href="https://wa.me/omlayer"` on the WhatsApp contact card. Official WhatsApp Click-to-Chat requires a phone number in international digits, not a vanity username, so this was not a valid contact action.
+- On isolated branch `fix/contact-whatsapp-link-20261121`, remove only that broken card; keep existing working email `hello@omlayer.com` and `https://t.me/omlayer`. Resize desktop contact grid from three to two columns; existing mobile single-column rule is unchanged.
+- Extend the dependency-free `scripts/validate-static-site.py` to reject any future malformed `wa.me` contact link. Did **not** invent or reveal a WhatsApp number.
+- **TESTS:** source link/count and patch invariants checked, Python CLI/static-site suite and real browser rendering **not yet executed**; CI/Cloudflare staging/production status not confirmed. No direct `main`, DNS, app, AUMYRA, ROAMDOTS or paid resource changes.
+- **NEXT:** run `python scripts/validate-static-site.py` on exact branch, review desktop/iPhone contact grid and existing staging UX PR #31 before release.
+
+
 ## ROAMDOTS third case · 2026-11-10
 - [x] Recover existing main index and both case-study format; identify separate open reliability PR #3.
 - [x] Review ROAMDOTS integration project HQ/release gates.
