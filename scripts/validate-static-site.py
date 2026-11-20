@@ -76,7 +76,7 @@ def main():
     logo = ROOT / "assets/roamdots-glitch-r.png"
     branded = "https://roamdots.omlayer.com/"
     legacy = "roamdots.r14tur99.workers.dev"
-    if not logo.is_file() or not logo.read_bytes().startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+    if not logo.is_file() or not logo.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
         failures.append("ROAMDOTS original glitch-R PNG missing or invalid")
     if 'href="' + branded + '"' not in home:
         failures.append("Homepage ROAMDOTS card does not open branded application")
