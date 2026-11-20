@@ -50,3 +50,12 @@
 - Dedicated staging `test.omlayer.com` not deployed: GH preview job skipped because `OMLAYER_STAGING_PAGES_PROJECT` is unset; see issue #15. Cloudflare Pages PR previews are separate from the named staging project.
 - OMLAYER website backlog: [issue #21](https://github.com/eriklobster/OMLAYER/issues/21). Next: real iPhone acceptance, Cloudflare staging binding, verified business inbox, and scope-limited OKC evidence.
 - Scheduled three-hour autonomous OMLAYER task creation blocked by 5 active automation slots. Do not replace unrelated ROAMDOTS, RDC or Tower tasks without owner choice.
+
+## 2026-11-20 mobile nav preview checkpoint
+- Production release boundary unchanged: branch targets staging for review, never main without owner approval.
+- Branch feat/omlayer-mobile-nav-20261120 adds progressive-enhancement mobile navigation for <=1020px, preserving desktop layout, CTAs, palette, existing links and contact destinations.
+- PR #30 skip-link fix was already merged to staging on Nov 18 and is not duplicated; real iPhone Telegram verification remains outstanding.
+- Previous Cloudflare PR preview https://7c5816b5.omlayer.pages.dev/ was retrieved read-only from authorized Jock Dell. It belongs to PR #30, not the new branch.
+- test.omlayer.com still lacks independently verified dedicated staging Pages deployment; historical PR preview is not proof of current branch publication.
+- Authorized Jock read-only device/filesystem/HTTPS inspection required no interactive terminal/browser invocation.
+- Release checklist: exact branch SHA and CI, new preview HTTP response with menu marker, responsive screenshots, no-JS, light/dark, real iPhone acceptance, owner approval.
