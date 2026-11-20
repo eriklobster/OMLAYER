@@ -50,3 +50,9 @@
 - Dedicated staging `test.omlayer.com` not deployed: GH preview job skipped because `OMLAYER_STAGING_PAGES_PROJECT` is unset; see issue #15. Cloudflare Pages PR previews are separate from the named staging project.
 - OMLAYER website backlog: [issue #21](https://github.com/eriklobster/OMLAYER/issues/21). Next: real iPhone acceptance, Cloudflare staging binding, verified business inbox, and scope-limited OKC evidence.
 - Scheduled three-hour autonomous OMLAYER task creation blocked by 5 active automation slots. Do not replace unrelated ROAMDOTS, RDC or Tower tasks without owner choice.
+
+## ROAMDOTS OMLAYER site link and logo — staging, 2026-11-21
+- Owner supplied `ROAMDOTS-White-Glitch-R-Telegram-1024.png`; site uses a visually faithful, 256px WebP copy at `assets/roamdots-white-glitch-r.webp` in the homepage card and case-study hero.
+- All OMLAYER-owned entry points to the ROAMDOTS app are now `https://roamdots.omlayer.com/` **on staging only**, as requested. The legacy `r14tur99.workers.dev` origin remains unchanged in the app infrastructure; this PR did not migrate or deploy a Worker.
+- Staging merge: [PR #33](https://github.com/eriklobster/OMLAYER/pull/33), `0ada7b7e772e40b7f07c7e685e28de44774855f1` with static and Chromium QA passed. Main production remains frozen pending explicit owner approval.
+- Actual Cloudflare branded hostname resolution and iPhone app acceptance are still **unverified**, so don't claim the new app URL works in production solely from source/link tests.
