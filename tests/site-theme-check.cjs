@@ -45,6 +45,31 @@ const server = createServer((req,res) => {
           assert.equal(await toggle.getAttribute("aria-label"),"Use dark theme");
           const bkg=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);
           assert.equal(bkg,"rgb(246, 248, 247)");
+          // Homepage mobile navigation is a native details control: inspect it
+          // in both color themes, and check touch, keyboard and anchor behavior.
+          if(route==="/"){
+            const menu=page.locator("[data-mobile-nav]");
+            if(width<=1020){
+              assert.equal(await menu.isVisible(),true,"mobile menu must be visible");
+              assert.equal(await page.locator(".nav-links").isVisible(),false);
+              const summary=menu.locator("summary");
+              assert.ok((await summary.boundingBox()).height>=44,"mobile menu tap target");
+              await summary.click();
+              assert.equal(await menu.evaluate(el=>el.open),true);
+              assert.deepEqual(await menu.locator(".mobile-nav-panel a").evaluateAll(els=>els.map(el=>el.getAttribute("href"))),
+                ["#capabilities","#about","#work","#process","#contact"]);
+              assert.equal(await menu.locator('a[href="#work"]').isVisible(),true);
+              await page.keyboard.press("Escape");
+              assert.equal(await menu.evaluate(el=>el.open),false,"Escape closes menu");
+              await summary.click();
+              await menu.locator('a[href="#work"]').click();
+              assert.equal(await menu.evaluate(el=>el.open),false,"in-page navigation closes menu");
+              assert.equal(await page.evaluate(()=>location.hash),"#work");
+              await page.evaluate(()=>{history.replaceState(null,"",location.pathname);window.scrollTo(0,0)});
+            }else{
+              assert.equal(await menu.isVisible(),false,"desktop keeps original nav");
+            }
+          }
           const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth));
           if(overflow>2)failures.push({route,width,error:"Horizontal overflow "+overflow+"px"});
           const label=route==="/"?"home":route.split("/")[2];
@@ -85,6 +110,13 @@ const server = createServer((req,res) => {
           assert.ok(state.overflow<=2,"horizontal overflow "+state.overflow+"px");
           assert.ok(state.email.includes("hello@omlayer.com"));
           assert.ok(state.count>100);
+          if(route==="/" && width<=1020){
+            const menu=page.locator("[data-mobile-nav]");
+            assert.equal(await menu.isVisible(),true,"native nav works with JS disabled");
+            await menu.locator("summary").click();
+            assert.equal(await menu.locator('a[href="#contact"]').isVisible(),true);
+            await menu.locator("summary").click();
+          }
           if(route==="/"){
             assert.equal(await page.locator(".process-fallback li").count(),7);
             assert.equal(await page.locator(".process-orbit").isVisible(),false);
