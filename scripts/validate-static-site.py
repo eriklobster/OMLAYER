@@ -2,6 +2,7 @@
 """Dependency-free local-link smoke test for OMLAYER's static website."""
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,6 +52,11 @@ def main():
             failures.append(f"{label}: missing canonical link")
         for value in document.links:
             target = urlsplit(value)
+            # WhatsApp Click-to-Chat requires an international phone number,
+            # not a vanity username (wa.me/omlayer is not a valid contact).
+            if target.netloc.lower() in ("wa.me", "www.wa.me"):
+                if not re.fullmatch(r"/[1-9][0-9]{5,14}", target.path):
+                    failures.append(f"{label}: invalid WhatsApp phone link: {value}")
             if target.scheme or target.netloc or value.startswith("//"):
                 continue
             path = unquote(target.path)
