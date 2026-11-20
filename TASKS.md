@@ -41,3 +41,12 @@
 - [ ] Merge staged website changes into `main` only after explicit owner approval and production release gates.
 - [ ] Continue P1 OKC evidence and founder/offers via separate approved staging PRs; do not invent client proof.
 - [ ] Three-hour ChatGPT staging automation cannot be activated until an active-task slot is freed (five-task quota); do not silently replace other projects.
+
+## ROAMDOTS OMLAYER portfolio correction — 2026-11-21
+- [x] [PR #33](https://github.com/eriklobster/OMLAYER/pull/33) merged **to staging only**, commit `0ada7b7e772e40b7f07c7e685e28de44774855f1`.
+- [x] Replaced illustrative ROAMDOTS pixel artwork on the homepage and case hero with the owner's uploaded white/cyan/magenta/black glitch-R, resized to an optimized 256px WebP asset.
+- [x] Homepage ROAMDOTS card now links directly to `https://roamdots.omlayer.com/`. All 3 ROAMDOTS case-page app links updated from retired `r14tur99.workers.dev` URL.
+- [x] Static smoke + Chromium theme/mobile/no-JS QA passed on PR #33; homepage eager logo load verified in screenshots.
+- [x] Superseded older main-based PR #24 closed without merging.
+- [ ] Confirm actual `https://roamdots.omlayer.com/` responds correctly and app navigation works on owner's iPhone; web tool failed to fetch this host, which is not proof of outage.
+- [ ] Owner visual approval of new asset in the Cloudflare Pages preview; **do not merge website changes into main or change DNS automatically**.
