@@ -81,7 +81,7 @@ def main():
     if 'href="' + branded + '"' not in home:
         failures.append("Homepage ROAMDOTS card does not open branded application")
     if 'src="/assets/roamdots-white-glitch-r.webp"' not in home:
-        failures.append("Homepage ROAMDOTS logo not using original PNG")
+        failures.append("Homepage ROAMDOTS logo not using owner-supplied image")
     if case.count('href="' + branded + '"') != 3:
         failures.append("Case page hero/title, button, and logo must all open branded application")
     if 'src="../../assets/roamdots-white-glitch-r.webp"' not in case:
