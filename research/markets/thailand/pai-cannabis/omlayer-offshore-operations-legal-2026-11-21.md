@@ -94,3 +94,20 @@ Jurisdiction references:
 **Open questions:** whether any overseas entity already exists; the overseas contractor's country and authority; actual client licences and scope; current payment-provider written eligibility; Thai lawyer view on client introductions and account setup. These are diligence items, not assumptions.
 
 **Change status:** Research memo only, no client outreach, account creation, campaign, financial operation or deployment completed.
+
+## Clarification 2026-11-21 — owner on holiday, two business locations
+
+**Owner-described fact (not yet independently verified):** one prospective client operates the two Pai locations. Treat as *one potential account, two locations* for private planning; do **not** publish shared-ownership claims in the public market profile until verified via official business statements or records.
+
+**Owner-described intended conduct:** a founder/CEO vacationing in Pai, occasionally making significant shareholder/board decisions and handing a business card to acquaintances. A real offshore operator would separately contract, receive approved payment, direct agents/contractors, administer profiles and be accountable for delivery.
+
+**Precisely scoped Thai government guidance:**
+- The Thai government explicitly lists attending meetings or seminars, **business visits or negotiations**, and attending one's own company board meetings among activities that do not require a work permit on tourist status. [Thai government explanation, updated 2025-05-28](https://www.thailand.go.th/issue-focus-detail/7--work-permit--tourist-visa-?hl=en).
+- The [BOI work-permit guidance](https://www.boi.go.th/index.php?language=en&page=legal_issues_for_investors_02_work_permits) distinguishes **visiting** a business site or **participating** in a meeting from organizing the visit or meeting; the government list should not be interpreted as a general permission to carry on continuing trade or employment in Thailand.
+- Incidental social exchange of business cards is **not expressly settled by these sources**, and whether repeatedly approaching local businesses amounts to work depends on facts, purpose and pattern. Do not claim that a tourist can freely engage in recurring client acquisition.
+- Genuine periodic **board/shareholder-level decisions** are different from providing day-to-day executive management. CEO title alone does not exempt ongoing CEO duties. Remote approval of deliverables, setting campaigns, supervising developers/AI agents, or handling routine Thai-customer support from Thailand creates work-authorization risk.
+- A Thai lawyer should evaluate this exact activity matrix and visa stamp rather than treating “on holiday” as a legal exemption.
+
+**Additional verified constraints:** [Thai PRD summary](https://thailand.prd.go.th/en/content/category/detail/id/2078/iid/401785) says all forms of cannabis advertising are prohibited; [Wise worldwide AUP updated 2026-03-25](https://wise.com/us/legal/acceptable-use-policy) restricts services related to legal marijuana trade. Do not launch paid shop ads or route related agency payments through Wise without written approvals.
+
+**Research progress:** Draft branch stores a sourced preliminary legal memo, **not** a completed legal opinion or verified shop comparison. Deep Research run was initiated separately; its current completion percentage and final output are not accessible through this repository session. Research results must be explicitly checked and transferred before labeling them verified.
