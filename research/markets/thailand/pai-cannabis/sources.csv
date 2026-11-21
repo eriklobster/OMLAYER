@@ -1,0 +1,3 @@
+id,subject,source_type,url,observed_date,source_date,claim_summary,evidence_status,notes
+PAI-001,Lead A,owner-provided Google Maps URL,https://maps.app.goo.gl/BYrJPdzYBhVc1Rsn6?g_st=ic,2026-11-21,,Business link provided; destination identity not re-verified,UNVERIFIED,Resolve link and confirm official business identity
+PAI-002,Lead B,owner-provided Google Maps URL,https://maps.app.goo.gl/nPmKPDHyXDKAaVmy5?g_st=ic,2026-11-21,,Business link provided; destination identity not re-verified,UNVERIFIED,Resolve link and confirm official business identity
