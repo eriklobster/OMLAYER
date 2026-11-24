@@ -25,7 +25,7 @@ const path = require('node:path');
  const xref=Number(raw.match(/startxref\n(\d+)/)[1]);assert.equal(raw.slice(xref,xref+4),'xref');
  const rows=raw.slice(xref).split('\n').slice(3,11);rows.forEach((row,i)=>{const off=Number(row.slice(0,10));assert.equal(raw.slice(off,off+7),(i+1)+' 0 obj')});
  await page.locator('#size').selectOption('4x6');await page.locator('#bleed').uncheck();assert.deepEqual(await canvas.evaluate(c=>[c.width,c.height]),[1800,1200]);
- await page.locator('[data-mode=photo]').click();const before=await snapshot();await page.locator('#photo').setInputFiles({name:'sample.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jP1sAAAAASUVORK5CYII=','base64')});
+ await page.locator('[data-mode=photo]').click();const before=await snapshot();await page.locator('#photo').setInputFiles({name:'sample.png',mimeType:'image/png',buffer:Buffer.from(await page.evaluate(()=>{const c=document.createElement('canvas');c.width=32;c.height=24;const ctx=c.getContext('2d');ctx.fillStyle='#dd33cc';ctx.fillRect(0,0,32,24);return c.toDataURL('image/png').split(',')[1]}),'base64')});
  await page.waitForFunction(()=>document.getElementById('status').textContent==='Photo loaded locally.');assert.notEqual(await snapshot(),before);
  const pngPromise=page.waitForEvent('download');await page.locator('#download').click();const png=await pngPromise;assert.equal(png.suggestedFilename(),'postcard-front.png');const pngBytes=fs.readFileSync(await png.path());assert.equal(pngBytes.readUInt32BE(16),1800);
  await page.locator('#findGps').click();await page.waitForFunction(()=>document.getElementById('printArea').value==='19.3600, 98.4400');
