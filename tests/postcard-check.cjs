@@ -30,6 +30,26 @@ const path = require('node:path');
  const pngPromise=page.waitForEvent('download');await page.locator('#download').click();const png=await pngPromise;assert.equal(png.suggestedFilename(),'postcard-front.png');const pngBytes=fs.readFileSync(await png.path());assert.equal(pngBytes.readUInt32BE(16),1800);
  await page.locator('#findGps').click();await page.waitForFunction(()=>document.getElementById('printArea').value==='19.3600, 98.4400');
  await page.evaluate(()=>{window.open=(u)=>{window.testMap=u;return null}});await page.locator('#find').click();assert.ok((await page.evaluate(()=>window.testMap)).includes(encodeURIComponent('print shop near 19.3600, 98.4400')));
+ assert.equal(await page.locator('#printerResult').isVisible(),true);
+ assert.match(await page.locator('#printerCoords').textContent(),/19\.3600, 98\.4400/);
+ const savedPhoto=await snapshot();
+ await page.reload();
+ await page.waitForFunction(expected=>document.getElementById('card').toDataURL()===expected,savedPhoto);
+ assert.equal(await page.locator('#message').inputValue(),'Hello from the mountains');
+ assert.equal(await page.locator('#address').inputValue(),'A friend');
+ assert.equal(await page.locator('#size').inputValue(),'4x6');
+ assert.equal(await page.locator('#printArea').inputValue(),'19.3600, 98.4400');
+ assert.equal(await page.locator('#printerResult').isVisible(),true);
+ assert.equal(await page.locator('[data-mode=photo]').getAttribute('aria-pressed'),'true');
+ await page.locator('#gps').click();
+ await page.waitForFunction(()=>!document.getElementById('gpsResult').hidden);
+ assert.match(await page.locator('#gpsCoords').textContent(),/19\.3600, 98\.4400/);
+ await page.evaluate(()=>{window.open=u=>{window.testMap=u}});
+ await page.locator('#printArea').fill('');
+ await page.locator('#find').click();
+ assert.ok((await page.evaluate(()=>window.testMap)).includes(encodeURIComponent('print shop near me')));
+ assert.equal(await page.locator('#printerResult').isVisible(),false);
+
  await page.locator('[data-mode=prompt]').click();assert.equal(await page.locator('#placeField').isVisible(),false);assert.equal(await page.locator('#promptField').isVisible(),true);
  const output=process.env.OMLAYER_SCREENSHOTS;if(output){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,'postcard-mobile.png'),fullPage:true})}
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow '+width)}
