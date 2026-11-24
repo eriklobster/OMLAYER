@@ -6,6 +6,7 @@ on:
       - "site-theme.css"
       - "site-theme.js"
       - "tests/site-theme-check.cjs"
+      - "tests/postcard-check.cjs"
       - ".github/workflows/staging-browser-qa.yml"
   workflow_dispatch:
 permissions:
@@ -22,6 +23,10 @@ jobs:
         run: npm install --no-save playwright@1.56.0
       - name: Test dark/light behavior and layout
         run: node tests/site-theme-check.cjs
+        env:
+          OMLAYER_SCREENSHOTS: ${{ runner.temp }}/omlayer-theme-qa
+      - name: Test postcard studio
+        run: node tests/postcard-check.cjs
         env:
           OMLAYER_SCREENSHOTS: ${{ runner.temp }}/omlayer-theme-qa
       - name: Upload screenshots
