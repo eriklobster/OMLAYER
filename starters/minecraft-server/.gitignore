@@ -1,0 +1,6 @@
+/.env
+/data/
+/backups/
+/restore-test/
+/*.jar
+/.env.local
