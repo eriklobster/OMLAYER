@@ -2,8 +2,10 @@ name: OMLAYER staging smoke and preview
 on:
   push:
     branches: [staging]
+    paths-ignore: ['**/*.md']
   pull_request:
     branches: [staging]
+    paths-ignore: ['**/*.md']
   workflow_dispatch:
 permissions:
   contents: read

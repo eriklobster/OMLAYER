@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   chrome:
     runs-on: ubuntu-latest
@@ -31,4 +35,5 @@ jobs:
           name: omlayer-theme-screenshots
           path: ${{ runner.temp }}/omlayer-theme-qa
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 3
+          compression-level: 0
