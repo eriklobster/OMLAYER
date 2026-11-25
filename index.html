@@ -724,6 +724,8 @@
 .hero h1{font-size:clamp(3rem,6.9vw,6.4rem);line-height:.98}
 .hero-intro{margin:24px 0;max-width:40ch}
 .layer-stage{min-height:0;height:clamp(200px,31vw,390px);margin:0}
+.layer-stage::before{width:min(88%,340px);left:50%;top:50%;transform:translate(-50%,-50%)}
+.spirit-shell{width:min(88%,340px,28vw)}
 .section{padding:clamp(34px,5vw,72px) 0}
 .section-header{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 22px;margin-bottom:24px}
 .section-index{margin:0}
@@ -739,7 +741,7 @@
 .case-study-link + .case-study-link{margin-top:12px}
 .case-top{display:block}
 .case-copy{border:0;padding:clamp(18px,3vw,30px)}
-.case-title-row{margin:12px 0 8px;justify-content:flex-start;flex-direction:row-reverse;justify-content:flex-end;gap:16px}
+.case-title-row{margin:12px 0 8px;flex-direction:row-reverse;justify-content:flex-end;gap:16px}
 .case-copy h3{font-size:clamp(1.5rem,3.2vw,2.5rem);line-height:1.1;letter-spacing:-.04em}
 .case-logo{width:clamp(48px,6vw,72px);height:auto;flex:none}
 .case-description{margin:10px 0;max-width:65ch;line-height:1.5}
@@ -758,6 +760,8 @@
 .hero-actions{flex-direction:row;align-items:stretch;gap:8px}
 .hero-actions .button{min-width:0;white-space:normal;padding:12px 15px}
 .layer-stage{height:190px;min-height:0}
+.spirit-shell{width:min(70%,180px)}
+.layer-stage::before{width:min(85%,210px)}
 .capabilities{grid-template-columns:1fr;gap:0}
 .section-header{gap:8px;margin-bottom:16px}
 .section-header .section-index{width:100%}
