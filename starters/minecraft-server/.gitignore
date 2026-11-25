@@ -4,3 +4,5 @@
 /restore-test/
 /*.jar
 /.env.local
+/data-login-test/
+/backups-login-test/
