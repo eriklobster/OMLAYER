@@ -1,0 +1,21 @@
+# PRIVATE TEST ONLY: use a separate project, world and backups.
+# Requires Docker Compose >=2.24.4 for !override. Do not expose to the Internet.
+services:
+  mc:
+    ports: !override
+      - "127.0.0.1:25566:25565/tcp"
+      - "127.0.0.1:19133:19132/udp"
+      - "127.0.0.1:19133:19132/tcp"
+    environment:
+      ONLINE_MODE: "FALSE"
+      MODRINTH_PROJECTS: |
+        luckperms
+        chunky
+        authmereloaded
+        packetevents
+    volumes:
+      - ./data-login-test:/data
+  backups:
+    volumes:
+      - ./data-login-test:/data:ro
+      - ./backups-login-test:/backups
